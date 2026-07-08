@@ -1,0 +1,40 @@
+# typescript
+*.tsbuildinfo
+
+# dependencies
+node_modules/
+
+# build output
+dist/
+build/
+.vite/
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# drizzle migrations output (keep tracked, but ignore lock conflicts)
+*.sql.bak
+
+# editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# os
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# bun
+bun.lockb.bak
+
+# better-auth
+better-auth*.json
