@@ -16,6 +16,9 @@ export const user = pgTable('user', {
     .$type<Role>()
     .notNull()
     .default('PETUGAS_LOKET'),
+  banned: boolean('banned').notNull().default(false),
+  banReason: varchar('ban_reason', { length: 255 }),
+  banExpires: timestamp('ban_expires', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -35,6 +38,7 @@ export const session = pgTable('session', {
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   ipAddress: varchar('ip_address'),
   userAgent: varchar('user_agent'),
+  impersonatedBy: varchar('impersonated_by'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),

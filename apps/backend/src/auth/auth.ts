@@ -1,8 +1,9 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter'
+import { admin } from 'better-auth/plugins'
 import { db, schema } from '../db/client'
 import { env } from '../env'
-import { ROLES } from '@sianter/shared'
+import { ac, adminRole, petugasRole } from './permissions'
 
 export const auth = betterAuth({
   baseURL: env.BASE_URL,
@@ -14,16 +15,17 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  user: {
-    additionalFields: {
-      role: {
-        type: [...ROLES],
-        required: true,
-        defaultValue: 'PETUGAS_LOKET',
-        input: false,
+  trustedOrigins: [env.BASE_URL, env.FRONTEND_URL],
+  plugins: [
+    admin({
+      ac,
+      roles: {
+        SUPER_ADMIN: adminRole,
+        PETUGAS_LOKET: petugasRole,
       },
-    },
-  },
+      defaultRole: 'PETUGAS_LOKET',
+      adminRoles: ['SUPER_ADMIN'],
+    }),
+  ],
   secret: env.BETTER_AUTH_SECRET,
 })
-

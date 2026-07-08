@@ -7,6 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./permissions": {
+      "types": "./src/auth/permissions.ts",
+      "default": "./src/auth/permissions.ts"
     }
   },
   "scripts": {
@@ -17,6 +21,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
+    "db:seed": "bun run src/seed.ts",
     "auth:generate": "auth generate --config ./src/auth/auth.ts"
   },
   "dependencies": {
