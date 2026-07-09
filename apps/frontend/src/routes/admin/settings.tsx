@@ -104,7 +104,7 @@ export function SettingsAdminPage() {
             >
               <Label
                 htmlFor="mode-fifo"
-                className="flex cursor-pointer items-start gap-3 rounded-lg border p-4 has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+                className="flex cursor-pointer items-start gap-3 rounded-lg border p-4 has-checked:border-primary has-checked:bg-primary/5"
               >
                 <RadioGroupItem id="mode-fifo" value="FIFO_GLOBAL" />
                 <div>
@@ -117,7 +117,7 @@ export function SettingsAdminPage() {
               </Label>
               <Label
                 htmlFor="mode-selective"
-                className="flex cursor-pointer items-start gap-3 rounded-lg border p-4 has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+                className="flex cursor-pointer items-start gap-3 rounded-lg border p-4 has-checked:border-primary has-checked:bg-primary/5"
               >
                 <RadioGroupItem id="mode-selective" value="SELECTIVE" />
                 <div>

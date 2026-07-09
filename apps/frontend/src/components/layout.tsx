@@ -5,7 +5,6 @@ import { Separator } from '@/components/ui/separator'
 const navItems = [
   { to: '/', label: 'Kios Tiket' },
   { to: '/monitor', label: 'Monitor Display' },
-  { to: '/dashboard', label: 'Dashboard Petugas' },
 ]
 
 export function Layout() {

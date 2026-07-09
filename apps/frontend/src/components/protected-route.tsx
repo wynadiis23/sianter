@@ -26,7 +26,7 @@ export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
   }
 
   if (role && session.user.role !== role) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/" replace />
   }
 
   return <>{children}</>

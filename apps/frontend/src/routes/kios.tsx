@@ -41,7 +41,7 @@ export function KiosPage() {
           <CardContent className="flex aspect-square flex-col items-center justify-center gap-2 p-6 text-center text-muted-foreground">
             <p className="text-sm">Layanan akan muncul di sini</p>
             <Button asChild variant="outline" size="sm">
-              <Link to="/dashboard">Kelola Layanan</Link>
+              <Link to="/admin/layanan">Kelola Layanan</Link>
             </Button>
           </CardContent>
         </Card>

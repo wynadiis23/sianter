@@ -4,7 +4,6 @@ import { AdminLayout } from './components/admin-layout'
 import { ProtectedRoute } from './components/protected-route'
 import { KiosPage } from './routes/kios'
 import { MonitorPage } from './routes/monitor'
-import { DashboardPage } from './routes/dashboard'
 import { LoginPage } from './routes/login'
 import { LayananAdminPage } from './routes/admin/layanan'
 import { LoketAdminPage } from './routes/admin/loket'
@@ -22,14 +21,6 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
-  },
-  {
-    path: '/dashboard',
-    element: (
-      <ProtectedRoute>
-        <DashboardPage />
-      </ProtectedRoute>
-    ),
   },
   {
     element: (
