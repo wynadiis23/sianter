@@ -11,12 +11,10 @@ import { UsersAdminPage } from './routes/admin/users'
 import { SettingsAdminPage } from './routes/admin/settings'
 
 const router = createBrowserRouter([
+  { path: '/', element: <KiosPage /> },
   {
     element: <Layout />,
-    children: [
-      { path: '/', element: <KiosPage /> },
-      { path: '/monitor', element: <MonitorPage /> },
-    ],
+    children: [{ path: '/monitor', element: <MonitorPage /> }],
   },
   {
     path: '/login',

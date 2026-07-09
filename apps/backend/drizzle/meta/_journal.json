@@ -15,6 +15,20 @@
       "when": 1783520321051,
       "tag": "0001_striped_human_fly",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783584691235,
+      "tag": "0002_tan_raider",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783603571884,
+      "tag": "0003_sloppy_silver_fox",
+      "breakpoints": true
     }
   ]
 }

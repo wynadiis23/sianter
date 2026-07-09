@@ -1,4 +1,4 @@
-import { pgTable, varchar, boolean, timestamp, integer } from 'drizzle-orm/pg-core'
+import { pgTable, varchar, boolean, timestamp, integer, text } from 'drizzle-orm/pg-core'
 import { createId } from '@paralleldrive/cuid2'
 
 export const layanan = pgTable('layanan', {
@@ -7,6 +7,9 @@ export const layanan = pgTable('layanan', {
     .primaryKey(),
   nama: varchar('nama', { length: 100 }).notNull(),
   prefix: varchar('prefix', { length: 3 }).notNull(),
+  deskripsi: varchar('deskripsi', { length: 200 }),
+  gambar: text('gambar'),
+  warna: varchar('warna', { length: 7 }),
   aktif: boolean('aktif').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()

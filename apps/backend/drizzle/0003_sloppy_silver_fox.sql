@@ -1,0 +1,1 @@
+ALTER TABLE "layanan" ADD COLUMN "warna" varchar(7);
