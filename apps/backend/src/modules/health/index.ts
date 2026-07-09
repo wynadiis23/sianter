@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia'
 
-export const healthRoutes = new Elysia({ name: 'health' }).get(
+export const healthModule = new Elysia().get(
   '/health',
   () => ({
     status: 'ok' as const,

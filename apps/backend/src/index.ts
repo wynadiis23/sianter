@@ -1,7 +1,11 @@
-import { Elysia, t } from 'elysia'
+import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { authPlugin } from './auth/plugin'
-import { healthRoutes } from './routes/health'
+import { healthModule } from './modules/health'
+import { meModule } from './modules/me'
+import { layananModule } from './modules/layanan'
+import { loketModule } from './modules/loket'
+import { pengaturanModule } from './modules/pengaturan'
 
 const app = new Elysia()
   .use(
@@ -13,16 +17,11 @@ const app = new Elysia()
     }),
   )
   .use(authPlugin)
-  .use(healthRoutes)
-  .get('/me', ({ user }) => user, {
-    auth: true,
-    response: t.Object({
-      id: t.String(),
-      email: t.String(),
-      name: t.String(),
-      role: t.Union([t.Literal('SUPER_ADMIN'), t.Literal('PETUGAS_LOKET')]),
-    }),
-  })
+  .use(healthModule)
+  .use(meModule)
+  .use(layananModule)
+  .use(loketModule)
+  .use(pengaturanModule)
   .listen(3000)
 
 console.log(
