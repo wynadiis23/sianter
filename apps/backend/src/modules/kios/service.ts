@@ -11,6 +11,7 @@ export abstract class KiosService {
         prefix: schema.layanan.prefix,
         deskripsi: schema.layanan.deskripsi,
         gambar: schema.layanan.gambar,
+        warna: schema.layanan.warna,
       })
       .from(schema.layanan)
       .where(eq(schema.layanan.aktif, true))

@@ -12,6 +12,7 @@ interface LayananItem {
   prefix: string
   deskripsi?: string | null
   gambar?: string | null
+  warna?: string | null
 }
 
 interface TicketData {
@@ -314,27 +315,22 @@ export function KiosPage() {
                   key={layanan.id}
                   type="button"
                   onClick={() => handleSelectLayanan(layanan)}
-                  className="flex min-h-[200px] flex-col items-center gap-3 rounded-xl border border-border bg-card p-5 text-center shadow-sm transition-all duration-150 active:scale-[0.97] active:bg-primary active:border-primary active:text-primary-foreground"
+                  className="flex min-h-[180px] flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-5 text-center shadow-sm transition-all duration-150 active:scale-[0.97] active:bg-primary active:border-primary active:text-primary-foreground"
+                  style={
+                    layanan.warna
+                      ? ({
+                          backgroundColor: `${layanan.warna}0D`,
+                          borderColor: `${layanan.warna}4D`,
+                        } as React.CSSProperties)
+                      : undefined
+                  }
                 >
-                  {layanan.gambar ? (
-                    <img
-                      src={layanan.gambar}
-                      alt=""
-                      className="size-16 shrink-0 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <span className="kiosk-font-wordmark text-4xl leading-none text-inherit">
-                      {layanan.prefix}
-                    </span>
-                  )}
-                  <span className="font-body text-sm font-medium text-inherit">
+                  <span className="kiosk-font-wordmark text-5xl leading-none text-inherit">
+                    {layanan.prefix}
+                  </span>
+                  <span className="font-body text-base font-medium text-inherit">
                     {layanan.nama}
                   </span>
-                  {layanan.deskripsi && (
-                    <p className="font-body text-xs leading-tight text-inherit/70 line-clamp-2">
-                      {layanan.deskripsi}
-                    </p>
-                  )}
                 </button>
               ))}
             </div>

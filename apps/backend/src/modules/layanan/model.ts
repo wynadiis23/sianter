@@ -5,6 +5,7 @@ const layananBody = {
   prefix: t.String({ minLength: 1, maxLength: 3 }),
   deskripsi: t.Optional(t.String({ maxLength: 200 })),
   gambar: t.Optional(t.String()),
+  warna: t.Optional(t.String({ maxLength: 7 })),
   aktif: t.Optional(t.Boolean()),
 }
 
@@ -14,6 +15,7 @@ const layananResponse = {
   prefix: t.String(),
   deskripsi: t.Nullable(t.String({ maxLength: 200 })),
   gambar: t.Nullable(t.String()),
+  warna: t.Nullable(t.String({ maxLength: 7 })),
   aktif: t.Boolean(),
   createdAt: t.Date(),
   updatedAt: t.Date(),

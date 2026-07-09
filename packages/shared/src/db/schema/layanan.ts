@@ -9,6 +9,7 @@ export const layanan = pgTable('layanan', {
   prefix: varchar('prefix', { length: 3 }).notNull(),
   deskripsi: varchar('deskripsi', { length: 200 }),
   gambar: text('gambar'),
+  warna: varchar('warna', { length: 7 }),
   aktif: boolean('aktif').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()

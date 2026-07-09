@@ -7,6 +7,7 @@ export const KiosModel = {
     prefix: t.String(),
     deskripsi: t.Nullable(t.String()),
     gambar: t.Nullable(t.String()),
+    warna: t.Nullable(t.String({ maxLength: 7 })),
   }),
 
   antreanBody: t.Object({

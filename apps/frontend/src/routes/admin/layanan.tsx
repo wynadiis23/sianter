@@ -32,11 +32,25 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+const WARNA_PALETTE = [
+  { label: 'Merah', value: '#E53935' },
+  { label: 'Biru', value: '#1E88E5' },
+  { label: 'Hijau', value: '#43A047' },
+  { label: 'Oranye', value: '#FB8C00' },
+  { label: 'Ungu', value: '#8E24AA' },
+  { label: 'Toska', value: '#00ACC1' },
+  { label: 'Indigo', value: '#3949AB' },
+  { label: 'Lime', value: '#C0CA33' },
+  { label: 'Pink', value: '#D81B60' },
+  { label: 'Coklat', value: '#6D4C41' },
+] as const
+
 interface Layanan {
   nama: string
   prefix: string
   deskripsi?: string | null
   gambar?: string | null
+  warna?: string | null
   aktif?: boolean
 }
 
@@ -46,7 +60,7 @@ interface LayananWithId extends Layanan {
   updatedAt?: Date
 }
 
-const empty: Layanan = { nama: '', prefix: '', deskripsi: '', gambar: '', aktif: true }
+const empty: Layanan = { nama: '', prefix: '', deskripsi: '', gambar: '', warna: '', aktif: true }
 
 export function LayananAdminPage() {
   const [items, setItems] = useState<LayananWithId[]>([])
@@ -82,6 +96,7 @@ export function LayananAdminPage() {
       prefix: item.prefix,
       deskripsi: item.deskripsi ?? '',
       gambar: item.gambar ?? '',
+      warna: item.warna ?? '',
       aktif: item.aktif,
     })
     setDialogOpen(true)
@@ -95,6 +110,7 @@ export function LayananAdminPage() {
       ...form,
       deskripsi: form.deskripsi || undefined,
       gambar: form.gambar || undefined,
+      warna: form.warna || undefined,
     }
 
     if (editing?.id) {
@@ -214,7 +230,19 @@ export function LayananAdminPage() {
                     </TableCell>
                     <TableCell className="font-medium">{item.nama}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{item.prefix}</Badge>
+                      <Badge
+                        variant="outline"
+                        style={
+                          item.warna
+                            ? {
+                                borderColor: item.warna,
+                                color: item.warna,
+                              }
+                            : undefined
+                        }
+                      >
+                        {item.prefix}
+                      </Badge>
                     </TableCell>
                     <TableCell className="hidden max-w-[200px] truncate text-sm text-muted-foreground md:table-cell">
                       {item.deskripsi || '—'}
@@ -344,6 +372,47 @@ export function LayananAdminPage() {
                   className="hidden"
                   onChange={handleImageSelect}
                 />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Warna (opsional)</Label>
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, warna: '' })}
+                  className={`flex size-8 items-center justify-center rounded-full border-2 text-[10px] font-bold text-muted-foreground ${
+                    !form.warna ? 'border-foreground' : 'border-muted-foreground/30'
+                  }`}
+                  title="Default"
+                >
+                  ∅
+                </button>
+                {WARNA_PALETTE.map((c) => {
+                  const selected = form.warna === c.value
+                  return (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          warna: selected ? '' : c.value,
+                        })
+                      }
+                      className={`size-8 rounded-full border-2 ${
+                        selected ? 'border-foreground' : 'border-transparent'
+                      }`}
+                      style={{ backgroundColor: c.value }}
+                      title={c.label}
+                    >
+                      {selected && (
+                        <span className="flex items-center justify-center text-white">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
             </div>
             <div className="flex items-center justify-between rounded-lg border p-3">
