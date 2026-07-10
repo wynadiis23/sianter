@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
-import { useLoketSocket } from '@/lib/ws'
+import { useLoketSocket, type WsStatus } from '@/lib/ws'
 import type { WsEvent } from '@sianter/backend'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -120,7 +120,15 @@ export function PetugasDashboardPage() {
     [fetchDashboard, session?.loketId],
   )
 
-  useLoketSocket(handleWsEvent, fetchDashboard)
+  const wsStatus = useLoketSocket(handleWsEvent, fetchDashboard)
+
+  const prevStatus = useRef<WsStatus>(wsStatus)
+  useEffect(() => {
+    if (prevStatus.current === wsStatus) return
+    prevStatus.current = wsStatus
+    if (wsStatus === 'connected') toast.success('WebSocket connected')
+    if (wsStatus === 'disconnected') toast.error('WebSocket disconnected')
+  }, [wsStatus])
 
   const handleCall = async (layananId?: string) => {
     if (!session) return
@@ -199,6 +207,13 @@ export function PetugasDashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
+            <span
+              className={`size-2 rounded-full shrink-0 ${
+                wsStatus === 'connected' ? 'bg-green-500' :
+                wsStatus === 'disconnected' ? 'bg-red-500' :
+                'bg-yellow-500'
+              }`}
+            />
             <h1 className="text-2xl font-bold text-foreground">
               Loket {session.nomorLoket}
             </h1>

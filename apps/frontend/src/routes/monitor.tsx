@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Youtube, ListVideo, Image, Volume2, VolumeX } from 'lucide-react'
 import { server } from '@/lib/eden'
+import { toast } from 'sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useMonitorSocket } from '@/lib/ws'
+import { useMonitorSocket, type WsStatus } from '@/lib/ws'
 import { useSpeech } from '@/hooks/use-speech'
 import type { WsEvent } from '@sianter/backend'
 
@@ -166,11 +167,10 @@ function MediaPanel({ data }: { data: MonitorData }) {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
-                tab === t.key
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${tab === t.key
                   ? 'border-b-2 border-primary text-primary'
                   : 'text-muted-foreground hover:text-foreground'
-              }`}
+                }`}
             >
               <t.icon className="size-4" />
               {t.label}
@@ -242,15 +242,15 @@ export function MonitorPage() {
               layanan: prev.layanan.map((l) =>
                 l.id === d.layananId
                   ? {
-                      ...l,
-                      dipanggil: {
-                        kode: d.kode,
-                        nomorUrut: d.nomorUrut,
-                        status: d.status,
-                        loketNama: d.loketNama,
-                      },
-                      menunggu: l.menunggu.filter((m) => m.kode !== d.kode),
-                    }
+                    ...l,
+                    dipanggil: {
+                      kode: d.kode,
+                      nomorUrut: d.nomorUrut,
+                      status: d.status,
+                      loketNama: d.loketNama,
+                    },
+                    menunggu: l.menunggu.filter((m) => m.kode !== d.kode),
+                  }
                   : l,
               ),
             }
@@ -272,12 +272,12 @@ export function MonitorPage() {
               layanan: prev.layanan.map((l) =>
                 l.id === d.layananId && l.menunggu.length < 5
                   ? {
-                      ...l,
-                      menunggu: [
-                        ...l.menunggu,
-                        { kode: d.kode, nomorUrut: d.nomorUrut },
-                      ],
-                    }
+                    ...l,
+                    menunggu: [
+                      ...l.menunggu,
+                      { kode: d.kode, nomorUrut: d.nomorUrut },
+                    ],
+                  }
                   : l,
               ),
             }
@@ -302,7 +302,19 @@ export function MonitorPage() {
     [speak],
   )
 
-  useMonitorSocket(handleWsEvent, fetchData)
+  const wsStatus = useMonitorSocket(handleWsEvent, fetchData)
+
+  const prevStatus = useRef<WsStatus>(wsStatus)
+  useEffect(() => {
+    if (prevStatus.current === wsStatus) return
+    prevStatus.current = wsStatus
+    if (wsStatus === 'connected') toast.success('WebSocket connected', {
+      duration: 1000,
+    })
+    if (wsStatus === 'disconnected') toast.error('WebSocket disconnected', {
+      duration: 1000,
+    })
+  }, [wsStatus])
 
   useEffect(() => {
     fetchData()
@@ -311,7 +323,15 @@ export function MonitorPage() {
   return (
     <div className="flex h-full flex-col bg-background">
       <header className="flex shrink-0 items-center justify-between bg-primary px-8 py-3 text-primary-foreground">
-        <span className="text-sm font-mono tabular-nums">{time}</span>
+        <div className="flex items-center gap-2">
+          <span
+            className={`size-2 rounded-full ${wsStatus === 'connected' ? 'bg-green-400' :
+                wsStatus === 'disconnected' ? 'bg-red-400' :
+                  'bg-yellow-400'
+              }`}
+          />
+          <span className="text-sm font-mono tabular-nums">{time}</span>
+        </div>
         <h1 className="text-lg font-bold tracking-wide">
           SISTEM ANTREAN
         </h1>

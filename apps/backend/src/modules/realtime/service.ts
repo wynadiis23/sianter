@@ -58,8 +58,6 @@ export async function emitAntreanEvent(
 
     if (!row) return
 
-    console.log(row);
-
     const event = { type, data: row } as WsEvent
     broadcastMonitor(event)
     broadcastLoket(event)

@@ -1,8 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { server } from './eden'
 import type { WsEvent } from '@sianter/backend'
 
 type AnyWs = ReturnType<typeof server.api.ws.monitor.subscribe>
+
+export type WsStatus = 'connecting' | 'connected' | 'disconnected'
 
 function useReconnectingSocket(
   factory: () => AnyWs,
@@ -14,6 +16,8 @@ function useReconnectingSocket(
   onMessageRef.current = onMessage
   onReconnectRef.current = onReconnect
 
+  const [status, setStatus] = useState<WsStatus>('connecting')
+
   useEffect(() => {
     let ws: AnyWs | null = null
     let retry = 0
@@ -21,19 +25,19 @@ function useReconnectingSocket(
     let opened = false
 
     const connect = () => {
+      setStatus('connecting')
       ws = factory()
       ws.on('message', (raw: any) => {
-        console.log('[ws] message received:', raw)
         onMessageRef.current?.(raw.data)
       })
       ws.on('open', () => {
-        console.log('[ws] connected:', ws?.url)
+        setStatus('connected')
         retry = 0
         if (opened) onReconnectRef.current?.()
         opened = true
       })
       ws.on('close', () => {
-        console.log('[ws] closed')
+        setStatus('disconnected')
         if (closed) return
         const delay = Math.min(1000 * 2 ** retry, 30000)
         retry += 1
@@ -47,13 +51,15 @@ function useReconnectingSocket(
       ws?.close()
     }
   }, [])
+
+  return status
 }
 
 export function useMonitorSocket(
   onEvent: (event: WsEvent) => void,
   onReconnect?: () => void,
 ) {
-  useReconnectingSocket(
+  return useReconnectingSocket(
     () => server.api.ws.monitor.subscribe(),
     onEvent,
     onReconnect,
@@ -64,7 +70,7 @@ export function useLoketSocket(
   onEvent: (event: WsEvent) => void,
   onReconnect?: () => void,
 ) {
-  useReconnectingSocket(
+  return useReconnectingSocket(
     () => server.api.ws.loket.subscribe(),
     onEvent,
     onReconnect,
