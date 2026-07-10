@@ -6,6 +6,7 @@ import {
 } from 'drizzle-orm/pg-core'
 import { createId } from '@paralleldrive/cuid2'
 import type { QueueStatus } from '../../enums'
+import { user } from './auth'
 import { layanan, loket } from './layanan'
 
 export const antrean = pgTable('antrean', {
@@ -18,6 +19,9 @@ export const antrean = pgTable('antrean', {
     .notNull()
     .references(() => layanan.id, { onDelete: 'restrict' }),
   loketId: varchar('loket_id').references(() => loket.id, {
+    onDelete: 'set null',
+  }),
+  petugasId: varchar('petugas_id').references(() => user.id, {
     onDelete: 'set null',
   }),
   status: varchar('status', { length: 20 })
@@ -40,6 +44,7 @@ export const antreanLog = pgTable('antrean_log', {
   nomorUrut: integer('nomor_urut').notNull(),
   layananId: varchar('layanan_id').notNull(),
   loketId: varchar('loket_id'),
+  petugasId: varchar('petugas_id'),
   status: varchar('status', { length: 20 })
     .$type<QueueStatus>()
     .notNull(),

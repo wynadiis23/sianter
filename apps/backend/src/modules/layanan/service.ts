@@ -23,6 +23,21 @@ export abstract class LayananService {
       .insert(schema.layanan)
       .values(values)
       .returning()
+
+    const allLokets = await db
+      .select({ id: schema.loket.id })
+      .from(schema.loket)
+      .where(eq(schema.loket.aktif, true))
+
+    if (allLokets.length > 0) {
+      await db.insert(schema.loketLayanan).values(
+        allLokets.map((loket) => ({
+          loketId: loket.id,
+          layananId: created.id,
+        })),
+      )
+    }
+
     return created
   }
 

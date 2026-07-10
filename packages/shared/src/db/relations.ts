@@ -14,6 +14,8 @@ import {
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  antrean: many(antrean),
+  antreanLog: many(antreanLog),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -47,6 +49,7 @@ export const loketLayananRelations = relations(loketLayanan, ({ one }) => ({
 export const antreanRelations = relations(antrean, ({ one }) => ({
   layanan: one(layanan, { fields: [antrean.layananId], references: [layanan.id] }),
   loket: one(loket, { fields: [antrean.loketId], references: [loket.id] }),
+  petugas: one(user, { fields: [antrean.petugasId], references: [user.id] }),
 }))
 
 export const antreanLogRelations = relations(antreanLog, ({ one }) => ({
@@ -55,4 +58,5 @@ export const antreanLogRelations = relations(antreanLog, ({ one }) => ({
     references: [layanan.id],
   }),
   loket: one(loket, { fields: [antreanLog.loketId], references: [loket.id] }),
+  petugas: one(user, { fields: [antreanLog.petugasId], references: [user.id] }),
 }))

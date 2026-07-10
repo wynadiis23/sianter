@@ -31,3 +31,15 @@ export const loketModule = new Elysia({ prefix: '/api/admin/loket' })
       404: LoketModel.notFound,
     },
   })
+  .get('/:id/layanan', ({ params: { id } }) => LoketService.listLayanan(id), {
+    admin: true,
+    response: t.Array(LoketModel.layananItem),
+  })
+  .put('/:id/layanan', ({ params: { id }, body }) => LoketService.setLayanan(id, body.layananIds), {
+    admin: true,
+    body: LoketModel.setLayananBody,
+    response: {
+      200: LoketModel.deleted,
+      404: LoketModel.notFound,
+    },
+  })

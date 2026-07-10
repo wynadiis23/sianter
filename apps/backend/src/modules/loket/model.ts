@@ -8,10 +8,24 @@ const loketShape = {
 
 export const LoketModel = {
   body: t.Object(loketShape),
-  response: t.Object(loketShape),
+  response: t.Object({
+    id: t.String(),
+    ...loketShape,
+  }),
   notFound: t.Object({ message: t.String() }),
   conflict: t.Object({ message: t.String() }),
   deleted: t.Object({ success: t.Literal(true) }),
+
+  layananItem: t.Object({
+    id: t.String(),
+    nama: t.String(),
+    prefix: t.String(),
+    assigned: t.Boolean(),
+  }),
+
+  setLayananBody: t.Object({
+    layananIds: t.Array(t.String()),
+  }),
 } as const
 
 export type LoketModel = {
