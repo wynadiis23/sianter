@@ -43,6 +43,13 @@
       "when": 1783647938846,
       "tag": "0005_wooden_psynapse",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783720710846,
+      "tag": "0006_broken_darkstar",
+      "breakpoints": true
     }
   ]
 }
