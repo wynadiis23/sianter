@@ -141,7 +141,6 @@ export function LoketAdminPage() {
     setLayananDialogOpen(true)
 
     const { data, error } = await server.api.admin.loket({ id }).layanan.get()
-    console.log('data layanan', data, error)
     setLayananLoading(false)
     if (error) {
       toast.error('Gagal memuat data layanan')
