@@ -1,7 +1,9 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
+import { useLoketSocket } from '@/lib/ws'
+import type { WsEvent } from '@sianter/backend'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -56,7 +58,6 @@ export function PetugasDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [layananInfo, setLayananInfo] = useState<LayananInfo[]>([])
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined)
 
   useEffect(() => {
     const raw = localStorage.getItem('petugasSession')
@@ -97,9 +98,29 @@ export function PetugasDashboardPage() {
 
   useEffect(() => {
     fetchDashboard()
-    intervalRef.current = setInterval(fetchDashboard, 5000)
-    return () => clearInterval(intervalRef.current)
   }, [fetchDashboard])
+
+  const handleWsEvent = useCallback(
+    (event: WsEvent) => {
+      if (event.type === 'pengaturan:updated') {
+        fetchDashboard()
+        return
+      }
+
+      const d = event.data
+      if (event.type === 'antrean:created') {
+        fetchDashboard()
+        return
+      }
+
+      if (d.loketId && d.loketId !== session?.loketId) {
+        fetchDashboard()
+      }
+    },
+    [fetchDashboard, session?.loketId],
+  )
+
+  useLoketSocket(handleWsEvent, fetchDashboard)
 
   const handleCall = async (layananId?: string) => {
     if (!session) return

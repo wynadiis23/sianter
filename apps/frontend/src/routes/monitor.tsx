@@ -1,7 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Youtube, ListVideo, Image } from 'lucide-react'
+import { Youtube, ListVideo, Image, Volume2, VolumeX } from 'lucide-react'
 import { server } from '@/lib/eden'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useMonitorSocket } from '@/lib/ws'
+import { useSpeech } from '@/hooks/use-speech'
+import type { WsEvent } from '@sianter/backend'
 
 type MonitorData = NonNullable<
   Awaited<ReturnType<typeof server.api.monitor.get>>['data']
@@ -208,6 +211,7 @@ function MediaPanel({ data }: { data: MonitorData }) {
 export function MonitorPage() {
   const [data, setData] = useState<MonitorData | null>(null)
   const { time, date } = useClock()
+  const { enabled, setEnabled, speak } = useSpeech()
 
   const fetchData = useCallback(async () => {
     try {
@@ -218,10 +222,90 @@ export function MonitorPage() {
     }
   }, [])
 
+  const handleWsEvent = useCallback(
+    (event: WsEvent) => {
+      if (event.type === 'antrean:called' || event.type === 'antrean:recalled') {
+        const d = event.data
+        speak(
+          `Nomor ${d.kode}, silakan menuju ${d.loketNama ?? 'loket'}`,
+        )
+      }
+
+      setData((prev) => {
+        if (!prev) return prev
+        switch (event.type) {
+          case 'antrean:called':
+          case 'antrean:recalled': {
+            const d = event.data
+            return {
+              ...prev,
+              layanan: prev.layanan.map((l) =>
+                l.id === d.layananId
+                  ? {
+                      ...l,
+                      dipanggil: {
+                        kode: d.kode,
+                        nomorUrut: d.nomorUrut,
+                        status: d.status,
+                        loketNama: d.loketNama,
+                      },
+                      menunggu: l.menunggu.filter((m) => m.kode !== d.kode),
+                    }
+                  : l,
+              ),
+            }
+          }
+          case 'antrean:skipped':
+          case 'antrean:finished': {
+            const d = event.data
+            return {
+              ...prev,
+              layanan: prev.layanan.map((l) =>
+                l.id === d.layananId ? { ...l, dipanggil: null } : l,
+              ),
+            }
+          }
+          case 'antrean:created': {
+            const d = event.data
+            return {
+              ...prev,
+              layanan: prev.layanan.map((l) =>
+                l.id === d.layananId && l.menunggu.length < 5
+                  ? {
+                      ...l,
+                      menunggu: [
+                        ...l.menunggu,
+                        { kode: d.kode, nomorUrut: d.nomorUrut },
+                      ],
+                    }
+                  : l,
+              ),
+            }
+          }
+          case 'pengaturan:updated': {
+            const d = event.data
+            return {
+              ...prev,
+              runningText: d.runningText,
+              mediaUrl: d.mediaUrl,
+              youtubeVideoUrl: d.youtubeVideoUrl,
+              youtubePlaylistUrl: d.youtubePlaylistUrl,
+              slideshowImages: d.slideshowImages,
+              slideshowInterval: d.slideshowInterval,
+            }
+          }
+          default:
+            return prev
+        }
+      })
+    },
+    [speak],
+  )
+
+  useMonitorSocket(handleWsEvent, fetchData)
+
   useEffect(() => {
     fetchData()
-    const timer = setInterval(fetchData, 5000)
-    return () => clearInterval(timer)
   }, [fetchData])
 
   return (
@@ -231,7 +315,20 @@ export function MonitorPage() {
         <h1 className="text-lg font-bold tracking-wide">
           SISTEM ANTREAN
         </h1>
-        <span className="text-sm">{date}</span>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setEnabled((v) => !v)}
+            className="rounded p-1 hover:bg-primary-foreground/10 transition-colors"
+            title={enabled ? 'Matikan suara' : 'Nyalakan suara'}
+          >
+            {enabled ? (
+              <Volume2 className="size-4" />
+            ) : (
+              <VolumeX className="size-4" />
+            )}
+          </button>
+          <span className="text-sm">{date}</span>
+        </div>
       </header>
 
       <main className="flex flex-1 min-h-0">

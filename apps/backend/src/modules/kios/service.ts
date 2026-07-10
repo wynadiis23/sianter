@@ -1,6 +1,7 @@
 import { eq, and, gte, lt, sql } from 'drizzle-orm'
 import { status } from 'elysia'
 import { db, schema } from '../../db/client'
+import { emitAntreanEvent } from '../realtime/service'
 
 export abstract class KiosService {
   static async listLayanan() {
@@ -58,6 +59,8 @@ export abstract class KiosService {
         status: 'WAITING',
       })
       .returning()
+
+    emitAntreanEvent('antrean:created', antrean.id)
 
     return {
       kode: antrean.kode,
