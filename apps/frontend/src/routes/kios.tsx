@@ -1,10 +1,23 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { server } from '@/lib/eden'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { Printer, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react'
+import {
+  Printer,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  User,
+} from 'lucide-react'
 
-type PageState = 'loading' | 'select' | 'confirm' | 'creating' | 'ticket' | 'error'
+type PageState =
+  | 'loading'
+  | 'select'
+  | 'identity'
+  | 'confirm'
+  | 'creating'
+  | 'ticket'
+  | 'error'
 
 interface LayananItem {
   id: string
@@ -19,6 +32,12 @@ interface TicketData {
   kode: string
   nomorUrut: number
   namaLayanan: string
+}
+
+interface IdentityForm {
+  nik: string
+  nama: string
+  noHp: string
 }
 
 const pad = (n: number) => n.toString().padStart(2, '0')
@@ -54,7 +73,7 @@ function Stepper({
   current: number
   error?: boolean
 }) {
-  const steps = ['Pilih Layanan', 'Konfirmasi', 'Ambil Tiket']
+  const steps = ['Pilih Layanan', 'Isi Identitas', 'Konfirmasi', 'Ambil Tiket']
 
   return (
     <nav aria-label="Langkah pengambilan antrean" className="border-b border-border bg-card">
@@ -113,6 +132,11 @@ export function KiosPage() {
   const [now, setNow] = useState(new Date())
   const [countdown, setCountdown] = useState(15)
 
+  const [identity, setIdentity] = useState<IdentityForm>({ nik: '', nama: '', noHp: '' })
+  const [lookupLoading, setLookupLoading] = useState(false)
+  const [lookupError, setLookupError] = useState<string | null>(null)
+  const lookedUpNik = useRef<string | null>(null)
+
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(id)
@@ -143,20 +167,76 @@ export function KiosPage() {
   const currentStep =
     state === 'select'
       ? 1
-      : state === 'confirm' || state === 'creating'
+      : state === 'identity'
         ? 2
-        : state === 'ticket'
+        : state === 'confirm' || state === 'creating'
           ? 3
-          : 0
+          : state === 'ticket'
+            ? 4
+            : 0
 
   const handleSelectLayanan = useCallback((layanan: LayananItem) => {
     setSelectedLayanan(layanan)
-    setState('confirm')
+    setIdentity({ nik: '', nama: '', noHp: '' })
+    lookedUpNik.current = null
+    setLookupLoading(false)
+    setLookupError(null)
+    setState('identity')
   }, [])
 
-  const handleCancelConfirm = useCallback(() => {
+  const handleBackToSelect = useCallback(() => {
     setSelectedLayanan(null)
+    setIdentity({ nik: '', nama: '', noHp: '' })
+    lookedUpNik.current = null
+    setLookupLoading(false)
+    setLookupError(null)
     setState('select')
+  }, [])
+
+  useEffect(() => {
+    if (identity.nik.length !== 16) {
+      setLookupError(null)
+      return
+    }
+    if (identity.nik === lookedUpNik.current) return
+
+    lookedUpNik.current = identity.nik
+    setLookupLoading(true)
+    setLookupError(null)
+
+    server.api.kios.pemohon.lookup
+      .get({ query: { nik: identity.nik } })
+      .then(({ data, error }) => {
+        if (error) {
+          setLookupError('Gagal memeriksa NIK. Silakan coba lagi.')
+          return
+        }
+        if (data?.found) {
+          setIdentity((prev) => ({
+            ...prev,
+            nama: data.nama ?? prev.nama,
+            noHp: data.noHp ?? prev.noHp,
+          }))
+        }
+      })
+      .finally(() => setLookupLoading(false))
+  }, [identity.nik])
+
+  const handleIdentitySubmit = useCallback(() => {
+    if (identity.nik.length !== 16) {
+      setLookupError('NIK harus 16 digit')
+      return
+    }
+    if (!identity.nama.trim()) {
+      setLookupError('Nama harus diisi')
+      return
+    }
+    setLookupError(null)
+    setState('confirm')
+  }, [identity])
+
+  const handleBackToIdentity = useCallback(() => {
+    setState('identity')
   }, [])
 
   const handleCreateAntrean = useCallback(async () => {
@@ -165,9 +245,16 @@ export function KiosPage() {
     setErrorMsg(null)
     const { data, error } = await server.api.kios.antrean.post({
       layananId: selectedLayanan.id,
+      nik: identity.nik,
+      nama: identity.nama.trim(),
+      noHp: identity.noHp || undefined,
     })
     if (error || !data) {
-      setErrorMsg('Gagal mengambil antrean. Silakan coba lagi.')
+      const msg =
+        error?.value && 'message' in error.value
+          ? (error.value as { message: string }).message
+          : 'Gagal mengambil antrean. Silakan coba lagi.'
+      setErrorMsg(msg)
       setState('error')
       return
     }
@@ -175,12 +262,16 @@ export function KiosPage() {
     setNow(new Date())
     setCountdown(15)
     setState('ticket')
-  }, [selectedLayanan])
+  }, [selectedLayanan, identity])
 
   const handleReset = useCallback(() => {
     setSelectedLayanan(null)
     setTicket(null)
     setErrorMsg(null)
+    setIdentity({ nik: '', nama: '', noHp: '' })
+    lookedUpNik.current = null
+    setLookupLoading(false)
+    setLookupError(null)
     setCountdown(15)
     fetchLayanan()
   }, [fetchLayanan])
@@ -341,7 +432,112 @@ export function KiosPage() {
           </main>
         )}
 
-        {/* ─── Step 2: Confirm / Creating / Error ─── */}
+        {/* ─── Step 2: Identity ─── */}
+        {state === 'identity' && (
+          <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
+            <div className="w-full max-w-sm">
+              <div className="mb-6 text-center">
+                <User className="mx-auto mb-3 size-10 text-primary" />
+                <h2 className="kiosk-font-wordmark text-2xl text-foreground">
+                  Isi Identitas
+                </h2>
+                <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
+                  Masukkan data diri Anda
+                </p>
+              </div>
+
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <label className="font-body text-sm font-medium text-foreground">
+                    NIK <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={16}
+                    value={identity.nik}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '')
+                      if (val !== identity.nik) {
+                        lookedUpNik.current = null
+                      }
+                      setIdentity((prev) => ({ ...prev, nik: val }))
+                    }}
+                    placeholder="16 digit NIK"
+                    className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                  {identity.nik.length > 0 && identity.nik.length < 16 && (
+                    <p className="font-body text-xs text-muted-foreground">
+                      {16 - identity.nik.length} digit tersisa
+                    </p>
+                  )}
+                  {lookupLoading && (
+                    <div className="flex items-center gap-2">
+                      <Spinner className="size-4" />
+                      <span className="font-body text-xs text-muted-foreground">Mencari data...</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="font-body text-sm font-medium text-foreground">
+                    Nama Lengkap <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={identity.nama}
+                    onChange={(e) => setIdentity((prev) => ({ ...prev, nama: e.target.value }))}
+                    placeholder="Nama sesuai KTP"
+                    className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="font-body text-sm font-medium text-foreground">
+                    Nomor HP
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="tel"
+                    value={identity.noHp}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '')
+                      setIdentity((prev) => ({ ...prev, noHp: val }))
+                    }}
+                    placeholder="08xxxxxxxxxx"
+                    maxLength={13}
+                    className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                {lookupError && (
+                  <div className="rounded-lg bg-destructive/10 p-3">
+                    <p className="font-body text-sm text-destructive">{lookupError}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-8 flex flex-col gap-4">
+                <Button
+                  onClick={handleIdentitySubmit}
+                  disabled={identity.nik.length !== 16 || !identity.nama.trim() || lookupLoading}
+                  className="h-14 w-full text-lg font-body"
+                >
+                  Lanjut
+                </Button>
+                <Button
+                  onClick={handleBackToSelect}
+                  variant="ghost"
+                  className="h-14 w-full text-base font-normal"
+                >
+                  Kembali
+                </Button>
+              </div>
+            </div>
+          </main>
+        )}
+
+        {/* ─── Step 3: Confirm / Creating / Error ─── */}
         {(state === 'confirm' || state === 'creating' || (state === 'error' && selectedLayanan)) && (
           <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
             {state === 'confirm' && selectedLayanan && (
@@ -349,7 +545,7 @@ export function KiosPage() {
                 <CheckCircle2 className="size-14 text-primary" />
                 <div>
                   <h2 className="kiosk-font-wordmark text-2xl text-foreground">
-                    Ambil Antrean
+                    Konfirmasi
                   </h2>
                   <p className="mt-1 font-body text-base text-muted-foreground/70">
                     Anda akan mengambil antrean untuk:
@@ -358,6 +554,26 @@ export function KiosPage() {
                 <p className="kiosk-font-wordmark text-4xl leading-tight text-foreground">
                   {selectedLayanan.nama}
                 </p>
+                <div className="w-full max-w-sm rounded-xl border border-border bg-card px-6 py-4 text-left">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="font-body text-sm text-muted-foreground">Nama</span>
+                      <span className="font-body text-sm font-medium text-foreground">{identity.nama}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-body text-sm text-muted-foreground">NIK</span>
+                      <span className="font-body text-sm font-medium text-foreground">
+                        ****{identity.nik.slice(-4)}
+                      </span>
+                    </div>
+                    {identity.noHp && (
+                      <div className="flex justify-between">
+                        <span className="font-body text-sm text-muted-foreground">No. HP</span>
+                        <span className="font-body text-sm font-medium text-foreground">{identity.noHp}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <div className="mt-2 flex flex-col gap-4">
                   <Button
                     onClick={handleCreateAntrean}
@@ -366,11 +582,11 @@ export function KiosPage() {
                     Ya, Ambil Antrean
                   </Button>
                   <Button
-                    onClick={handleCancelConfirm}
+                    onClick={handleBackToIdentity}
                     variant="ghost"
                     className="h-14 min-w-65 text-base font-normal"
                   >
-                    Batal
+                    Kembali
                   </Button>
                 </div>
               </div>
@@ -410,7 +626,7 @@ export function KiosPage() {
           </main>
         )}
 
-        {/* ─── Step 3: Ticket ─── */}
+        {/* ─── Step 4: Ticket ─── */}
         {state === 'ticket' && ticket && (
           <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
             <div className="kiosk-stub-enter flex flex-col items-center gap-8 text-center">

@@ -8,6 +8,7 @@ import { createId } from '@paralleldrive/cuid2'
 import type { QueueStatus } from '../../enums'
 import { user } from './auth'
 import { layanan, loket } from './layanan'
+import { pemohon } from './pemohon'
 
 export const antrean = pgTable('antrean', {
   id: varchar('id')
@@ -22,6 +23,9 @@ export const antrean = pgTable('antrean', {
     onDelete: 'set null',
   }),
   petugasId: varchar('petugas_id').references(() => user.id, {
+    onDelete: 'set null',
+  }),
+  pemohonId: varchar('pemohon_id').references(() => pemohon.id, {
     onDelete: 'set null',
   }),
   status: varchar('status', { length: 20 })
@@ -45,6 +49,7 @@ export const antreanLog = pgTable('antrean_log', {
   layananId: varchar('layanan_id').notNull(),
   loketId: varchar('loket_id'),
   petugasId: varchar('petugas_id'),
+  pemohonId: varchar('pemohon_id'),
   status: varchar('status', { length: 20 })
     .$type<QueueStatus>()
     .notNull(),
