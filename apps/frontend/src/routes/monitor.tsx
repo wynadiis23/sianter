@@ -212,6 +212,8 @@ export function MonitorPage() {
   const [data, setData] = useState<MonitorData | null>(null)
   const { time, date } = useClock()
   const { enabled, setEnabled, speak } = useSpeech()
+  const [animatingIds, setAnimatingIds] = useState<string[]>([])
+  const prevDipanggilRef = useRef<Map<string, string | null>>(new Map())
 
   const fetchData = useCallback(async () => {
     try {
@@ -320,9 +322,24 @@ export function MonitorPage() {
     fetchData()
   }, [fetchData])
 
+  useEffect(() => {
+    if (!data) return
+    data.layanan.forEach((l) => {
+      const prevKode = prevDipanggilRef.current.get(l.id) ?? null
+      const currKode = l.dipanggil?.kode ?? null
+      if (prevKode !== undefined && prevKode !== currKode && currKode !== null) {
+        setAnimatingIds((ids) => [...ids, l.id])
+        setTimeout(() => {
+          setAnimatingIds((ids) => ids.filter((id) => id !== l.id))
+        }, 1500)
+      }
+      prevDipanggilRef.current.set(l.id, currKode)
+    })
+  }, [data])
+
   return (
     <div className="flex h-full flex-col bg-background">
-      <header className="flex shrink-0 items-center justify-between bg-primary px-8 py-3 text-primary-foreground">
+      <header className="flex shrink-0 items-center justify-between bg-gradient-to-r from-primary to-primary/85 px-8 py-3 text-primary-foreground">
         <div className="flex items-center gap-2">
           <span
             className={`size-2 rounded-full ${wsStatus === 'connected' ? 'bg-green-400' :
@@ -332,7 +349,7 @@ export function MonitorPage() {
           />
           <span className="text-sm font-mono tabular-nums">{time}</span>
         </div>
-        <h1 className="text-lg font-bold tracking-wide">
+        <h1 className="font-wordmark text-lg tracking-wide">
           SISTEM ANTREAN
         </h1>
         <div className="flex items-center gap-4">
@@ -358,7 +375,11 @@ export function MonitorPage() {
               {data?.layanan.map((l) => (
                 <div
                   key={l.id}
-                  className="flex flex-col rounded-lg border bg-card shadow-sm"
+                  className={`flex flex-col rounded-lg border bg-card shadow-sm transition-all duration-500 ${
+                    animatingIds.includes(l.id)
+                      ? 'ring-2 ring-primary/30 scale-[1.02]'
+                      : ''
+                  }`}
                   style={
                     l.warna
                       ? { borderTopColor: l.warna, borderTopWidth: 4 }
@@ -366,14 +387,14 @@ export function MonitorPage() {
                   }
                 >
                   <div className="px-5 py-3">
-                    <h2 className="text-base font-semibold text-card-foreground">
+                    <h2 className="font-wordmark text-base font-semibold text-card-foreground">
                       {l.nama}
                     </h2>
                   </div>
                   <div className="flex flex-1 flex-col items-center justify-center px-5 py-6">
                     {l.dipanggil ? (
                       <>
-                        <p className="text-5xl font-bold font-mono tabular-nums text-primary">
+                        <p className="text-5xl font-bold font-mono tabular-nums text-primary drop-shadow-[0_0_6px_var(--color-primary)]">
                           {l.dipanggil.kode}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">
@@ -395,12 +416,19 @@ export function MonitorPage() {
                     {l.menunggu.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {l.menunggu.map((t) => (
-                          <span
-                            key={t.kode}
-                            className="rounded bg-muted px-2 py-0.5 font-mono text-sm tabular-nums text-muted-foreground"
-                          >
-                            {t.kode}
-                          </span>
+<span
+                          key={t.kode}
+                          className={`rounded px-2 py-0.5 font-mono text-sm tabular-nums ${
+                            l.warna ? '' : 'bg-muted text-muted-foreground'
+                          }`}
+                          style={
+                            l.warna
+                              ? { backgroundColor: `${l.warna}20`, color: l.warna }
+                              : undefined
+                          }
+                        >
+                          {t.kode}
+                        </span>
                         ))}
                       </div>
                     ) : (
@@ -427,7 +455,7 @@ export function MonitorPage() {
         </div>
       </main>
 
-      <footer className="flex shrink-0 items-center overflow-hidden bg-primary px-4 py-3">
+      <footer className="flex shrink-0 items-center overflow-hidden bg-gradient-to-r from-primary to-primary/85 px-4 py-3">
         <div className="animate-marquee whitespace-nowrap text-sm font-medium text-primary-foreground">
           {data?.runningText
             ? `${data.runningText} \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 ${data.runningText}`

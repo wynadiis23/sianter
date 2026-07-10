@@ -82,7 +82,7 @@ function Stepper({
                   )}
                 </div>
                 <span
-                  className={`hidden whitespace-nowrap text-xs sm:block
+                  className={`hidden whitespace-nowrap text-xs sm:block font-wordmark
                     ${isActive ? 'font-semibold text-foreground' : ''}
                     ${isCompleted ? 'text-muted-foreground' : ''}
                     ${!isActive && !isCompleted ? 'text-muted-foreground/40' : ''}`}
@@ -270,12 +270,12 @@ export function KiosPage() {
         </div>
       </div>
 
-      <div className="kiosk flex h-dvh flex-col print:hidden">
+      <div className="kiosk flex h-dvh flex-col bg-gradient-to-b from-primary/[0.04] via-background to-background print:hidden">
         {/* Masthead */}
-        <header className="flex items-center gap-3 border-b border-border bg-card px-5 py-3">
+        <header className="flex items-center gap-3 border-b border-border bg-card/80 px-5 py-3 shadow-sm backdrop-blur-sm">
           <img src="/logo-kpu-bali.png" alt="KPU Provinsi Bali" className="size-11" />
           <div className="flex-1">
-            <h1 className="kiosk-font-wordmark text-xl leading-tight text-foreground">
+            <h1 className="kiosk-font-wordmark text-2xl leading-tight tracking-tight text-foreground">
               KPU PROVINSI BALI
             </h1>
             <p className="kiosk-font-mono text-[10px] tracking-wider text-muted-foreground/60">
@@ -315,12 +315,15 @@ export function KiosPage() {
                     key={layanan.id}
                     type="button"
                     onClick={() => handleSelectLayanan(layanan)}
-                    className="flex min-h-45 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-5 text-center shadow-sm transition-all duration-150 active:scale-[0.97] active:bg-primary active:border-primary active:text-primary-foreground"
+                    className={`flex min-h-45 flex-col items-center justify-center gap-2 rounded-xl border bg-card p-5 text-center shadow-sm transition-all duration-150 hover:shadow-md active:scale-[0.97] active:bg-primary active:border-primary active:text-primary-foreground ${
+                      layanan.warna ? 'border-t-4' : 'border-border'
+                    }`}
                     style={
                       layanan.warna
                         ? ({
-                          backgroundColor: `${layanan.warna}0D`,
-                          borderColor: `${layanan.warna}4D`,
+                          backgroundColor: `${layanan.warna}15`,
+                          borderColor: `${layanan.warna}40`,
+                          borderTopColor: layanan.warna,
                         } as React.CSSProperties)
                         : undefined
                     }
@@ -411,7 +414,7 @@ export function KiosPage() {
         {state === 'ticket' && ticket && (
           <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
             <div className="kiosk-stub-enter flex flex-col items-center gap-8 text-center">
-              <div className="w-full max-w-95 rounded-2xl border border-border bg-card shadow-lg">
+              <div className="w-full max-w-95 rounded-2xl border border-border bg-card shadow-xl shadow-primary/5">
                 {/* Stub top — number */}
                 <div className="px-10 pt-10 pb-6">
                   <p className="kiosk-font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">

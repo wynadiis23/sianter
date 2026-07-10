@@ -73,9 +73,9 @@
 }
 
 @theme inline {
-  --font-wordmark: 'Fraunces Variable', Georgia, serif;
-  --font-body: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono Variable', 'SF Mono', 'Monaco', monospace;
+  --font-wordmark: 'Fraunces', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Monaco', monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -118,7 +118,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body;
   }
 }
 
@@ -132,12 +132,12 @@ body,
 /* ─── Kiosk styles ─── */
 
 .kiosk-font-wordmark {
-  font-family: 'Fraunces Variable', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-variation-settings: 'opsz' 48, 'SOFT' 25;
 }
 
 .kiosk-font-mono {
-  font-family: 'JetBrains Mono Variable', 'SF Mono', 'Monaco', monospace;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', monospace;
   font-variant-numeric: tabular-nums;
 }
 
@@ -196,6 +196,8 @@ body,
 .animate-marquee {
   animation: marquee 30s linear infinite;
 }
+
+
 
 /* Print receipt styles */
 @media print {
