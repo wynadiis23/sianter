@@ -1,5 +1,4 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
-import { Layout } from './components/layout'
 import { AdminLayout } from './components/admin-layout'
 import { ProtectedRoute } from './components/protected-route'
 import { KiosPage } from './routes/kios'
@@ -15,10 +14,7 @@ import { PetugasDashboardPage } from './routes/petugas/dashboard'
 
 const router = createBrowserRouter([
   { path: '/', element: <KiosPage /> },
-  {
-    element: <Layout />,
-    children: [{ path: '/monitor', element: <MonitorPage /> }],
-  },
+  { path: '/monitor', element: <MonitorPage /> },
   {
     path: '/login',
     element: <LoginPage />,
