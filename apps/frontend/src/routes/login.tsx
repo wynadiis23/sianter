@@ -103,7 +103,7 @@ export function LoginPage() {
                   {loading ? 'Memproses...' : 'Masuk'}
                 </Button>
                 <FieldDescription className="text-center">
-                  <Link to="/" className="underline-offset-2 hover:underline">
+                  <Link to="/kios" className="underline-offset-2 hover:underline">
                     Kios Tiket
                   </Link>
                   <span className="mx-1 text-muted-foreground">·</span>
