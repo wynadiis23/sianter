@@ -13,7 +13,7 @@ import { PilihLoketPage } from './routes/petugas/pilih-loket'
 import { PetugasDashboardPage } from './routes/petugas/dashboard'
 
 const router = createBrowserRouter([
-  { path: '/', element: <KiosPage /> },
+  { path: '/kios', element: <KiosPage /> },
   { path: '/monitor', element: <MonitorPage /> },
   {
     path: '/login',

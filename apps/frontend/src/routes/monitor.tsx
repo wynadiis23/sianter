@@ -45,12 +45,14 @@ function useClock() {
     return () => clearInterval(timer)
   }, [])
 
-  const time = now.toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
-  const date = now.toLocaleDateString('id-ID', {
+  const pad = (n: number) => n.toString().padStart(2, '0')
+
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000
+  const wita = new Date(utc + 8 * 3600000)
+
+  const time = `${pad(wita.getHours())}:${pad(wita.getMinutes())}:${pad(wita.getSeconds())}`
+
+  const date = wita.toLocaleDateString('id-ID', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -210,7 +212,7 @@ function MediaPanel({ data }: { data: MonitorData }) {
 
 export function MonitorPage() {
   const [data, setData] = useState<MonitorData | null>(null)
-  const { time, date } = useClock()
+  const { time } = useClock()
   const { enabled, setEnabled, speak } = useSpeech()
   const [animatingIds, setAnimatingIds] = useState<string[]>([])
   const prevDipanggilRef = useRef<Map<string, string | null>>(new Map())
@@ -339,23 +341,32 @@ export function MonitorPage() {
 
   return (
     <div className="flex h-full flex-col bg-background">
-      <header className="flex shrink-0 items-center justify-between bg-gradient-to-r from-primary to-primary/85 px-8 py-3 text-primary-foreground">
-        <div className="flex items-center gap-2">
+      <header className="flex shrink-0 items-center gap-3 border-b border-border bg-card/80 px-5 py-3 shadow-sm">
+        <img src="/logo-kpu-bali.png" alt="KPU Provinsi Bali" className="size-11" />
+        <div className="flex-1">
+          <h1 className="kiosk-font-wordmark text-2xl leading-tight tracking-tight text-foreground">
+            KPU PROVINSI BALI
+          </h1>
+          <p className="kiosk-font-mono text-[10px] tracking-wider text-muted-foreground/60">
+            SISTEM INFORMASI ANTREAN
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
           <span
             className={`size-2 rounded-full ${wsStatus === 'connected' ? 'bg-green-400' :
               wsStatus === 'disconnected' ? 'bg-red-400' :
                 'bg-yellow-400'
               }`}
           />
-          <span className="text-sm font-mono tabular-nums">{time}</span>
-        </div>
-        <h1 className="font-wordmark text-lg tracking-wide">
-          SISTEM ANTREAN
-        </h1>
-        <div className="flex items-center gap-4">
+          <time
+            className="kiosk-font-mono text-lg tracking-widest text-foreground"
+            aria-label="Jam saat ini"
+          >
+            {time}
+          </time>
           <button
             onClick={() => setEnabled((v) => !v)}
-            className="rounded p-1 hover:bg-primary-foreground/10 transition-colors"
+            className="rounded p-1 text-foreground hover:bg-foreground/10 transition-colors"
             title={enabled ? 'Matikan suara' : 'Nyalakan suara'}
           >
             {enabled ? (
@@ -364,7 +375,6 @@ export function MonitorPage() {
               <VolumeX className="size-4" />
             )}
           </button>
-          <span className="text-sm">{date}</span>
         </div>
       </header>
 
@@ -455,8 +465,8 @@ export function MonitorPage() {
         </div>
       </main>
 
-      <footer className="flex shrink-0 items-center overflow-hidden bg-gradient-to-r from-primary to-primary/85 px-4 py-3">
-        <div className="animate-marquee whitespace-nowrap text-sm font-medium text-primary-foreground">
+      <footer className="flex shrink-0 items-center overflow-hidden border-t border-border bg-card/80 px-4 py-3 shadow-sm">
+        <div className="animate-marquee whitespace-nowrap text-sm text-muted-foreground">
           {data?.runningText
             ? `${data.runningText} \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 ${data.runningText}`
             : 'Selamat datang di Sistem Antrean'}
