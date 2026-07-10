@@ -114,7 +114,7 @@ export function PilihLoketPage() {
               <div key={loket.id}>
                 <label
                   htmlFor={`loket-${loket.id}`}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 has-data-[state=checked]:border-primary has-data-[state=checked]:bg-primary/5"
                 >
                   <RadioGroupItem
                     value={loket.id}

@@ -270,206 +270,206 @@ export function KiosPage() {
         </div>
       </div>
 
-    <div className="kiosk flex h-dvh flex-col print:hidden">
-      {/* Masthead */}
-      <header className="flex items-center gap-3 border-b border-border bg-card px-5 py-3">
-        <img src="/logo-kpu-bali.png" alt="KPU Provinsi Bali" className="size-11" />
-        <div className="flex-1">
-          <h1 className="kiosk-font-wordmark text-xl leading-tight text-foreground">
-            KPU PROVINSI BALI
-          </h1>
-          <p className="kiosk-font-mono text-[10px] tracking-wider text-muted-foreground/60">
-            SISTEM INFORMASI ANTREAN
-          </p>
-        </div>
-        <time
-          className="kiosk-font-mono text-lg tracking-widest text-foreground"
-          aria-label="Jam saat ini WITA"
-        >
-          {formatClock(now)}
-        </time>
-        <span className="kiosk-font-mono text-[10px] text-muted-foreground/60">WITA</span>
-      </header>
+      <div className="kiosk flex h-dvh flex-col print:hidden">
+        {/* Masthead */}
+        <header className="flex items-center gap-3 border-b border-border bg-card px-5 py-3">
+          <img src="/logo-kpu-bali.png" alt="KPU Provinsi Bali" className="size-11" />
+          <div className="flex-1">
+            <h1 className="kiosk-font-wordmark text-xl leading-tight text-foreground">
+              KPU PROVINSI BALI
+            </h1>
+            <p className="kiosk-font-mono text-[10px] tracking-wider text-muted-foreground/60">
+              SISTEM INFORMASI ANTREAN
+            </p>
+          </div>
+          <time
+            className="kiosk-font-mono text-lg tracking-widest text-foreground"
+            aria-label="Jam saat ini WITA"
+          >
+            {formatClock(now)}
+          </time>
+          <span className="kiosk-font-mono text-[10px] text-muted-foreground/60">WITA</span>
+        </header>
 
-      {/* Stepper */}
-      <Stepper
-        current={currentStep}
-        error={state === 'error' && !!selectedLayanan}
-      />
+        {/* Stepper */}
+        <Stepper
+          current={currentStep}
+          error={state === 'error' && !!selectedLayanan}
+        />
 
-      {/* ─── Step 1: Select service ─── */}
-      {state === 'select' && (
-        <main className="flex flex-1 flex-col overflow-auto px-6 py-8">
-          <div className="mx-auto w-full max-w-5xl">
-            <div className="mb-6 text-center">
-              <h2 className="kiosk-font-wordmark text-2xl text-foreground">
-                Pilih Layanan
-              </h2>
-              <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
-                Ketuk layanan yang Anda butuhkan
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {layananList.map((layanan) => (
-                <button
-                  key={layanan.id}
-                  type="button"
-                  onClick={() => handleSelectLayanan(layanan)}
-                  className="flex min-h-[180px] flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-5 text-center shadow-sm transition-all duration-150 active:scale-[0.97] active:bg-primary active:border-primary active:text-primary-foreground"
-                  style={
-                    layanan.warna
-                      ? ({
+        {/* ─── Step 1: Select service ─── */}
+        {state === 'select' && (
+          <main className="flex flex-1 flex-col overflow-auto px-6 py-8">
+            <div className="mx-auto w-full max-w-5xl">
+              <div className="mb-6 text-center">
+                <h2 className="kiosk-font-wordmark text-2xl text-foreground">
+                  Pilih Layanan
+                </h2>
+                <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
+                  Ketuk layanan yang Anda butuhkan
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                {layananList.map((layanan) => (
+                  <button
+                    key={layanan.id}
+                    type="button"
+                    onClick={() => handleSelectLayanan(layanan)}
+                    className="flex min-h-45 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-5 text-center shadow-sm transition-all duration-150 active:scale-[0.97] active:bg-primary active:border-primary active:text-primary-foreground"
+                    style={
+                      layanan.warna
+                        ? ({
                           backgroundColor: `${layanan.warna}0D`,
                           borderColor: `${layanan.warna}4D`,
                         } as React.CSSProperties)
-                      : undefined
-                  }
-                >
-                  <span className="kiosk-font-wordmark text-5xl leading-none text-inherit">
-                    {layanan.prefix}
-                  </span>
-                  <span className="font-body text-base font-medium text-inherit">
-                    {layanan.nama}
-                  </span>
-                </button>
-              ))}
+                        : undefined
+                    }
+                  >
+                    <span className="kiosk-font-wordmark text-5xl leading-none text-inherit">
+                      {layanan.prefix}
+                    </span>
+                    <span className="font-body text-base font-medium text-inherit">
+                      {layanan.nama}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </main>
-      )}
+          </main>
+        )}
 
-      {/* ─── Step 2: Confirm / Creating / Error ─── */}
-      {(state === 'confirm' || state === 'creating' || (state === 'error' && selectedLayanan)) && (
-        <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
-          {state === 'confirm' && selectedLayanan && (
-            <div className="flex flex-col items-center gap-6 text-center">
-              <CheckCircle2 className="size-14 text-primary" />
-              <div>
-                <h2 className="kiosk-font-wordmark text-2xl text-foreground">
-                  Ambil Antrean
-                </h2>
-                <p className="mt-1 font-body text-base text-muted-foreground/70">
-                  Anda akan mengambil antrean untuk:
+        {/* ─── Step 2: Confirm / Creating / Error ─── */}
+        {(state === 'confirm' || state === 'creating' || (state === 'error' && selectedLayanan)) && (
+          <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
+            {state === 'confirm' && selectedLayanan && (
+              <div className="flex flex-col items-center gap-6 text-center">
+                <CheckCircle2 className="size-14 text-primary" />
+                <div>
+                  <h2 className="kiosk-font-wordmark text-2xl text-foreground">
+                    Ambil Antrean
+                  </h2>
+                  <p className="mt-1 font-body text-base text-muted-foreground/70">
+                    Anda akan mengambil antrean untuk:
+                  </p>
+                </div>
+                <p className="kiosk-font-wordmark text-4xl leading-tight text-foreground">
+                  {selectedLayanan.nama}
+                </p>
+                <div className="mt-2 flex flex-col gap-4">
+                  <Button
+                    onClick={handleCreateAntrean}
+                    className="h-14 min-w-65 text-lg font-body"
+                  >
+                    Ya, Ambil Antrean
+                  </Button>
+                  <Button
+                    onClick={handleCancelConfirm}
+                    variant="ghost"
+                    className="h-14 min-w-65 text-base font-normal"
+                  >
+                    Batal
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {state === 'creating' && (
+              <div className="flex flex-col items-center gap-6 text-center">
+                <Spinner className="size-12 text-primary" />
+                <p className="font-body text-base text-muted-foreground/70">
+                  Memproses antrean...
                 </p>
               </div>
-              <p className="kiosk-font-wordmark text-4xl leading-tight text-foreground">
-                {selectedLayanan.nama}
-              </p>
-              <div className="mt-2 flex flex-col gap-4">
-                <Button
-                  onClick={handleCreateAntrean}
-                  className="h-14 min-w-[260px] text-lg font-body"
-                >
-                  Ya, Ambil Antrean
-                </Button>
-                <Button
-                  onClick={handleCancelConfirm}
-                  variant="ghost"
-                  className="h-14 min-w-[260px] text-base font-normal"
-                >
-                  Batal
-                </Button>
+            )}
+
+            {state === 'error' && selectedLayanan && (
+              <div className="flex flex-col items-center gap-6 text-center">
+                <AlertCircle className="size-12 text-destructive" />
+                <p className="font-body text-base text-foreground">{errorMsg}</p>
+                <div className="flex flex-col gap-4">
+                  <Button
+                    onClick={handleCreateAntrean}
+                    className="h-13 min-w-60 gap-3 text-base"
+                  >
+                    <RefreshCw className="size-4" />
+                    Coba Lagi
+                  </Button>
+                  <Button
+                    onClick={handleReset}
+                    variant="ghost"
+                    className="h-13 min-w-60 text-base font-normal"
+                  >
+                    Kembali ke Awal
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </main>
+        )}
 
-          {state === 'creating' && (
-            <div className="flex flex-col items-center gap-6 text-center">
-              <Spinner className="size-12 text-primary" />
-              <p className="font-body text-base text-muted-foreground/70">
-                Memproses antrean...
-              </p>
-            </div>
-          )}
+        {/* ─── Step 3: Ticket ─── */}
+        {state === 'ticket' && ticket && (
+          <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
+            <div className="kiosk-stub-enter flex flex-col items-center gap-8 text-center">
+              <div className="w-full max-w-95 rounded-2xl border border-border bg-card shadow-lg">
+                {/* Stub top — number */}
+                <div className="px-10 pt-10 pb-6">
+                  <p className="kiosk-font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">
+                    Nomor Antrean
+                  </p>
+                  <p
+                    className="kiosk-font-mono mt-3 text-6xl font-bold tracking-[0.12em] text-primary leading-none"
+                    aria-label={`Nomor antrean ${ticket.kode}`}
+                  >
+                    {ticket.kode}
+                  </p>
+                </div>
 
-          {state === 'error' && selectedLayanan && (
-            <div className="flex flex-col items-center gap-6 text-center">
-              <AlertCircle className="size-12 text-destructive" />
-              <p className="font-body text-base text-foreground">{errorMsg}</p>
+                {/* Perforation */}
+                <div className="kiosk-perforation" />
+
+                {/* Stub bottom — info */}
+                <div className="px-10 pt-6 pb-10">
+                  <p className="font-body text-lg font-medium text-foreground">
+                    {ticket.namaLayanan}
+                  </p>
+                  <p className="mt-2 font-body text-sm leading-relaxed text-muted-foreground/60">
+                    {formatDateLong(now)}
+                  </p>
+                  <p className="font-body text-sm text-muted-foreground/60">
+                    {formatClock(now)} WITA
+                  </p>
+                  <p className="mt-4 font-body text-xs text-muted-foreground/40">
+                    Harap menunggu nomor Anda dipanggil
+                  </p>
+                </div>
+              </div>
+
               <div className="flex flex-col gap-4">
                 <Button
-                  onClick={handleCreateAntrean}
-                  className="h-13 min-w-[240px] gap-3 text-base"
+                  onClick={handlePrint}
+                  className="h-14 min-w-65 gap-3 text-base"
                 >
-                  <RefreshCw className="size-4" />
-                  Coba Lagi
+                  <Printer className="size-5" />
+                  Cetak Struk
                 </Button>
                 <Button
                   onClick={handleReset}
                   variant="ghost"
-                  className="h-13 min-w-[240px] text-base font-normal"
+                  className="h-14 min-w-65 text-base font-normal"
                 >
-                  Kembali ke Awal
+                  Selesai
+                  {countdown > 0 && (
+                    <span className="kiosk-font-mono ml-2 text-sm text-muted-foreground/50">
+                      ({countdown})
+                    </span>
+                  )}
                 </Button>
               </div>
             </div>
-          )}
-        </main>
-      )}
+          </main>
+        )}
 
-      {/* ─── Step 3: Ticket ─── */}
-      {state === 'ticket' && ticket && (
-        <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
-          <div className="kiosk-stub-enter flex flex-col items-center gap-8 text-center">
-            <div className="w-full max-w-[380px] rounded-2xl border border-border bg-card shadow-lg">
-              {/* Stub top — number */}
-              <div className="px-10 pt-10 pb-6">
-                <p className="kiosk-font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">
-                  Nomor Antrean
-                </p>
-                <p
-                  className="kiosk-font-mono mt-3 text-6xl font-bold tracking-[0.12em] text-primary leading-none"
-                  aria-label={`Nomor antrean ${ticket.kode}`}
-                >
-                  {ticket.kode}
-                </p>
-              </div>
-
-              {/* Perforation */}
-              <div className="kiosk-perforation" />
-
-              {/* Stub bottom — info */}
-              <div className="px-10 pt-6 pb-10">
-                <p className="font-body text-lg font-medium text-foreground">
-                  {ticket.namaLayanan}
-                </p>
-                <p className="mt-2 font-body text-sm leading-relaxed text-muted-foreground/60">
-                  {formatDateLong(now)}
-                </p>
-                <p className="font-body text-sm text-muted-foreground/60">
-                  {formatClock(now)} WITA
-                </p>
-                <p className="mt-4 font-body text-xs text-muted-foreground/40">
-                  Harap menunggu nomor Anda dipanggil
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <Button
-                onClick={handlePrint}
-                className="h-14 min-w-[260px] gap-3 text-base"
-              >
-                <Printer className="size-5" />
-                Cetak Struk
-              </Button>
-              <Button
-                onClick={handleReset}
-                variant="ghost"
-                className="h-14 min-w-[260px] text-base font-normal"
-              >
-                Selesai
-                {countdown > 0 && (
-                  <span className="kiosk-font-mono ml-2 text-sm text-muted-foreground/50">
-                    ({countdown})
-                  </span>
-                )}
-              </Button>
-            </div>
-          </div>
-        </main>
-      )}
-
-    </div></>
+      </div></>
   )
 }

@@ -2,10 +2,10 @@ import { LayoutGrid, Building2, Users, Settings } from 'lucide-react'
 import { DashboardLayout } from './dashboard-layout'
 
 const navItems = [
-  { to: '/admin/layanan', label: 'Layanan', icon: LayoutGrid },
-  { to: '/admin/loket', label: 'Loket', icon: Building2 },
-  { to: '/admin/users', label: 'Pengguna', icon: Users },
-  { to: '/admin/settings', label: 'Pengaturan', icon: Settings },
+  { title: 'Layanan', url: '/admin/layanan', icon: LayoutGrid },
+  { title: 'Loket', url: '/admin/loket', icon: Building2 },
+  { title: 'Pengguna', url: '/admin/users', icon: Users },
+  { title: 'Pengaturan', url: '/admin/settings', icon: Settings },
 ]
 
 export function AdminLayout() {
