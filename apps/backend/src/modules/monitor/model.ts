@@ -26,6 +26,10 @@ const MonitorModel = {
     ),
     runningText: t.Nullable(t.String()),
     mediaUrl: t.Nullable(t.String()),
+    youtubeVideoUrl: t.Nullable(t.String()),
+    youtubePlaylistUrl: t.Nullable(t.String()),
+    slideshowImages: t.Nullable(t.String()),
+    slideshowInterval: t.Integer(),
   }),
 } as const
 

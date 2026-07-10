@@ -70,6 +70,10 @@ export abstract class MonitorService {
       layanan: result,
       runningText: pengaturan?.runningText ?? null,
       mediaUrl: pengaturan?.mediaUrl ?? null,
+      youtubeVideoUrl: pengaturan?.youtubeVideoUrl ?? null,
+      youtubePlaylistUrl: pengaturan?.youtubePlaylistUrl ?? null,
+      slideshowImages: pengaturan?.slideshowImages ?? null,
+      slideshowInterval: pengaturan?.slideshowInterval ?? 5,
     }
   }
 }

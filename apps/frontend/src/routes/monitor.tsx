@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { Youtube, ListVideo, Image } from 'lucide-react'
 import { server } from '@/lib/eden'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
@@ -15,6 +16,21 @@ function extractYouTubeId(url: string): string | null {
     if (match) return match[1]
   }
   return null
+}
+
+function extractPlaylistId(url: string): string | null {
+  const match = url.match(/[?&]list=([a-zA-Z0-9_-]+)/)
+  return match ? match[1] : null
+}
+
+function parseSlideshowImages(raw: string | null): string[] {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.filter((v) => typeof v === 'string') : []
+  } catch {
+    return []
+  }
 }
 
 function useClock() {
@@ -40,6 +56,155 @@ function useClock() {
   return { time, date }
 }
 
+function Slideshow({
+  images,
+  interval,
+}: {
+  images: string[]
+  interval: number
+}) {
+  const [current, setCurrent] = useState(0)
+
+  useEffect(() => {
+    if (images.length <= 1) return
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % images.length)
+    }, interval * 1000)
+    return () => clearInterval(timer)
+  }, [images.length, interval])
+
+  if (images.length === 0) return null
+
+  return (
+    <div className="relative h-full w-full overflow-hidden">
+      {images.map((url, i) => (
+        <img
+          key={i}
+          src={url}
+          alt={`Slide ${i + 1}`}
+          className="absolute inset-0 h-full w-full object-contain transition-opacity duration-700"
+          style={{ opacity: i === current ? 1 : 0 }}
+        />
+      ))}
+    </div>
+  )
+}
+
+type MediaTab = 'video' | 'playlist' | 'slideshow'
+
+function MediaPanel({ data }: { data: MonitorData }) {
+  const [tab, setTab] = useState<MediaTab>('video')
+
+  const youtubeVideoId = data.youtubeVideoUrl
+    ? extractYouTubeId(data.youtubeVideoUrl)
+    : null
+  const playlistId = data.youtubePlaylistUrl
+    ? extractPlaylistId(data.youtubePlaylistUrl)
+    : null
+  const slideshowImages = parseSlideshowImages(data.slideshowImages)
+
+  const availableTabs = [
+    {
+      key: 'video' as MediaTab,
+      icon: Youtube,
+      label: 'Video',
+      available: !!youtubeVideoId,
+    },
+    {
+      key: 'playlist' as MediaTab,
+      icon: ListVideo,
+      label: 'Playlist',
+      available: !!playlistId,
+    },
+    {
+      key: 'slideshow' as MediaTab,
+      icon: Image,
+      label: 'Gambar',
+      available: slideshowImages.length > 0,
+    },
+  ].filter((t) => t.available)
+
+  useEffect(() => {
+    if (availableTabs.length > 0 && !availableTabs.find((t) => t.key === tab)) {
+      setTab(availableTabs[0].key)
+    }
+  }, [availableTabs, tab])
+
+  if (availableTabs.length === 0) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
+          <svg
+            className="size-12"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"
+            />
+          </svg>
+          <p className="text-sm">Media tidak tersedia</p>
+        </div>
+      </div>
+    )
+  }
+
+  const showTabs = availableTabs.length > 1
+
+  return (
+    <div className="flex flex-1 flex-col">
+      {showTabs && (
+        <div className="flex shrink-0 border-b">
+          {availableTabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+                tab === t.key
+                  ? 'border-b-2 border-primary text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <t.icon className="size-4" />
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="flex flex-1 items-center justify-center p-4">
+        {tab === 'video' && youtubeVideoId && (
+          <iframe
+            className="h-full w-full rounded-lg"
+            src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeVideoId}`}
+            title="Video"
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+          />
+        )}
+        {tab === 'playlist' && playlistId && (
+          <iframe
+            className="h-full w-full rounded-lg"
+            src={`https://www.youtube.com/embed/videoseries?list=${playlistId}&autoplay=1&mute=1&controls=0`}
+            title="Playlist"
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+          />
+        )}
+        {tab === 'slideshow' && slideshowImages.length > 0 && (
+          <Slideshow
+            images={slideshowImages}
+            interval={data.slideshowInterval}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function MonitorPage() {
   const [data, setData] = useState<MonitorData | null>(null)
   const { time, date } = useClock()
@@ -58,8 +223,6 @@ export function MonitorPage() {
     const timer = setInterval(fetchData, 5000)
     return () => clearInterval(timer)
   }, [fetchData])
-
-  const youtubeId = data?.mediaUrl ? extractYouTubeId(data.mediaUrl) : null
 
   return (
     <div className="flex h-full flex-col bg-background">
@@ -143,34 +306,7 @@ export function MonitorPage() {
         </div>
 
         <div className="flex w-[40%] flex-col border-l bg-muted/20">
-          <div className="flex flex-1 items-center justify-center p-6">
-            {youtubeId ? (
-              <iframe
-                className="h-full w-full rounded-lg"
-                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${youtubeId}`}
-                title="Media Informasi"
-                allow="autoplay; encrypted-media"
-                allowFullScreen
-              />
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
-                <svg
-                  className="size-12"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"
-                  />
-                </svg>
-                <p className="text-sm">Media tidak tersedia</p>
-              </div>
-            )}
-          </div>
+          {data && <MediaPanel data={data} />}
         </div>
       </main>
 
