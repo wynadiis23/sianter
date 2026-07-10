@@ -168,8 +168,8 @@ function MediaPanel({ data }: { data: MonitorData }) {
               key={t.key}
               onClick={() => setTab(t.key)}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${tab === t.key
-                  ? 'border-b-2 border-primary text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
                 }`}
             >
               <t.icon className="size-4" />
@@ -326,8 +326,8 @@ export function MonitorPage() {
         <div className="flex items-center gap-2">
           <span
             className={`size-2 rounded-full ${wsStatus === 'connected' ? 'bg-green-400' :
-                wsStatus === 'disconnected' ? 'bg-red-400' :
-                  'bg-yellow-400'
+              wsStatus === 'disconnected' ? 'bg-red-400' :
+                'bg-yellow-400'
               }`}
           />
           <span className="text-sm font-mono tabular-nums">{time}</span>
