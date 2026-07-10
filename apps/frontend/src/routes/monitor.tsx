@@ -1,7 +1,11 @@
-import { useEffect, useState, useCallback } from 'react'
-import { Youtube, ListVideo, Image } from 'lucide-react'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { Youtube, ListVideo, Image, Volume2, VolumeX } from 'lucide-react'
 import { server } from '@/lib/eden'
+import { toast } from 'sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useMonitorSocket, type WsStatus } from '@/lib/ws'
+import { useSpeech } from '@/hooks/use-speech'
+import type { WsEvent } from '@sianter/backend'
 
 type MonitorData = NonNullable<
   Awaited<ReturnType<typeof server.api.monitor.get>>['data']
@@ -163,11 +167,10 @@ function MediaPanel({ data }: { data: MonitorData }) {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
-                tab === t.key
-                  ? 'border-b-2 border-primary text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${tab === t.key
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+                }`}
             >
               <t.icon className="size-4" />
               {t.label}
@@ -208,6 +211,7 @@ function MediaPanel({ data }: { data: MonitorData }) {
 export function MonitorPage() {
   const [data, setData] = useState<MonitorData | null>(null)
   const { time, date } = useClock()
+  const { enabled, setEnabled, speak } = useSpeech()
 
   const fetchData = useCallback(async () => {
     try {
@@ -218,20 +222,133 @@ export function MonitorPage() {
     }
   }, [])
 
+  const handleWsEvent = useCallback(
+    (event: WsEvent) => {
+      if (event.type === 'antrean:called' || event.type === 'antrean:recalled') {
+        const d = event.data
+        speak(
+          `Nomor ${d.kode}, silakan menuju ${d.loketNama ?? 'loket'}`,
+        )
+      }
+
+      setData((prev) => {
+        if (!prev) return prev
+        switch (event.type) {
+          case 'antrean:called':
+          case 'antrean:recalled': {
+            const d = event.data
+            return {
+              ...prev,
+              layanan: prev.layanan.map((l) =>
+                l.id === d.layananId
+                  ? {
+                    ...l,
+                    dipanggil: {
+                      kode: d.kode,
+                      nomorUrut: d.nomorUrut,
+                      status: d.status,
+                      loketNama: d.loketNama,
+                    },
+                    menunggu: l.menunggu.filter((m) => m.kode !== d.kode),
+                  }
+                  : l,
+              ),
+            }
+          }
+          case 'antrean:skipped':
+          case 'antrean:finished': {
+            const d = event.data
+            return {
+              ...prev,
+              layanan: prev.layanan.map((l) =>
+                l.id === d.layananId ? { ...l, dipanggil: null } : l,
+              ),
+            }
+          }
+          case 'antrean:created': {
+            const d = event.data
+            return {
+              ...prev,
+              layanan: prev.layanan.map((l) =>
+                l.id === d.layananId && l.menunggu.length < 5
+                  ? {
+                    ...l,
+                    menunggu: [
+                      ...l.menunggu,
+                      { kode: d.kode, nomorUrut: d.nomorUrut },
+                    ],
+                  }
+                  : l,
+              ),
+            }
+          }
+          case 'pengaturan:updated': {
+            const d = event.data
+            return {
+              ...prev,
+              runningText: d.runningText,
+              mediaUrl: d.mediaUrl,
+              youtubeVideoUrl: d.youtubeVideoUrl,
+              youtubePlaylistUrl: d.youtubePlaylistUrl,
+              slideshowImages: d.slideshowImages,
+              slideshowInterval: d.slideshowInterval,
+            }
+          }
+          default:
+            return prev
+        }
+      })
+    },
+    [speak],
+  )
+
+  const wsStatus = useMonitorSocket(handleWsEvent, fetchData)
+
+  const prevStatus = useRef<WsStatus>(wsStatus)
+  useEffect(() => {
+    if (prevStatus.current === wsStatus) return
+    prevStatus.current = wsStatus
+    if (wsStatus === 'connected') toast.success('WebSocket connected', {
+      duration: 1000,
+    })
+    if (wsStatus === 'disconnected') toast.error('WebSocket disconnected', {
+      duration: 1000,
+    })
+  }, [wsStatus])
+
   useEffect(() => {
     fetchData()
-    const timer = setInterval(fetchData, 5000)
-    return () => clearInterval(timer)
   }, [fetchData])
 
   return (
     <div className="flex h-full flex-col bg-background">
       <header className="flex shrink-0 items-center justify-between bg-primary px-8 py-3 text-primary-foreground">
-        <span className="text-sm font-mono tabular-nums">{time}</span>
+        <div className="flex items-center gap-2">
+          <span
+            className={`size-2 rounded-full ${wsStatus === 'connected' ? 'bg-green-400' :
+              wsStatus === 'disconnected' ? 'bg-red-400' :
+                'bg-yellow-400'
+              }`}
+          />
+          <span className="text-sm font-mono tabular-nums">{time}</span>
+        </div>
         <h1 className="text-lg font-bold tracking-wide">
           SISTEM ANTREAN
         </h1>
-        <span className="text-sm">{date}</span>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setEnabled((v) => !v)}
+            className="rounded p-1 hover:bg-primary-foreground/10 transition-colors"
+            title={enabled ? 'Matikan suara' : 'Nyalakan suara'}
+          >
+            {enabled ? (
+              <Volume2 className="size-4" />
+            ) : (
+              <VolumeX className="size-4" />
+            )}
+          </button>
+          <span className="text-sm">{date}</span>
+        </div>
       </header>
 
       <main className="flex flex-1 min-h-0">

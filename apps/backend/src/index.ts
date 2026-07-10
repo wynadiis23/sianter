@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
 import { authPlugin } from './auth/plugin'
+import { realtimeModule } from './modules/realtime'
 import { healthModule } from './modules/health'
 import { meModule } from './modules/me'
 import { layananModule } from './modules/layanan'
@@ -20,6 +21,7 @@ const app = new Elysia()
     }),
   )
   .use(authPlugin)
+  .use(realtimeModule)
   .use(healthModule)
   .use(meModule)
   .use(layananModule)
@@ -35,3 +37,4 @@ console.log(
 )
 
 export type App = typeof app
+export type { WsEvent, AntreanEventData, PengaturanEventData } from './modules/realtime/model'

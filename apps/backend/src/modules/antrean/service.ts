@@ -1,6 +1,7 @@
 import { eq, and, gte, lt, inArray } from 'drizzle-orm'
 import { status } from 'elysia'
 import { db, schema } from '../../db/client'
+import { emitAntreanEvent } from '../realtime/service'
 
 export abstract class AntreanService {
   static async getLayananByLoket(loketId: string) {
@@ -194,6 +195,10 @@ export abstract class AntreanService {
       .where(eq(schema.antrean.id, nextTicket.id))
       .returning()
 
+    if (updated) {
+      await emitAntreanEvent('antrean:called', updated.id)
+    }
+
     return updated
   }
 
@@ -212,6 +217,7 @@ export abstract class AntreanService {
     if (!updated) {
       throw status(404, { message: 'Antrean tidak ditemukan atau sudah selesai' })
     }
+    await emitAntreanEvent('antrean:recalled', updated.id)
     return updated
   }
 
@@ -230,6 +236,7 @@ export abstract class AntreanService {
     if (!updated) {
       throw status(404, { message: 'Antrean tidak ditemukan atau sudah selesai' })
     }
+    await emitAntreanEvent('antrean:skipped', updated.id)
     return updated
   }
 
@@ -248,6 +255,7 @@ export abstract class AntreanService {
     if (!updated) {
       throw status(404, { message: 'Antrean tidak ditemukan atau sudah selesai' })
     }
+    await emitAntreanEvent('antrean:finished', updated.id)
     return updated
   }
 }
