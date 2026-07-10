@@ -1,19 +1,17 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { signIn } from '@/lib/auth'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Ticket } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field'
 
 interface LocationState {
   from?: { pathname: string }
@@ -57,63 +55,78 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex h-full items-center justify-center bg-muted/30 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-full bg-primary/10">
-            <Ticket className="size-6 text-primary" />
-          </div>
-          <CardTitle className="text-2xl">Sianter</CardTitle>
-          <CardDescription>Masuk untuk mengelola sistem antrean</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@sianter.local"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
+    <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
+      <div className="w-full max-w-sm md:max-w-4xl">
+        <Card className="overflow-hidden p-0">
+          <CardContent className="grid p-0 md:grid-cols-2">
+            <form className="p-6 md:p-8" onSubmit={handleSubmit}>
+              <FieldGroup>
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-primary/10">
+                    <Ticket className="size-6 text-primary" />
+                  </div>
+                  <h1 className="text-2xl font-bold">Sianter</h1>
+                  <p className="text-balance text-muted-foreground">
+                    Masuk untuk mengelola sistem antrean
+                  </p>
+                </div>
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                <Field>
+                  <FieldLabel htmlFor="email">Email</FieldLabel>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="admin@sianter.local"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                  />
+                </Field>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Memproses...' : 'Masuk'}
+                </Button>
+                <FieldDescription className="text-center">
+                  <Link to="/" className="underline-offset-2 hover:underline">
+                    Kios Tiket
+                  </Link>
+                  <span className="mx-1 text-muted-foreground">·</span>
+                  <Link to="/monitor" className="underline-offset-2 hover:underline">
+                    Monitor
+                  </Link>
+                </FieldDescription>
+              </FieldGroup>
+            </form>
+            <div className="relative hidden flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/20 md:flex">
+              <div className="text-center">
+                <Ticket className="mx-auto size-16 text-primary/60" />
+                <h2 className="mt-4 text-2xl font-bold text-foreground/80">
+                  Sianter
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Sistem Informasi Antrean Instansi Pemerintah
+                </p>
+              </div>
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-3">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Memproses...' : 'Masuk'}
-            </Button>
-            <div className="flex gap-3 text-sm text-muted-foreground">
-              <Link to="/" className="hover:text-foreground">
-                Kios Tiket
-              </Link>
-              <span>·</span>
-              <Link to="/monitor" className="hover:text-foreground">
-                Monitor
-              </Link>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }
