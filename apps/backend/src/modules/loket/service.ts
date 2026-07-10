@@ -5,6 +5,7 @@ import type { LoketModel } from './model'
 
 export abstract class LoketService {
   static async list() {
+    console.log('Fetching list of lokets from database...')
     return await db
       .select()
       .from(schema.loket)
@@ -23,6 +24,21 @@ export abstract class LoketService {
       .insert(schema.loket)
       .values(values)
       .returning()
+
+    const activeLayanan = await db
+      .select({ id: schema.layanan.id })
+      .from(schema.layanan)
+      .where(eq(schema.layanan.aktif, true))
+
+    if (activeLayanan.length > 0) {
+      await db.insert(schema.loketLayanan).values(
+        activeLayanan.map((l) => ({
+          loketId: created.id,
+          layananId: l.id,
+        })),
+      )
+    }
+
     return created
   }
 
@@ -50,6 +66,47 @@ export abstract class LoketService {
       .where(eq(schema.loket.id, id))
       .returning()
     if (!deleted) throw status(404, { message: 'Loket tidak ditemukan' })
+    return { success: true as const }
+  }
+
+  static async listLayanan(loketId: string) {
+    const allLayanan = await db
+      .select({
+        id: schema.layanan.id,
+        nama: schema.layanan.nama,
+        prefix: schema.layanan.prefix,
+      })
+      .from(schema.layanan)
+      .where(eq(schema.layanan.aktif, true))
+      .orderBy(schema.layanan.nama)
+
+    const assignedRows = await db
+      .select({ layananId: schema.loketLayanan.layananId })
+      .from(schema.loketLayanan)
+      .where(eq(schema.loketLayanan.loketId, loketId))
+
+    const assignedSet = new Set(assignedRows.map((r) => r.layananId))
+
+    return allLayanan.map((l) => ({
+      ...l,
+      assigned: assignedSet.has(l.id),
+    })) as LoketModel['layananItem'][]
+  }
+
+  static async setLayanan(loketId: string, layananIds: string[]) {
+    await db
+      .delete(schema.loketLayanan)
+      .where(eq(schema.loketLayanan.loketId, loketId))
+
+    if (layananIds.length > 0) {
+      await db.insert(schema.loketLayanan).values(
+        layananIds.map((layananId) => ({
+          loketId,
+          layananId,
+        })),
+      )
+    }
+
     return { success: true as const }
   }
 }

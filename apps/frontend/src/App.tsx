@@ -9,6 +9,9 @@ import { LayananAdminPage } from './routes/admin/layanan'
 import { LoketAdminPage } from './routes/admin/loket'
 import { UsersAdminPage } from './routes/admin/users'
 import { SettingsAdminPage } from './routes/admin/settings'
+import { PetugasLayout } from './components/petugas-layout'
+import { PilihLoketPage } from './routes/petugas/pilih-loket'
+import { PetugasDashboardPage } from './routes/petugas/dashboard'
 
 const router = createBrowserRouter([
   { path: '/', element: <KiosPage /> },
@@ -19,6 +22,18 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/petugas',
+    element: (
+      <ProtectedRoute role="PETUGAS_LOKET">
+        <PetugasLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <PilihLoketPage /> },
+      { path: 'dashboard', element: <PetugasDashboardPage /> },
+    ],
   },
   {
     element: (

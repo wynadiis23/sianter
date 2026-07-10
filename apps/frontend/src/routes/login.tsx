@@ -34,7 +34,7 @@ export function LoginPage() {
     setError(null)
     setLoading(true)
 
-    const { error: signInError } = await signIn.email({ email, password })
+    const { data, error: signInError } = await signIn.email({ email, password })
 
     setLoading(false)
 
@@ -43,7 +43,17 @@ export function LoginPage() {
       return
     }
 
-    navigate(from, { replace: true })
+    const isFromLogin = from === '/admin/layanan'
+    if (isFromLogin) {
+      const role = data?.user?.role
+      if (role === 'SUPER_ADMIN') {
+        navigate('/admin/layanan', { replace: true })
+      } else {
+        navigate('/petugas', { replace: true })
+      }
+    } else {
+      navigate(from, { replace: true })
+    }
   }
 
   return (

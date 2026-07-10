@@ -25,7 +25,7 @@ export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  if (role && session.user.role !== role) {
+  if (role && session.user.role !== role && session.user.role !== 'SUPER_ADMIN') {
     return <Navigate to="/" replace />
   }
 
