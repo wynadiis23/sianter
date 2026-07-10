@@ -22,13 +22,18 @@ function useReconnectingSocket(
 
     const connect = () => {
       ws = factory()
-      ws.subscribe((event) => onMessageRef.current?.(event))
+      ws.on('message', (raw: any) => {
+        console.log('[ws] message received:', raw)
+        onMessageRef.current?.(raw.data)
+      })
       ws.on('open', () => {
+        console.log('[ws] connected:', ws?.url)
         retry = 0
         if (opened) onReconnectRef.current?.()
         opened = true
       })
       ws.on('close', () => {
+        console.log('[ws] closed')
         if (closed) return
         const delay = Math.min(1000 * 2 ** retry, 30000)
         retry += 1

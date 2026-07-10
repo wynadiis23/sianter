@@ -28,7 +28,7 @@ export abstract class PengaturanService {
         .returning()
       result = created
     }
-    emitPengaturanEvent(result)
+    await emitPengaturanEvent(result)
     return result
   }
 }

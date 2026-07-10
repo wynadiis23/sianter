@@ -37,33 +37,43 @@ export async function emitAntreanEvent(
   type: WsEvent['type'],
   antreanId: string,
 ) {
-  const [row] = await db
-    .select({
-      id: schema.antrean.id,
-      kode: schema.antrean.kode,
-      nomorUrut: schema.antrean.nomorUrut,
-      layananId: schema.antrean.layananId,
-      layananNama: schema.layanan.nama,
-      loketId: schema.antrean.loketId,
-      loketNomor: schema.loket.nomor,
-      loketNama: schema.loket.nama,
-      status: schema.antrean.status,
-    })
-    .from(schema.antrean)
-    .innerJoin(schema.layanan, eq(schema.antrean.layananId, schema.layanan.id))
-    .leftJoin(schema.loket, eq(schema.antrean.loketId, schema.loket.id))
-    .where(eq(schema.antrean.id, antreanId))
-    .limit(1)
+  try {
+    const [row] = await db
+      .select({
+        id: schema.antrean.id,
+        kode: schema.antrean.kode,
+        nomorUrut: schema.antrean.nomorUrut,
+        layananId: schema.antrean.layananId,
+        layananNama: schema.layanan.nama,
+        loketId: schema.antrean.loketId,
+        loketNomor: schema.loket.nomor,
+        loketNama: schema.loket.nama,
+        status: schema.antrean.status,
+      })
+      .from(schema.antrean)
+      .innerJoin(schema.layanan, eq(schema.antrean.layananId, schema.layanan.id))
+      .leftJoin(schema.loket, eq(schema.antrean.loketId, schema.loket.id))
+      .where(eq(schema.antrean.id, antreanId))
+      .limit(1)
 
-  if (!row) return
+    if (!row) return
 
-  const event = { type, data: row } as WsEvent
-  broadcastMonitor(event)
-  broadcastLoket(event)
+    console.log(row);
+
+    const event = { type, data: row } as WsEvent
+    broadcastMonitor(event)
+    broadcastLoket(event)
+  } catch (err) {
+    console.error(`[realtime] emitAntreanEvent ${type} failed:`, err)
+  }
 }
 
-export function emitPengaturanEvent(data: PengaturanEventData) {
-  const event = { type: 'pengaturan:updated' as const, data } as WsEvent
-  broadcastMonitor(event)
-  broadcastLoket(event)
+export async function emitPengaturanEvent(data: PengaturanEventData) {
+  try {
+    const event = { type: 'pengaturan:updated' as const, data } as WsEvent
+    broadcastMonitor(event)
+    broadcastLoket(event)
+  } catch (err) {
+    console.error('[realtime] emitPengaturanEvent failed:', err)
+  }
 }

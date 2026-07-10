@@ -60,7 +60,7 @@ export abstract class KiosService {
       })
       .returning()
 
-    emitAntreanEvent('antrean:created', antrean.id)
+    await emitAntreanEvent('antrean:created', antrean.id)
 
     return {
       kode: antrean.kode,

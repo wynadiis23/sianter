@@ -196,7 +196,7 @@ export abstract class AntreanService {
       .returning()
 
     if (updated) {
-      emitAntreanEvent('antrean:called', updated.id)
+      await emitAntreanEvent('antrean:called', updated.id)
     }
 
     return updated
@@ -217,7 +217,7 @@ export abstract class AntreanService {
     if (!updated) {
       throw status(404, { message: 'Antrean tidak ditemukan atau sudah selesai' })
     }
-    emitAntreanEvent('antrean:recalled', updated.id)
+    await emitAntreanEvent('antrean:recalled', updated.id)
     return updated
   }
 
@@ -236,7 +236,7 @@ export abstract class AntreanService {
     if (!updated) {
       throw status(404, { message: 'Antrean tidak ditemukan atau sudah selesai' })
     }
-    emitAntreanEvent('antrean:skipped', updated.id)
+    await emitAntreanEvent('antrean:skipped', updated.id)
     return updated
   }
 
@@ -255,7 +255,7 @@ export abstract class AntreanService {
     if (!updated) {
       throw status(404, { message: 'Antrean tidak ditemukan atau sudah selesai' })
     }
-    emitAntreanEvent('antrean:finished', updated.id)
+    await emitAntreanEvent('antrean:finished', updated.id)
     return updated
   }
 }
