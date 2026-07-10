@@ -1,96 +1,69 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogOut, Ticket } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Outlet, useLocation } from 'react-router-dom'
+
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+} from '@/components/ui/breadcrumb'
 import { Separator } from '@/components/ui/separator'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { useSession, signOut } from '@/lib/auth'
-import { cn } from '@/lib/utils'
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
+import { AppSidebar } from './app-sidebar'
 import type { LucideIcon } from 'lucide-react'
 
 interface NavItem {
-  to: string
-  label: string
+  title: string
+  url: string
   icon: LucideIcon
+  isActive?: boolean
+  items?: { title: string; url: string }[]
 }
 
 interface DashboardLayoutProps {
   navItems: NavItem[]
 }
 
+const routeLabels: Record<string, string> = {
+  '/admin/layanan': 'Layanan',
+  '/admin/loket': 'Loket',
+  '/admin/users': 'Pengguna',
+  '/admin/settings': 'Pengaturan',
+  '/petugas/dashboard': 'Dashboard',
+}
+
 export function DashboardLayout({ navItems }: DashboardLayoutProps) {
   const { pathname } = useLocation()
-  const navigate = useNavigate()
-  const { data: session } = useSession()
 
-  const handleLogout = async () => {
-    await signOut()
-    navigate('/login', { replace: true })
-  }
-
-  const initials = session?.user?.name
-    ?.split(' ')
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() ?? 'AD'
+  const currentLabel = routeLabels[pathname] ?? 'Dashboard'
 
   return (
-    <div className="flex h-full">
-      <aside className="flex w-64 flex-col border-r bg-sidebar">
-        <div className="flex items-center gap-2 px-6 py-4">
-          <Ticket className="size-6 text-primary" />
-          <span className="text-lg font-bold text-sidebar-foreground">
-            Sianter<span className="text-primary">.</span>
-          </span>
-        </div>
-        <Separator />
-        <ScrollArea className="flex-1">
-          <nav className="flex flex-col gap-1 p-3">
-            {navItems.map((item) => {
-              const active = pathname === item.to
-              return (
-                <Button
-                  key={item.to}
-                  asChild
-                  variant={active ? 'secondary' : 'ghost'}
-                  className="justify-start"
-                >
-                  <Link to={item.to}>
-                    <item.icon className="size-4" />
-                    {item.label}
-                  </Link>
-                </Button>
-              )
-            })}
-          </nav>
-        </ScrollArea>
-        <Separator />
-        <div className="flex items-center gap-3 p-3">
-          <Avatar className="size-9">
-            <AvatarFallback className={cn('text-xs')}>{initials}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 overflow-hidden">
-            <p className="truncate text-sm font-medium text-sidebar-foreground">
-              {session?.user?.name ?? 'Admin'}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {session?.user?.email}
-            </p>
+    <SidebarProvider>
+      <AppSidebar navItems={navItems} />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
+            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{currentLabel}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleLogout}
-            title="Keluar"
-          >
-            <LogOut className="size-4" />
-          </Button>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <Outlet />
         </div>
-      </aside>
-      <main className="flex-1 overflow-auto bg-muted/30">
-        <Outlet />
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

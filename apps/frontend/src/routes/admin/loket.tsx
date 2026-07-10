@@ -345,7 +345,7 @@ export function LoketAdminPage() {
               layananForLoket.map((layanan) => (
                 <label
                   key={layanan.id}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 has-[[data-state=checked]]:border-primary"
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 has-data-[state=checked]:border-primary"
                 >
                   <Checkbox
                     checked={selectedLayanan.has(layanan.id)}

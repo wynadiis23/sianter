@@ -2,7 +2,7 @@ import { ClipboardList } from 'lucide-react'
 import { DashboardLayout } from './dashboard-layout'
 
 const navItems = [
-  { to: '/petugas/dashboard', label: 'Dashboard', icon: ClipboardList },
+  { title: 'Dashboard', url: '/petugas/dashboard', icon: ClipboardList },
 ]
 
 export function PetugasLayout() {
