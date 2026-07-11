@@ -1,5 +1,6 @@
 import { pgTable, varchar, time, integer, boolean, timestamp } from 'drizzle-orm/pg-core'
 import { createId } from '@paralleldrive/cuid2'
+import { layanan } from './layanan'
 
 export const sesi = pgTable('sesi', {
   id: varchar('id')
@@ -9,8 +10,15 @@ export const sesi = pgTable('sesi', {
   jamMulai: time('jam_mulai').notNull(),
   jamSelesai: time('jam_selesai').notNull(),
   kuota: integer('kuota').notNull().default(0),
+  layananId: varchar('layanan_id')
+    .notNull()
+    .references(() => layanan.id, { onDelete: 'cascade' }),
   aktif: boolean('aktif').notNull().default(true),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 })

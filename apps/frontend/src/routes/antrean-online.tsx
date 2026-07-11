@@ -87,20 +87,22 @@ export function OnlineAntreanPage() {
     setLayananList(data)
   }, [])
 
-  const fetchSesi = useCallback(async () => {
-    const { data } = await server.api['antrean-online'].sesi.get()
+  const fetchSesi = useCallback(async (layananId: string) => {
+    setSesiList([])
+    setSelectedSesi(null)
+    const { data } = await server.api['antrean-online'].sesi.get({ query: { layananId } })
     if (data) setSesiList(data)
   }, [])
 
   useEffect(() => {
     fetchLayanan()
-    fetchSesi()
-  }, [fetchLayanan, fetchSesi])
+  }, [fetchLayanan])
 
   const handleSelectLayanan = useCallback((layanan: LayananItem) => {
     setSelectedLayanan(layanan)
     setStep('jadwal')
-  }, [])
+    fetchSesi(layanan.id)
+  }, [fetchSesi])
 
   const handleSelectSesi = useCallback((sesi: SesiItem) => {
     setSelectedSesi(sesi)

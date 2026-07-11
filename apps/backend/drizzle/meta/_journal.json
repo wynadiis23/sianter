@@ -71,6 +71,13 @@
       "when": 1783775939679,
       "tag": "0009_late_colossus",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783778061780,
+      "tag": "0010_even_stick",
+      "breakpoints": true
     }
   ]
 }

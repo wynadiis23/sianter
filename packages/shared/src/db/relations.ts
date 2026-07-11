@@ -33,6 +33,7 @@ export const verificationRelations = relations(verification, () => ({}))
 export const layananRelations = relations(layanan, ({ many }) => ({
   loketLayanan: many(loketLayanan),
   antrean: many(antrean),
+  sesi: many(sesi),
 }))
 
 export const loketRelations = relations(loket, ({ many }) => ({
@@ -71,6 +72,7 @@ export const antreanLogRelations = relations(antreanLog, ({ one }) => ({
   sesi: one(sesi, { fields: [antreanLog.sesiId], references: [sesi.id] }),
 }))
 
-export const sesiRelations = relations(sesi, ({ many }) => ({
+export const sesiRelations = relations(sesi, ({ one, many }) => ({
   antrean: many(antrean),
+  layanan: one(layanan, { fields: [sesi.layananId], references: [layanan.id] }),
 }))

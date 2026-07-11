@@ -3,7 +3,12 @@ import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 
 export abstract class AntreanOnlineService {
-  static async listSesi() {
+  static async listSesi(layananId?: string) {
+    const conditions = [eq(schema.sesi.aktif, true)]
+    if (layananId) {
+      conditions.push(eq(schema.sesi.layananId, layananId))
+    }
+
     return await db
       .select({
         id: schema.sesi.id,
@@ -13,7 +18,7 @@ export abstract class AntreanOnlineService {
         kuota: schema.sesi.kuota,
       })
       .from(schema.sesi)
-      .where(eq(schema.sesi.aktif, true))
+      .where(and(...conditions))
       .orderBy(schema.sesi.jamMulai)
   }
 
@@ -66,6 +71,7 @@ export abstract class AntreanOnlineService {
       )
       .limit(1)
     if (!sesi) throw status(404, { message: 'Sesi tidak ditemukan' })
+    if (sesi.layananId !== layananId) throw status(400, { message: 'Sesi tidak sesuai dengan layanan yang dipilih' })
 
     const tanggal = new Date(tanggalKunjungan + 'T00:00:00')
     const today = new Date()

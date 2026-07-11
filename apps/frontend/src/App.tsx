@@ -8,6 +8,7 @@ import { MonitorPage } from './routes/monitor'
 import { LoginPage } from './routes/login'
 import { LayananAdminPage } from './routes/admin/layanan'
 import { LoketAdminPage } from './routes/admin/loket'
+import { SesiAdminPage } from './routes/admin/sesi'
 import { UsersAdminPage } from './routes/admin/users'
 import { SettingsAdminPage } from './routes/admin/settings'
 import { PetugasLayout } from './components/petugas-layout'
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
       { path: '/admin', element: <Navigate to="/admin/layanan" replace /> },
       { path: '/admin/layanan', element: <LayananAdminPage /> },
       { path: '/admin/loket', element: <LoketAdminPage /> },
+      { path: '/admin/sesi', element: <SesiAdminPage /> },
       { path: '/admin/users', element: <UsersAdminPage /> },
       { path: '/admin/settings', element: <SettingsAdminPage /> },
     ],

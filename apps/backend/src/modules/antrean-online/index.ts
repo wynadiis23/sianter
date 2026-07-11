@@ -3,7 +3,8 @@ import { AntreanOnlineService } from './service'
 import { AntreanOnlineModel } from './model'
 
 export const antreanOnlineModule = new Elysia({ prefix: '/api/antrean-online' })
-  .get('/sesi', () => AntreanOnlineService.listSesi(), {
+  .get('/sesi', ({ query: { layananId } }) => AntreanOnlineService.listSesi(layananId), {
+    query: t.Optional(t.Object({ layananId: t.String() })),
     response: t.Array(AntreanOnlineModel.sesiResponse),
   })
   .post(
