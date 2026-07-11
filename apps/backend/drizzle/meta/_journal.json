@@ -50,6 +50,13 @@
       "when": 1783720710846,
       "tag": "0006_broken_darkstar",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783722347879,
+      "tag": "0007_romantic_orphan",
+      "breakpoints": true
     }
   ]
 }

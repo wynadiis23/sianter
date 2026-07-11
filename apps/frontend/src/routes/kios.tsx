@@ -1,23 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { server } from '@/lib/eden'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import {
-  Printer,
-  CheckCircle2,
-  AlertCircle,
-  RefreshCw,
-  User,
-} from 'lucide-react'
+import { Printer, CheckCircle2, AlertCircle, RefreshCw, User } from 'lucide-react'
 
-type PageState =
-  | 'loading'
-  | 'select'
-  | 'identity'
-  | 'confirm'
-  | 'creating'
-  | 'ticket'
-  | 'error'
+type PageState = 'loading' | 'select' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
 interface LayananItem {
   id: string
@@ -32,12 +19,6 @@ interface TicketData {
   kode: string
   nomorUrut: number
   namaLayanan: string
-}
-
-interface IdentityForm {
-  nik: string
-  nama: string
-  noHp: string
 }
 
 const pad = (n: number) => n.toString().padStart(2, '0')
@@ -132,10 +113,9 @@ export function KiosPage() {
   const [now, setNow] = useState(new Date())
   const [countdown, setCountdown] = useState(15)
 
-  const [identity, setIdentity] = useState<IdentityForm>({ nik: '', nama: '', noHp: '' })
-  const [lookupLoading, setLookupLoading] = useState(false)
-  const [lookupError, setLookupError] = useState<string | null>(null)
-  const lookedUpNik = useRef<string | null>(null)
+  const [nama, setNama] = useState('')
+  const [noHp, setNoHp] = useState('')
+  const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
@@ -177,63 +157,35 @@ export function KiosPage() {
 
   const handleSelectLayanan = useCallback((layanan: LayananItem) => {
     setSelectedLayanan(layanan)
-    setIdentity({ nik: '', nama: '', noHp: '' })
-    lookedUpNik.current = null
-    setLookupLoading(false)
-    setLookupError(null)
+    setNama('')
+    setNoHp('')
+    setFormError(null)
     setState('identity')
   }, [])
 
   const handleBackToSelect = useCallback(() => {
     setSelectedLayanan(null)
-    setIdentity({ nik: '', nama: '', noHp: '' })
-    lookedUpNik.current = null
-    setLookupLoading(false)
-    setLookupError(null)
+    setNama('')
+    setNoHp('')
+    setFormError(null)
     setState('select')
   }, [])
 
-  useEffect(() => {
-    if (identity.nik.length !== 16) {
-      setLookupError(null)
-      return
-    }
-    if (identity.nik === lookedUpNik.current) return
-
-    lookedUpNik.current = identity.nik
-    setLookupLoading(true)
-    setLookupError(null)
-
-    server.api.kios.pemohon.lookup
-      .get({ query: { nik: identity.nik } })
-      .then(({ data, error }) => {
-        if (error) {
-          setLookupError('Gagal memeriksa NIK. Silakan coba lagi.')
-          return
-        }
-        if (data?.found) {
-          setIdentity((prev) => ({
-            ...prev,
-            nama: data.nama ?? prev.nama,
-            noHp: data.noHp ?? prev.noHp,
-          }))
-        }
-      })
-      .finally(() => setLookupLoading(false))
-  }, [identity.nik])
-
   const handleIdentitySubmit = useCallback(() => {
-    if (identity.nik.length !== 16) {
-      setLookupError('NIK harus 16 digit')
+    const trimmedNama = nama.trim()
+    const trimmedNoHp = noHp.trim()
+
+    if (!trimmedNama) {
+      setFormError('Nama harus diisi')
       return
     }
-    if (!identity.nama.trim()) {
-      setLookupError('Nama harus diisi')
+    if (trimmedNoHp.length < 10 || trimmedNoHp.length > 15 || !/^0\d+$/.test(trimmedNoHp)) {
+      setFormError('Masukkan nomor HP yang valid (diawali 0, 10-15 digit)')
       return
     }
-    setLookupError(null)
+    setFormError(null)
     setState('confirm')
-  }, [identity])
+  }, [nama, noHp])
 
   const handleBackToIdentity = useCallback(() => {
     setState('identity')
@@ -245,9 +197,8 @@ export function KiosPage() {
     setErrorMsg(null)
     const { data, error } = await server.api.kios.antrean.post({
       layananId: selectedLayanan.id,
-      nik: identity.nik,
-      nama: identity.nama.trim(),
-      noHp: identity.noHp || undefined,
+      nama: nama.trim(),
+      noHp: noHp.trim(),
     })
     if (error || !data) {
       const msg =
@@ -262,16 +213,15 @@ export function KiosPage() {
     setNow(new Date())
     setCountdown(15)
     setState('ticket')
-  }, [selectedLayanan, identity])
+  }, [selectedLayanan, nama, noHp])
 
   const handleReset = useCallback(() => {
     setSelectedLayanan(null)
     setTicket(null)
     setErrorMsg(null)
-    setIdentity({ nik: '', nama: '', noHp: '' })
-    lookedUpNik.current = null
-    setLookupLoading(false)
-    setLookupError(null)
+    setNama('')
+    setNoHp('')
+    setFormError(null)
     setCountdown(15)
     fetchLayanan()
   }, [fetchLayanan])
@@ -449,44 +399,12 @@ export function KiosPage() {
               <div className="space-y-5">
                 <div className="space-y-2">
                   <label className="font-body text-sm font-medium text-foreground">
-                    NIK <span className="text-destructive">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={16}
-                    value={identity.nik}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '')
-                      if (val !== identity.nik) {
-                        lookedUpNik.current = null
-                      }
-                      setIdentity((prev) => ({ ...prev, nik: val }))
-                    }}
-                    placeholder="16 digit NIK"
-                    className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                  {identity.nik.length > 0 && identity.nik.length < 16 && (
-                    <p className="font-body text-xs text-muted-foreground">
-                      {16 - identity.nik.length} digit tersisa
-                    </p>
-                  )}
-                  {lookupLoading && (
-                    <div className="flex items-center gap-2">
-                      <Spinner className="size-4" />
-                      <span className="font-body text-xs text-muted-foreground">Mencari data...</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="font-body text-sm font-medium text-foreground">
                     Nama Lengkap <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="text"
-                    value={identity.nama}
-                    onChange={(e) => setIdentity((prev) => ({ ...prev, nama: e.target.value }))}
+                    value={nama}
+                    onChange={(e) => setNama(e.target.value)}
                     placeholder="Nama sesuai KTP"
                     className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
@@ -494,25 +412,25 @@ export function KiosPage() {
 
                 <div className="space-y-2">
                   <label className="font-body text-sm font-medium text-foreground">
-                    Nomor HP
+                    Nomor HP <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="text"
                     inputMode="tel"
-                    value={identity.noHp}
+                    value={noHp}
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, '')
-                      setIdentity((prev) => ({ ...prev, noHp: val }))
+                      setNoHp(val)
                     }}
                     placeholder="08xxxxxxxxxx"
-                    maxLength={13}
+                    maxLength={15}
                     className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
-                {lookupError && (
+                {formError && (
                   <div className="rounded-lg bg-destructive/10 p-3">
-                    <p className="font-body text-sm text-destructive">{lookupError}</p>
+                    <p className="font-body text-sm text-destructive">{formError}</p>
                   </div>
                 )}
               </div>
@@ -520,7 +438,7 @@ export function KiosPage() {
               <div className="mt-8 flex flex-col gap-4">
                 <Button
                   onClick={handleIdentitySubmit}
-                  disabled={identity.nik.length !== 16 || !identity.nama.trim() || lookupLoading}
+                  disabled={!nama.trim() || !noHp.trim()}
                   className="h-14 w-full text-lg font-body"
                 >
                   Lanjut
@@ -558,20 +476,12 @@ export function KiosPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="font-body text-sm text-muted-foreground">Nama</span>
-                      <span className="font-body text-sm font-medium text-foreground">{identity.nama}</span>
+                      <span className="font-body text-sm font-medium text-foreground">{nama}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="font-body text-sm text-muted-foreground">NIK</span>
-                      <span className="font-body text-sm font-medium text-foreground">
-                        ****{identity.nik.slice(-4)}
-                      </span>
+                      <span className="font-body text-sm text-muted-foreground">No. HP</span>
+                      <span className="font-body text-sm font-medium text-foreground">{noHp}</span>
                     </div>
-                    {identity.noHp && (
-                      <div className="flex justify-between">
-                        <span className="font-body text-sm text-muted-foreground">No. HP</span>
-                        <span className="font-body text-sm font-medium text-foreground">{identity.noHp}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
                 <div className="mt-2 flex flex-col gap-4">
