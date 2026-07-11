@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { server } from '@/lib/eden'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { Printer, CheckCircle2, AlertCircle, RefreshCw, User } from 'lucide-react'
+import { Printer, CheckCircle2, AlertCircle, RefreshCw, User, ExternalLink } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 
 type PageState = 'loading' | 'select' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -19,6 +20,7 @@ interface TicketData {
   kode: string
   nomorUrut: number
   namaLayanan: string
+  trackingToken: string
 }
 
 const pad = (n: number) => n.toString().padStart(2, '0')
@@ -302,6 +304,18 @@ export function KiosPage() {
             {ticket ? formatDateTime(now) : ''}
           </p>
           <div className="my-6 border-t border-border" />
+          {ticket?.trackingToken && (
+            <div className="flex justify-center mb-4">
+              <QRCodeSVG
+                value={`${window.location.origin}/track/${ticket.trackingToken}`}
+                size={120}
+              />
+            </div>
+          )}
+          <p className="font-body text-xs text-muted-foreground/60">
+            Scan QR untuk pantau antrean
+          </p>
+          <div className="my-4 border-t border-border" />
           <p className="font-body text-xs text-muted-foreground/60">
             Harap menunggu nomor antrean Anda dipanggil.
           </p>
@@ -568,7 +582,24 @@ export function KiosPage() {
                   <p className="font-body text-sm text-muted-foreground/60">
                     {formatClock(now)} WITA
                   </p>
-                  <p className="mt-4 font-body text-xs text-muted-foreground/40">
+                  <div className="mt-4 flex justify-center">
+                    <QRCodeSVG
+                      value={`${window.location.origin}/track/${ticket.trackingToken}`}
+                      size={100}
+                    />
+                  </div>
+                  <div className="mt-2 flex items-center justify-center gap-1">
+                    <ExternalLink className="size-3 text-muted-foreground/40" />
+                    <a
+                      href={`/track/${ticket.trackingToken}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-body text-xs text-muted-foreground/40 hover:text-primary transition-colors underline underline-offset-2"
+                    >
+                      Pantau antrean
+                    </a>
+                  </div>
+                  <p className="mt-3 font-body text-xs text-muted-foreground/40">
                     Harap menunggu nomor Anda dipanggil
                   </p>
                 </div>

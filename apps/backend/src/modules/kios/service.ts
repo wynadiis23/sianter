@@ -134,6 +134,7 @@ export abstract class KiosService {
       kode: antrean.kode,
       nomorUrut: antrean.nomorUrut,
       namaLayanan: layanan.nama,
+      trackingToken: antrean.trackingToken,
     }
   }
 }

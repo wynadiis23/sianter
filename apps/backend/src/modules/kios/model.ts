@@ -20,6 +20,7 @@ export const KiosModel = {
     kode: t.String(),
     nomorUrut: t.Number(),
     namaLayanan: t.String(),
+    trackingToken: t.String(),
   }),
 
   notFound: t.Object({ message: t.String() }),

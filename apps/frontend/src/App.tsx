@@ -2,6 +2,8 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { AdminLayout } from './components/admin-layout'
 import { ProtectedRoute } from './components/protected-route'
 import { KiosPage } from './routes/kios'
+import { OnlineAntreanPage } from './routes/antrean-online'
+import { TrackPage } from './routes/track'
 import { MonitorPage } from './routes/monitor'
 import { LoginPage } from './routes/login'
 import { LayananAdminPage } from './routes/admin/layanan'
@@ -14,6 +16,8 @@ import { PetugasDashboardPage } from './routes/petugas/dashboard'
 
 const router = createBrowserRouter([
   { path: '/kios', element: <KiosPage /> },
+  { path: '/antrean-online', element: <OnlineAntreanPage /> },
+  { path: '/track/:token', element: <TrackPage /> },
   { path: '/monitor', element: <MonitorPage /> },
   {
     path: '/login',

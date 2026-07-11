@@ -57,6 +57,13 @@
       "when": 1783722347879,
       "tag": "0007_romantic_orphan",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783730153848,
+      "tag": "0008_heavy_logan",
+      "breakpoints": true
     }
   ]
 }

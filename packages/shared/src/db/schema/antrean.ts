@@ -28,6 +28,10 @@ export const antrean = pgTable('antrean', {
   pemohonId: varchar('pemohon_id').references(() => pemohon.id, {
     onDelete: 'set null',
   }),
+  trackingToken: varchar('tracking_token', { length: 32 })
+    .notNull()
+    .unique()
+    .$defaultFn(() => createId()),
   status: varchar('status', { length: 20 })
     .$type<QueueStatus>()
     .notNull()
@@ -50,6 +54,7 @@ export const antreanLog = pgTable('antrean_log', {
   loketId: varchar('loket_id'),
   petugasId: varchar('petugas_id'),
   pemohonId: varchar('pemohon_id'),
+  trackingToken: varchar('tracking_token', { length: 32 }).notNull(),
   status: varchar('status', { length: 20 })
     .$type<QueueStatus>()
     .notNull(),

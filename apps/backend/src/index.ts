@@ -10,6 +10,7 @@ import { pengaturanModule } from './modules/pengaturan'
 import { kiosModule } from './modules/kios'
 import { antreanModule } from './modules/antrean'
 import { monitorModule } from './modules/monitor'
+import { trackingModule } from './modules/tracking'
 
 const app = new Elysia()
   .use(
@@ -30,6 +31,7 @@ const app = new Elysia()
   .use(kiosModule)
   .use(antreanModule)
   .use(monitorModule)
+  .use(trackingModule)
   .listen(3000)
 
 console.log(
