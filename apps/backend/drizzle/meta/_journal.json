@@ -64,6 +64,13 @@
       "when": 1783730153848,
       "tag": "0008_heavy_logan",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783775939679,
+      "tag": "0009_late_colossus",
+      "breakpoints": true
     }
   ]
 }

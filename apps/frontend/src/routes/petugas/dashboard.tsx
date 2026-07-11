@@ -23,16 +23,16 @@ interface PetugasSession {
 
 interface ActiveTicket {
   id: string
-  kode: string
-  nomorUrut: number
+  kode: string | null
+  nomorUrut: number | null
   status: string
   namaLayanan: string
 }
 
 interface WaitingItem {
   id: string
-  kode: string
-  nomorUrut: number
+  kode: string | null
+  nomorUrut: number | null
   layananId: string
   namaLayanan: string
   createdAt: Date
@@ -251,7 +251,7 @@ export function PetugasDashboardPage() {
               <CardContent>
                 <div className="mb-4 text-center">
                   <p className="text-4xl font-bold text-primary">
-                    {data.aktif.kode}
+                    {data.aktif.kode ?? '-'}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {data.aktif.namaLayanan}
@@ -377,7 +377,7 @@ export function PetugasDashboardPage() {
                       className="flex items-center justify-between py-3"
                     >
                       <div>
-                        <p className="font-mono font-bold">{item.kode}</p>
+                        <p className="font-mono font-bold">{item.kode ?? '-'}</p>
                         <p className="text-xs text-muted-foreground">
                           {item.namaLayanan}
                         </p>

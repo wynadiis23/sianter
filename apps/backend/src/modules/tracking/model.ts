@@ -2,7 +2,7 @@ import { t, type UnwrapSchema } from 'elysia'
 
 export const TrackingModel = {
   trackResponse: t.Object({
-    kode: t.String(),
+    kode: t.Nullable(t.String()),
     status: t.String(),
     nama: t.String(),
     namaLayanan: t.String(),

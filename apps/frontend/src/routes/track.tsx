@@ -3,9 +3,10 @@ import { useParams } from 'react-router-dom'
 import { server } from '@/lib/eden'
 import { Spinner } from '@/components/ui/spinner'
 import { AlertCircle, RefreshCw } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 
 interface TrackData {
-  kode: string
+  kode: string | null
   status: string
   nama: string
   namaLayanan: string
@@ -18,11 +19,13 @@ interface TrackData {
 }
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
+  RESERVED: { label: 'Dipesan', color: 'text-purple-600 bg-purple-50 border-purple-200' },
   WAITING: { label: 'Menunggu', color: 'text-amber-600 bg-amber-50 border-amber-200' },
   CALLED: { label: 'Dipanggil', color: 'text-green-600 bg-green-50 border-green-200' },
   RECALLED: { label: 'Dipanggil Ulang', color: 'text-orange-600 bg-orange-50 border-orange-200' },
   SKIPPED: { label: 'Dilewati', color: 'text-red-600 bg-red-50 border-red-200' },
   FINISHED: { label: 'Selesai', color: 'text-blue-600 bg-blue-50 border-blue-200' },
+  EXPIRED: { label: 'Hangus', color: 'text-gray-600 bg-gray-50 border-gray-200' },
 }
 
 const pad = (n: number) => n.toString().padStart(2, '0')
@@ -34,11 +37,12 @@ function formatTime(iso: string) {
   return `${pad(wita.getHours())}:${pad(wita.getMinutes())}:${pad(wita.getSeconds())} WITA`
 }
 
-function TrackStatus({ data }: { data: TrackData }) {
+function TrackStatus({ data, token }: { data: TrackData; token: string }) {
   const status = STATUS_LABEL[data.status] ?? { label: data.status, color: 'text-gray-600 bg-gray-50 border-gray-200' }
+  const isReserved = data.status === 'RESERVED'
   const isWaiting = data.status === 'WAITING'
   const isCalled = data.status === 'CALLED' || data.status === 'RECALLED'
-  const isDone = data.status === 'FINISHED'
+  const isDone = data.status === 'FINISHED' || data.status === 'EXPIRED' || data.status === 'SKIPPED'
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-primary/[0.03] via-background to-background">
@@ -57,7 +61,8 @@ function TrackStatus({ data }: { data: TrackData }) {
             Nomor Antrean
           </p>
           <p className="mt-2 text-5xl font-bold tracking-[0.1em] text-primary">
-            {data.kode}
+            {data.kode ?? 'Belum'}
+
           </p>
         </div>
 
@@ -69,6 +74,23 @@ function TrackStatus({ data }: { data: TrackData }) {
         <div className={`mt-4 rounded-xl border-2 p-4 text-center ${status.color}`}>
           <p className="text-sm font-medium uppercase tracking-wider">{status.label}</p>
         </div>
+
+        {isReserved && (
+          <div className="mt-4 rounded-xl border border-border bg-card p-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Tiket Anda sudah dipesan. Silakan datang ke lokasi pada tanggal kunjungan dan lakukan check-in di kios untuk mendapatkan nomor antrean.
+            </p>
+            <div className="mt-3 flex justify-center">
+              <QRCodeSVG
+                value={`${window.location.origin}/track/${token}`}
+                size={100}
+              />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground text-center">
+              Tunjukkan QR ini saat check-in
+            </p>
+          </div>
+        )}
 
         {isWaiting && data.position !== null && (
           <div className="mt-4 grid grid-cols-2 gap-3">
@@ -167,5 +189,5 @@ export function TrackPage() {
     )
   }
 
-  return <TrackStatus data={data} />
+  return <TrackStatus data={data} token={token!} />
 }

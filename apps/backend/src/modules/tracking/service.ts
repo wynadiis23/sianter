@@ -52,8 +52,8 @@ export abstract class TrackingService {
           ),
         )
 
-      totalWaiting = result?.total ?? 0
-      position = result?.pos ?? null
+      totalWaiting = Number(result?.total ?? 0)
+      position = result?.pos != null ? Number(result.pos) : null
     }
 
     return {

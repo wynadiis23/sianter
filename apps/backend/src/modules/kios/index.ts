@@ -19,3 +19,16 @@ export const kiosModule = new Elysia({ prefix: '/api/kios' })
       },
     },
   )
+  .post(
+    '/check-in',
+    ({ body }) => KiosService.checkIn(body.token),
+    {
+      body: KiosModel.checkInBody,
+      response: {
+        200: KiosModel.antreanResponse,
+        400: KiosModel.badRequest,
+        404: KiosModel.notFound,
+        409: KiosModel.conflict,
+      },
+    },
+  )

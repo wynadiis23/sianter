@@ -11,6 +11,7 @@ import { kiosModule } from './modules/kios'
 import { antreanModule } from './modules/antrean'
 import { monitorModule } from './modules/monitor'
 import { trackingModule } from './modules/tracking'
+import { antreanOnlineModule } from './modules/antrean-online'
 
 const app = new Elysia()
   .use(
@@ -32,6 +33,7 @@ const app = new Elysia()
   .use(antreanModule)
   .use(monitorModule)
   .use(trackingModule)
+  .use(antreanOnlineModule)
   .listen(3000)
 
 console.log(

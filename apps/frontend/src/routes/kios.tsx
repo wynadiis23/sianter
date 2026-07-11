@@ -2,10 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { server } from '@/lib/eden'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { Printer, CheckCircle2, AlertCircle, RefreshCw, User, ExternalLink } from 'lucide-react'
+import { Printer, CheckCircle2, AlertCircle, RefreshCw, User, ExternalLink, QrCode } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 
-type PageState = 'loading' | 'select' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
+type PageState = 'loading' | 'select' | 'checkin' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
 interface LayananItem {
   id: string
@@ -118,6 +118,8 @@ export function KiosPage() {
   const [nama, setNama] = useState('')
   const [noHp, setNoHp] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
+  const [checkInToken, setCheckInToken] = useState('')
+  const [checkInError, setCheckInError] = useState<string | null>(null)
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
@@ -217,6 +219,32 @@ export function KiosPage() {
     setState('ticket')
   }, [selectedLayanan, nama, noHp])
 
+  const handleCheckIn = useCallback(async () => {
+    if (!checkInToken.trim()) {
+      setCheckInError('Masukkan token check-in')
+      return
+    }
+    setState('creating')
+    setCheckInError(null)
+    setErrorMsg(null)
+    const { data, error } = await server.api.kios['check-in'].post({
+      token: checkInToken.trim(),
+    })
+    if (error || !data) {
+      const msg =
+        error?.value && 'message' in error.value
+          ? (error.value as { message: string }).message
+          : 'Gagal check-in. Silakan coba lagi.'
+      setCheckInError(msg)
+      setState('checkin')
+      return
+    }
+    setTicket(data)
+    setNow(new Date())
+    setCountdown(15)
+    setState('ticket')
+  }, [checkInToken])
+
   const handleReset = useCallback(() => {
     setSelectedLayanan(null)
     setTicket(null)
@@ -224,6 +252,8 @@ export function KiosPage() {
     setNama('')
     setNoHp('')
     setFormError(null)
+    setCheckInToken('')
+    setCheckInError(null)
     setCountdown(15)
     fetchLayanan()
   }, [fetchLayanan])
@@ -391,6 +421,71 @@ export function KiosPage() {
                     </span>
                   </button>
                 ))}
+              </div>
+            </div>
+            <div className="mt-8 flex justify-center">
+              <Button
+                onClick={() => { setCheckInToken(''); setCheckInError(null); setState('checkin') }}
+                variant="outline"
+                className="h-14 gap-3 text-base"
+              >
+                <QrCode className="size-5" />
+                Check-In Antrean Online
+              </Button>
+            </div>
+          </main>
+        )}
+
+        {/* ─── Check-In Online ─── */}
+        {state === 'checkin' && (
+          <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
+            <div className="w-full max-w-sm">
+              <div className="mb-6 text-center">
+                <QrCode className="mx-auto mb-3 size-10 text-primary" />
+                <h2 className="kiosk-font-wordmark text-2xl text-foreground">
+                  Check-In Online
+                </h2>
+                <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
+                  Masukkan token atau scan QR tiket online Anda
+                </p>
+              </div>
+
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <label className="font-body text-sm font-medium text-foreground">
+                    Token Check-In
+                  </label>
+                  <input
+                    type="text"
+                    value={checkInToken}
+                    onChange={(e) => { setCheckInToken(e.target.value); setCheckInError(null) }}
+                    placeholder="Tempel token dari tiket online"
+                    className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                {checkInError && (
+                  <div className="rounded-lg bg-destructive/10 p-3">
+                    <p className="font-body text-sm text-destructive">{checkInError}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-8 flex flex-col gap-4">
+                <Button
+                  onClick={handleCheckIn}
+                  disabled={!checkInToken.trim()}
+                  className="h-14 w-full text-lg font-body"
+                >
+                  Check-In
+                </Button>
+                <Button
+                  onClick={() => { setCheckInToken(''); setCheckInError(null); setState('select') }}
+                  variant="ghost"
+                  className="h-14 w-full text-base font-normal"
+                >
+                  Kembali
+                </Button>
               </div>
             </div>
           </main>

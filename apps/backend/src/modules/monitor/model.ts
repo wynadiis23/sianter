@@ -10,16 +10,16 @@ const MonitorModel = {
         warna: t.Nullable(t.String()),
         dipanggil: t.Nullable(
           t.Object({
-            kode: t.String(),
-            nomorUrut: t.Integer(),
+            kode: t.Nullable(t.String()),
+            nomorUrut: t.Nullable(t.Integer()),
             status: t.String(),
             loketNama: t.Nullable(t.String()),
           }),
         ),
         menunggu: t.Array(
           t.Object({
-            kode: t.String(),
-            nomorUrut: t.Integer(),
+            kode: t.Nullable(t.String()),
+            nomorUrut: t.Nullable(t.Integer()),
           }),
         ),
       }),

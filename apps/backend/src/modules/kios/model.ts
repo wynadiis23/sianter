@@ -23,6 +23,10 @@ export const KiosModel = {
     trackingToken: t.String(),
   }),
 
+  checkInBody: t.Object({
+    token: t.String(),
+  }),
+
   notFound: t.Object({ message: t.String() }),
   badRequest: t.Object({ message: t.String() }),
   conflict: t.Object({ message: t.String() }),
