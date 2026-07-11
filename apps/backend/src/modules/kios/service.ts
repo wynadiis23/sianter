@@ -3,10 +3,6 @@ import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 import { emitAntreanEvent } from '../realtime/service'
 
-function isValidNik(nik: string) {
-  return /^\d{16}$/.test(nik)
-}
-
 function todayRange() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -31,35 +27,17 @@ export abstract class KiosService {
       .orderBy(schema.layanan.nama)
   }
 
-  static async lookupPemohon(nik: string) {
-    if (!isValidNik(nik)) {
-      throw status(400, { message: 'Format NIK tidak valid' })
-    }
-
-    const [pemohon] = await db
-      .select({ nama: schema.pemohon.nama, noHp: schema.pemohon.noHp })
-      .from(schema.pemohon)
-      .where(eq(schema.pemohon.nik, nik))
-      .limit(1)
-
-    if (!pemohon) {
-      return { found: false }
-    }
-
-    return { found: true, nama: pemohon.nama, noHp: pemohon.noHp ?? undefined }
-  }
-
-  static async upsertPemohon(nik: string, nama: string, noHp?: string) {
+  static async upsertPemohon(nama: string, noHp: string) {
     const [existing] = await db
       .select({ id: schema.pemohon.id })
       .from(schema.pemohon)
-      .where(eq(schema.pemohon.nik, nik))
+      .where(eq(schema.pemohon.noHp, noHp))
       .limit(1)
 
     if (existing) {
       const [updated] = await db
         .update(schema.pemohon)
-        .set({ nama, ...(noHp !== undefined ? { noHp } : {}) })
+        .set({ nama })
         .where(eq(schema.pemohon.id, existing.id))
         .returning({ id: schema.pemohon.id })
 
@@ -68,7 +46,7 @@ export abstract class KiosService {
 
     const [inserted] = await db
       .insert(schema.pemohon)
-      .values({ nik, nama, noHp })
+      .values({ nama, noHp })
       .returning({ id: schema.pemohon.id })
 
     return inserted.id
@@ -99,9 +77,8 @@ export abstract class KiosService {
 
   static async createAntrean(
     layananId: string,
-    nik: string,
     nama: string,
-    noHp?: string,
+    noHp: string,
   ) {
     const [layanan] = await db
       .select()
@@ -112,17 +89,13 @@ export abstract class KiosService {
       .limit(1)
     if (!layanan) throw status(404, { message: 'Layanan tidak ditemukan' })
 
-    if (!isValidNik(nik)) {
-      throw status(400, { message: 'Format NIK tidak valid' })
-    }
-
-    const pemohonId = await KiosService.upsertPemohon(nik, nama, noHp)
+    const pemohonId = await KiosService.upsertPemohon(nama, noHp)
 
     const hasDuplicate = await KiosService.checkDuplicateAntrean(pemohonId)
     if (hasDuplicate) {
       throw status(409, {
         message:
-          `NIK sudah terdaftar antrean hari ini. Silakan tunggu hingga antrean selesai atau batalkan antrean sebelumnya.`,
+          'Nomor HP ini sudah terdaftar dalam antrean hari ini. Silakan selesaikan antrean yang sudah ada.',
       })
     }
 

@@ -5,9 +5,8 @@ export const pemohon = pgTable('pemohon', {
   id: varchar('id')
     .$defaultFn(() => createId())
     .primaryKey(),
-  nik: varchar('nik', { length: 16 }).notNull().unique(),
   nama: varchar('nama', { length: 100 }).notNull(),
-  noHp: varchar('no_hp', { length: 15 }),
+  noHp: varchar('no_hp', { length: 15 }).notNull().unique(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
