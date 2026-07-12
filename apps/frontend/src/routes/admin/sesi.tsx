@@ -6,15 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -43,7 +37,7 @@ interface Sesi {
   jamMulai: string
   jamSelesai: string
   kuota?: number
-  layananId: string
+  layananIds: string[]
   aktif?: boolean
 }
 
@@ -59,7 +53,7 @@ interface LayananOption {
   nama: string
 }
 
-const empty: Sesi = { nama: '', jamMulai: '', jamSelesai: '', kuota: 0, layananId: '', aktif: true }
+const empty: Sesi = { nama: '', jamMulai: '', jamSelesai: '', kuota: 0, layananIds: [], aktif: true }
 
 export function SesiAdminPage() {
   const [items, setItems] = useState<SesiWithId[]>([])
@@ -92,7 +86,7 @@ export function SesiAdminPage() {
 
   const openCreate = () => {
     setEditing(null)
-    setForm({ ...empty, kuota: 0 })
+    setForm({ ...empty, kuota: 0, layananIds: [] })
     setDialogOpen(true)
   }
 
@@ -103,25 +97,36 @@ export function SesiAdminPage() {
       jamMulai: item.jamMulai.substring(0, 5),
       jamSelesai: item.jamSelesai.substring(0, 5),
       kuota: item.kuota,
-      layananId: item.layananId,
+      layananIds: item.layananIds ?? [],
       aktif: item.aktif,
     })
     setDialogOpen(true)
   }
 
+  const toggleLayanan = (id: string) => {
+    setForm((prev) => {
+      const next = prev.layananIds.includes(id)
+        ? prev.layananIds.filter((lid) => lid !== id)
+        : [...prev.layananIds, id]
+      return { ...prev, layananIds: next }
+    })
+  }
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.layananId) {
-      toast.error('Pilih layanan')
+    if (form.layananIds.length === 0) {
+      toast.error('Pilih minimal 1 layanan')
       return
     }
     setSaving(true)
 
     const payload = {
-      ...form,
+      nama: form.nama,
       jamMulai: form.jamMulai + ':00',
       jamSelesai: form.jamSelesai + ':00',
       kuota: form.kuota ?? 0,
+      layananIds: form.layananIds,
+      aktif: form.aktif,
     }
 
     if (editing?.id) {
@@ -190,56 +195,58 @@ export function SesiAdminPage() {
           <TableBody>
             {loading
               ? Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-12" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                    <TableCell></TableCell>
-                  </TableRow>
-                ))
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-12" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              ))
               : items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.nama}</TableCell>
-                    <TableCell className="text-muted-foreground">{item.namaLayanan}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {item.jamMulai?.substring(0, 5)} – {item.jamSelesai?.substring(0, 5)}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {item.kuota != null && item.kuota > 0 ? item.kuota : <span className="text-muted-foreground">∞</span>}
-                    </TableCell>
-                    <TableCell>
-                      {item.aktif ? (
-                        <Badge>Aktif</Badge>
-                      ) : (
-                        <Badge variant="secondary">Nonaktif</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEdit(item)}>
-                            <Pencil className="size-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => item.id && handleDelete(item.id)}
-                          >
-                            <Trash2 className="size-4" />
-                            Hapus
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.nama}</TableCell>
+                  <TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
+                    {item.namaLayanan || '—'}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {item.jamMulai?.substring(0, 5)} – {item.jamSelesai?.substring(0, 5)}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {item.kuota != null && item.kuota > 0 ? item.kuota : <span className="text-muted-foreground">∞</span>}
+                  </TableCell>
+                  <TableCell>
+                    {item.aktif ? (
+                      <Badge>Aktif</Badge>
+                    ) : (
+                      <Badge variant="secondary">Nonaktif</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEdit(item)}>
+                          <Pencil className="size-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => item.id && handleDelete(item.id)}
+                        >
+                          <Trash2 className="size-4" />
+                          Hapus
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </div>
@@ -255,22 +262,6 @@ export function SesiAdminPage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="layanan">Layanan</Label>
-              <Select
-                value={form.layananId}
-                onValueChange={(v) => setForm({ ...form, layananId: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Pilih layanan" />
-                </SelectTrigger>
-                <SelectContent>
-                  {layananOptions.map((l) => (
-                    <SelectItem key={l.id} value={l.id}>{l.nama}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
             <div className="space-y-2">
               <Label htmlFor="nama">Nama Sesi</Label>
               <Input
@@ -312,6 +303,29 @@ export function SesiAdminPage() {
                 value={form.kuota ?? 0}
                 onChange={(e) => setForm({ ...form, kuota: Number(e.target.value) })}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Layanan</Label>
+              <div className="max-h-48 space-y-2 overflow-y-auto rounded-lg border p-3">
+                {layananOptions.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Tidak ada layanan</p>
+                )}
+                {layananOptions.map((l) => (
+                  <label
+                    key={l.id}
+                    className="flex cursor-pointer items-center gap-3 rounded-md p-1.5 hover:bg-muted transition-colors"
+                  >
+                    <Checkbox
+                      checked={form.layananIds.includes(l.id)}
+                      onCheckedChange={() => toggleLayanan(l.id)}
+                    />
+                    <span className="text-sm font-medium">{l.nama}</span>
+                  </label>
+                ))}
+              </div>
+              {form.layananIds.length === 0 && (
+                <p className="text-xs text-destructive">Pilih minimal 1 layanan</p>
+              )}
             </div>
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>

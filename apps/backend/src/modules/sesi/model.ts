@@ -6,7 +6,7 @@ export const SesiModel = {
     jamMulai: t.String(),
     jamSelesai: t.String(),
     kuota: t.Optional(t.Number()),
-    layananId: t.String(),
+    layananIds: t.Array(t.String(), { minItems: 1 }),
     aktif: t.Optional(t.Boolean()),
   }),
 
@@ -16,7 +16,7 @@ export const SesiModel = {
     jamMulai: t.String(),
     jamSelesai: t.String(),
     kuota: t.Number(),
-    layananId: t.String(),
+    layananIds: t.Array(t.String()),
     namaLayanan: t.String(),
     aktif: t.Boolean(),
     createdAt: t.Date(),

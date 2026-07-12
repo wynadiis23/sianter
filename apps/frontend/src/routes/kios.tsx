@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { Printer, CheckCircle2, AlertCircle, RefreshCw, User, ExternalLink, QrCode } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
+import { wita } from '@/lib/dayjs'
 
 type PageState = 'loading' | 'select' | 'checkin' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -22,32 +23,6 @@ interface TicketData {
   namaLayanan: string
   trackingToken: string
 }
-
-const pad = (n: number) => n.toString().padStart(2, '0')
-
-function formatClock(date: Date) {
-  const utc = date.getTime() + date.getTimezoneOffset() * 60000
-  const wita = new Date(utc + 8 * 3600000)
-  return `${pad(wita.getHours())}:${pad(wita.getMinutes())}:${pad(wita.getSeconds())}`
-}
-
-function formatDateLong(date: Date) {
-  const utc = date.getTime() + date.getTimezoneOffset() * 60000
-  const wita = new Date(utc + 8 * 3600000)
-  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu']
-  const months = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-  ]
-  return `${days[wita.getDay()]}, ${wita.getDate()} ${months[wita.getMonth()]} ${wita.getFullYear()}`
-}
-
-function formatDateTime(d: Date) {
-  const utc = d.getTime() + d.getTimezoneOffset() * 60000
-  const wita = new Date(utc + 8 * 3600000)
-  return `${wita.getFullYear()}-${pad(wita.getMonth() + 1)}-${pad(wita.getDate())} ${pad(wita.getHours())}:${pad(wita.getMinutes())}:${pad(wita.getSeconds())} WITA`
-}
-
 
 function Stepper({
   current,
@@ -331,7 +306,7 @@ export function KiosPage() {
             {ticket?.namaLayanan}
           </p>
           <p className="mt-2 font-body text-sm text-muted-foreground/60">
-            {ticket ? formatDateTime(now) : ''}
+            {ticket ? `${wita(now).format('YYYY-MM-DD HH:mm:ss')} WITA` : ''}
           </p>
           <div className="my-6 border-t border-border" />
           {ticket?.trackingToken && (
@@ -371,7 +346,7 @@ export function KiosPage() {
             className="kiosk-font-mono text-lg tracking-widest text-foreground"
             aria-label="Jam saat ini WITA"
           >
-            {formatClock(now)}
+            {wita(now).format('HH:mm:ss')}
           </time>
           <span className="kiosk-font-mono text-[10px] text-muted-foreground/60">WITA</span>
         </header>
@@ -672,10 +647,10 @@ export function KiosPage() {
                     {ticket.namaLayanan}
                   </p>
                   <p className="mt-2 font-body text-sm leading-relaxed text-muted-foreground/60">
-                    {formatDateLong(now)}
+                    {wita(now).format('dddd, D MMMM YYYY')}
                   </p>
                   <p className="font-body text-sm text-muted-foreground/60">
-                    {formatClock(now)} WITA
+                    {wita(now).format('HH:mm:ss')} WITA
                   </p>
                   <div className="mt-4 flex justify-center">
                     <QRCodeSVG

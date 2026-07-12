@@ -1,62 +1,118 @@
-import { eq, and, sql } from 'drizzle-orm'
+import { eq, sql, inArray } from 'drizzle-orm'
 import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 import type { SesiModel } from './model'
 
 export abstract class SesiService {
   static async list() {
-    return await db
+    const rows = await db
       .select({
         id: schema.sesi.id,
         nama: schema.sesi.nama,
         jamMulai: schema.sesi.jamMulai,
         jamSelesai: schema.sesi.jamSelesai,
         kuota: schema.sesi.kuota,
-        layananId: schema.sesi.layananId,
-        namaLayanan: schema.layanan.nama,
         aktif: schema.sesi.aktif,
         createdAt: schema.sesi.createdAt,
         updatedAt: schema.sesi.updatedAt,
+        layananId: schema.layanan.id,
+        namaLayanan: schema.layanan.nama,
       })
       .from(schema.sesi)
-      .innerJoin(schema.layanan, eq(schema.sesi.layananId, schema.layanan.id))
-      .orderBy(schema.layanan.nama, schema.sesi.jamMulai)
+      .innerJoin(
+        schema.sesiLayanan,
+        eq(schema.sesiLayanan.sesiId, schema.sesi.id),
+      )
+      .innerJoin(
+        schema.layanan,
+        eq(schema.sesiLayanan.layananId, schema.layanan.id),
+      )
+      .orderBy(schema.sesi.jamMulai, schema.layanan.nama)
+
+    const grouped = new Map<
+      string,
+      {
+        id: string
+        nama: string
+        jamMulai: string
+        jamSelesai: string
+        kuota: number
+        aktif: boolean
+        createdAt: Date
+        updatedAt: Date
+        layananIds: string[]
+        namaLayanan: string[]
+      }
+    >()
+
+    for (const row of rows) {
+      const key = row.id
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          id: row.id,
+          nama: row.nama,
+          jamMulai: row.jamMulai,
+          jamSelesai: row.jamSelesai,
+          kuota: row.kuota,
+          aktif: row.aktif,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          layananIds: [],
+          namaLayanan: [],
+        })
+      }
+      const group = grouped.get(key)!
+      if (row.layananId) {
+        group.layananIds.push(row.layananId)
+        group.namaLayanan.push(row.namaLayanan)
+      }
+    }
+
+    return Array.from(grouped.values()).map((g) => ({
+      ...g,
+      layananIds: g.layananIds,
+      namaLayanan: g.namaLayanan.join(', '),
+    }))
   }
 
   static async create(body: SesiModel['body']) {
-    const [layanan] = await db
-      .select()
+    const layananList = await db
+      .select({ id: schema.layanan.id })
       .from(schema.layanan)
-      .where(eq(schema.layanan.id, body.layananId))
-      .limit(1)
-    if (!layanan) throw status(404, { message: 'Layanan tidak ditemukan' })
+      .where(inArray(schema.layanan.id, body.layananIds))
+    if (layananList.length !== body.layananIds.length) {
+      throw status(404, { message: 'Beberapa layanan tidak ditemukan' })
+    }
 
-    const [existing] = await db
-      .select()
-      .from(schema.sesi)
-      .where(
-        and(
-          eq(schema.sesi.nama, body.nama),
-          eq(schema.sesi.layananId, body.layananId),
-        ),
-      )
-      .limit(1)
-    if (existing) throw status(409, { message: 'Sesi dengan nama yang sama sudah ada untuk layanan ini' })
-
+    const { layananIds, ...sesiData } = body
     const values = {
-      nama: body.nama,
-      jamMulai: body.jamMulai,
-      jamSelesai: body.jamSelesai,
-      kuota: body.kuota ?? 0,
-      layananId: body.layananId,
-      aktif: body.aktif ?? true,
+      nama: sesiData.nama,
+      jamMulai: sesiData.jamMulai,
+      jamSelesai: sesiData.jamSelesai,
+      kuota: sesiData.kuota ?? 0,
+      aktif: sesiData.aktif ?? true,
     }
 
     const [created] = await db.insert(schema.sesi).values(values).returning()
 
+    if (layananIds.length > 0) {
+      await db.insert(schema.sesiLayanan).values(
+        layananIds.map((layananId) => ({
+          sesiId: created.id,
+          layananId,
+        })),
+      )
+    }
+
+    const allLayanan = await db
+      .select({ id: schema.layanan.id, nama: schema.layanan.nama })
+      .from(schema.layanan)
+      .where(inArray(schema.layanan.id, layananIds))
+
     return {
       ...created,
-      namaLayanan: layanan.nama,
+      layananIds: allLayanan.map((l) => l.id),
+      namaLayanan: allLayanan.map((l) => l.nama).join(', '),
     }
   }
 
@@ -68,34 +124,21 @@ export abstract class SesiService {
       .limit(1)
     if (!existing) throw status(404, { message: 'Sesi tidak ditemukan' })
 
-    const [layanan] = await db
-      .select()
+    const layananList = await db
+      .select({ id: schema.layanan.id, nama: schema.layanan.nama })
       .from(schema.layanan)
-      .where(eq(schema.layanan.id, body.layananId))
-      .limit(1)
-    if (!layanan) throw status(404, { message: 'Layanan tidak ditemukan' })
-
-    const [duplicate] = await db
-      .select()
-      .from(schema.sesi)
-      .where(
-        and(
-          eq(schema.sesi.nama, body.nama),
-          eq(schema.sesi.layananId, body.layananId),
-        ),
-      )
-      .limit(1)
-    if (duplicate && duplicate.id !== id) {
-      throw status(409, { message: 'Sesi dengan nama yang sama sudah ada untuk layanan ini' })
+      .where(inArray(schema.layanan.id, body.layananIds))
+    if (layananList.length !== body.layananIds.length) {
+      throw status(404, { message: 'Beberapa layanan tidak ditemukan' })
     }
 
+    const { layananIds, ...sesiData } = body
     const values = {
-      nama: body.nama,
-      jamMulai: body.jamMulai,
-      jamSelesai: body.jamSelesai,
-      kuota: body.kuota ?? 0,
-      layananId: body.layananId,
-      aktif: body.aktif ?? true,
+      nama: sesiData.nama,
+      jamMulai: sesiData.jamMulai,
+      jamSelesai: sesiData.jamSelesai,
+      kuota: sesiData.kuota ?? 0,
+      aktif: sesiData.aktif ?? true,
     }
 
     const [updated] = await db
@@ -104,9 +147,23 @@ export abstract class SesiService {
       .where(eq(schema.sesi.id, id))
       .returning()
 
+    await db
+      .delete(schema.sesiLayanan)
+      .where(eq(schema.sesiLayanan.sesiId, id))
+
+    if (layananIds.length > 0) {
+      await db.insert(schema.sesiLayanan).values(
+        layananIds.map((layananId) => ({
+          sesiId: id,
+          layananId,
+        })),
+      )
+    }
+
     return {
       ...updated,
-      namaLayanan: layanan.nama,
+      layananIds: layananList.map((l) => l.id),
+      namaLayanan: layananList.map((l) => l.nama).join(', '),
     }
   }
 
@@ -117,6 +174,15 @@ export abstract class SesiService {
       .where(eq(schema.sesi.id, id))
       .limit(1)
     if (!existing) throw status(404, { message: 'Sesi tidak ditemukan' })
+
+    const [linkCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(schema.sesiLayanan)
+      .where(eq(schema.sesiLayanan.sesiId, id))
+
+    if (linkCount && Number(linkCount.count) > 0) {
+      throw status(409, { message: 'Sesi tidak dapat dihapus karena masih memiliki layanan terkait' })
+    }
 
     const [antreanCount] = await db
       .select({ count: sql<number>`count(*)` })

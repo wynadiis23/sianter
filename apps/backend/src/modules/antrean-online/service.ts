@@ -4,9 +4,27 @@ import { db, schema } from '../../db/client'
 
 export abstract class AntreanOnlineService {
   static async listSesi(layananId?: string) {
-    const conditions = [eq(schema.sesi.aktif, true)]
     if (layananId) {
-      conditions.push(eq(schema.sesi.layananId, layananId))
+      return await db
+        .select({
+          id: schema.sesi.id,
+          nama: schema.sesi.nama,
+          jamMulai: schema.sesi.jamMulai,
+          jamSelesai: schema.sesi.jamSelesai,
+          kuota: schema.sesi.kuota,
+        })
+        .from(schema.sesi)
+        .innerJoin(
+          schema.sesiLayanan,
+          eq(schema.sesiLayanan.sesiId, schema.sesi.id),
+        )
+        .where(
+          and(
+            eq(schema.sesi.aktif, true),
+            eq(schema.sesiLayanan.layananId, layananId),
+          ),
+        )
+        .orderBy(schema.sesi.jamMulai)
     }
 
     return await db
@@ -18,7 +36,7 @@ export abstract class AntreanOnlineService {
         kuota: schema.sesi.kuota,
       })
       .from(schema.sesi)
-      .where(and(...conditions))
+      .where(eq(schema.sesi.aktif, true))
       .orderBy(schema.sesi.jamMulai)
   }
 
@@ -64,14 +82,20 @@ export abstract class AntreanOnlineService {
     if (!layanan) throw status(404, { message: 'Layanan tidak ditemukan' })
 
     const [sesi] = await db
-      .select()
+      .select({ id: schema.sesi.id, nama: schema.sesi.nama, jamMulai: schema.sesi.jamMulai, jamSelesai: schema.sesi.jamSelesai, kuota: schema.sesi.kuota })
       .from(schema.sesi)
+      .innerJoin(
+        schema.sesiLayanan,
+        and(
+          eq(schema.sesiLayanan.sesiId, schema.sesi.id),
+          eq(schema.sesiLayanan.layananId, layananId),
+        ),
+      )
       .where(
         and(eq(schema.sesi.id, sesiId), eq(schema.sesi.aktif, true)),
       )
       .limit(1)
-    if (!sesi) throw status(404, { message: 'Sesi tidak ditemukan' })
-    if (sesi.layananId !== layananId) throw status(400, { message: 'Sesi tidak sesuai dengan layanan yang dipilih' })
+    if (!sesi) throw status(404, { message: 'Sesi tidak ditemukan atau tidak sesuai dengan layanan yang dipilih' })
 
     const tanggal = new Date(tanggalKunjungan + 'T00:00:00')
     const today = new Date()
@@ -142,13 +166,15 @@ export abstract class AntreanOnlineService {
       })
       .returning()
 
+    const formattedTanggal = String(tanggalKunjungan).substring(0, 10)
+
     return {
       trackingToken: antrean.trackingToken,
       namaLayanan: layanan.nama,
       namaSesi: sesi.nama,
       jamMulai: sesi.jamMulai,
       jamSelesai: sesi.jamSelesai,
-      tanggalKunjungan,
+      tanggalKunjungan: formattedTanggal,
     }
   }
 }

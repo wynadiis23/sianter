@@ -13,6 +13,7 @@ import {
   Clock,
 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
+import { wita } from '@/lib/dayjs'
 
 type Step = 'select' | 'jadwal' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -42,28 +43,13 @@ interface ReservationData {
   tanggalKunjungan: string
 }
 
-const pad = (n: number) => n.toString().padStart(2, '0')
-
-function formatDateLocal(date: Date) {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
-}
-
-function formatDateDisplay(date: Date) {
-  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu']
-  const months = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-  ]
-  return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`
-}
-
 export function OnlineAntreanPage() {
   const [step, setStep] = useState<Step>('select')
   const [layananList, setLayananList] = useState<LayananItem[]>([])
   const [sesiList, setSesiList] = useState<SesiItem[]>([])
   const [selectedLayanan, setSelectedLayanan] = useState<LayananItem | null>(null)
   const [selectedSesi, setSelectedSesi] = useState<SesiItem | null>(null)
-  const [selectedDate, setSelectedDate] = useState(formatDateLocal(new Date()))
+  const [selectedDate, setSelectedDate] = useState(wita().format('YYYY-MM-DD'))
   const [reservation, setReservation] = useState<ReservationData | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
@@ -238,7 +224,7 @@ export function OnlineAntreanPage() {
             <Input
               type="date"
               value={selectedDate}
-              min={formatDateLocal(new Date())}
+              min={wita().format('YYYY-MM-DD')}
               onChange={(e) => setSelectedDate(e.target.value)}
             />
           </div>
@@ -355,7 +341,7 @@ export function OnlineAntreanPage() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Tanggal</span>
-                <span className="font-medium text-foreground">{formatDateDisplay(new Date(selectedDate + 'T00:00:00'))}</span>
+                <span className="font-medium text-foreground">{wita(selectedDate).format('dddd, D MMMM YYYY')}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Nama</span>
@@ -397,7 +383,7 @@ export function OnlineAntreanPage() {
             </p>
             <div className="my-4 space-y-1">
               <p className="text-sm text-muted-foreground">
-                {formatDateDisplay(new Date(reservation.tanggalKunjungan + 'T00:00:00'))}
+                {wita(reservation.tanggalKunjungan).format('dddd, D MMMM YYYY')}
               </p>
               <p className="text-sm font-medium text-foreground">
                 {reservation.namaSesi} ({reservation.jamMulai?.substring(0, 5)} – {reservation.jamSelesai?.substring(0, 5)})

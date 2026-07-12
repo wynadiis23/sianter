@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   Users,
 } from 'lucide-react'
+import { wita } from '@/lib/dayjs'
 
 interface PetugasSession {
   loketId: string
@@ -383,10 +384,7 @@ export function PetugasDashboardPage() {
                         </p>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(item.createdAt).toLocaleTimeString('id-ID', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                        {wita(item.createdAt).format('HH:mm')}
                       </p>
                     </div>
                   ))}

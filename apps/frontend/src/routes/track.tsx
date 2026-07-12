@@ -4,6 +4,7 @@ import { server } from '@/lib/eden'
 import { Spinner } from '@/components/ui/spinner'
 import { AlertCircle, RefreshCw } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
+import { wita } from '@/lib/dayjs'
 
 interface TrackData {
   kode: string | null
@@ -28,15 +29,6 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   EXPIRED: { label: 'Hangus', color: 'text-gray-600 bg-gray-50 border-gray-200' },
 }
 
-const pad = (n: number) => n.toString().padStart(2, '0')
-
-function formatTime(iso: string) {
-  const d = new Date(iso)
-  const utc = d.getTime() + d.getTimezoneOffset() * 60000
-  const wita = new Date(utc + 8 * 3600000)
-  return `${pad(wita.getHours())}:${pad(wita.getMinutes())}:${pad(wita.getSeconds())} WITA`
-}
-
 function TrackStatus({ data, token }: { data: TrackData; token: string }) {
   const status = STATUS_LABEL[data.status] ?? { label: data.status, color: 'text-gray-600 bg-gray-50 border-gray-200' }
   const isReserved = data.status === 'RESERVED'
@@ -45,7 +37,7 @@ function TrackStatus({ data, token }: { data: TrackData; token: string }) {
   const isDone = data.status === 'FINISHED' || data.status === 'EXPIRED' || data.status === 'SKIPPED'
 
   return (
-    <div className="min-h-dvh bg-gradient-to-b from-primary/[0.03] via-background to-background">
+    <div className="min-h-dvh bg-linear-to-b from-primary/3 via-background to-background">
       <header className="border-b border-border bg-card/80 px-4 py-3">
         <div className="mx-auto flex max-w-md items-center gap-3">
           <div className="flex-1">
@@ -60,7 +52,7 @@ function TrackStatus({ data, token }: { data: TrackData; token: string }) {
           <p className="text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">
             Nomor Antrean
           </p>
-          <p className="mt-2 text-5xl font-bold tracking-[0.1em] text-primary">
+          <p className="mt-2 text-5xl font-bold tracking-widest text-primary">
             {data.kode ?? 'Belum'}
 
           </p>
@@ -116,14 +108,14 @@ function TrackStatus({ data, token }: { data: TrackData; token: string }) {
           <div className="mt-4 rounded-xl border border-border bg-card p-4 text-center">
             <p className="text-sm text-muted-foreground">Selesai pada</p>
             <p className="mt-1 font-medium text-foreground">
-              {data.finishedAt ? formatTime(data.finishedAt) : '-'}
+              {data.finishedAt ? `${wita(data.finishedAt).format('HH:mm:ss')} WITA` : '-'}
             </p>
           </div>
         )}
 
         <div className="mt-6 text-center">
           <p className="text-xs text-muted-foreground">
-            Diambil pada {formatTime(data.createdAt)}
+            Diambil pada {wita(data.createdAt).format('HH:mm:ss')} WITA
           </p>
         </div>
       </main>
