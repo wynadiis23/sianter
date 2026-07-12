@@ -5,6 +5,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Printer, CheckCircle2, AlertCircle, RefreshCw, User, ExternalLink, QrCode } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { wita } from '@/lib/dayjs'
+import { QrScanner } from '@/components/qr-scanner'
 
 type PageState = 'loading' | 'select' | 'checkin' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -93,7 +94,6 @@ export function KiosPage() {
   const [nama, setNama] = useState('')
   const [noHp, setNoHp] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
-  const [checkInToken, setCheckInToken] = useState('')
   const [checkInError, setCheckInError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -194,16 +194,12 @@ export function KiosPage() {
     setState('ticket')
   }, [selectedLayanan, nama, noHp])
 
-  const handleCheckIn = useCallback(async () => {
-    if (!checkInToken.trim()) {
-      setCheckInError('Masukkan token check-in')
-      return
-    }
+  const handleCheckIn = useCallback(async (token: string) => {
     setState('creating')
     setCheckInError(null)
     setErrorMsg(null)
     const { data, error } = await server.api.kios['check-in'].post({
-      token: checkInToken.trim(),
+      token,
     })
     if (error || !data) {
       const msg =
@@ -218,7 +214,7 @@ export function KiosPage() {
     setNow(new Date())
     setCountdown(15)
     setState('ticket')
-  }, [checkInToken])
+  }, [])
 
   const handleReset = useCallback(() => {
     setSelectedLayanan(null)
@@ -227,7 +223,6 @@ export function KiosPage() {
     setNama('')
     setNoHp('')
     setFormError(null)
-    setCheckInToken('')
     setCheckInError(null)
     setCountdown(15)
     fetchLayanan()
@@ -400,7 +395,7 @@ export function KiosPage() {
             </div>
             <div className="mt-8 flex justify-center">
               <Button
-                onClick={() => { setCheckInToken(''); setCheckInError(null); setState('checkin') }}
+                onClick={() => { setCheckInError(null); setState('checkin') }}
                 variant="outline"
                 className="h-14 gap-3 text-base"
               >
@@ -421,41 +416,24 @@ export function KiosPage() {
                   Check-In Online
                 </h2>
                 <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
-                  Masukkan token atau scan QR tiket online Anda
+                  Arahkan QR code tiket Anda ke kamera
                 </p>
               </div>
 
-              <div className="space-y-5">
-                <div className="space-y-2">
-                  <label className="font-body text-sm font-medium text-foreground">
-                    Token Check-In
-                  </label>
-                  <input
-                    type="text"
-                    value={checkInToken}
-                    onChange={(e) => { setCheckInToken(e.target.value); setCheckInError(null) }}
-                    placeholder="Tempel token dari tiket online"
-                    className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
+              <QrScanner
+                onScan={(token) => handleCheckIn(token)}
+                onError={(msg) => setCheckInError(msg)}
+              />
+
+              {checkInError && (
+                <div className="mt-4 rounded-lg bg-destructive/10 p-3">
+                  <p className="font-body text-sm text-destructive">{checkInError}</p>
                 </div>
+              )}
 
-                {checkInError && (
-                  <div className="rounded-lg bg-destructive/10 p-3">
-                    <p className="font-body text-sm text-destructive">{checkInError}</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-8 flex flex-col gap-4">
+              <div className="mt-8">
                 <Button
-                  onClick={handleCheckIn}
-                  disabled={!checkInToken.trim()}
-                  className="h-14 w-full text-lg font-body"
-                >
-                  Check-In
-                </Button>
-                <Button
-                  onClick={() => { setCheckInToken(''); setCheckInError(null); setState('select') }}
+                  onClick={() => { setCheckInError(null); setState('select') }}
                   variant="ghost"
                   className="h-14 w-full text-base font-normal"
                 >

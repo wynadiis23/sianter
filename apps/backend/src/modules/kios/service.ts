@@ -1,4 +1,4 @@
-import { eq, and, gte, lt, or, sql } from 'drizzle-orm'
+import { eq, and, gte, lt, ne, or, sql } from 'drizzle-orm'
 import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 import { emitAntreanEvent } from '../realtime/service'
@@ -52,25 +52,29 @@ export abstract class KiosService {
     return inserted.id
   }
 
-  static async checkDuplicateAntrean(pemohonId: string) {
+  static async checkDuplicateAntrean(pemohonId: string, excludeId?: string) {
     const { today, tomorrow } = todayRange()
+
+    const conditions = [
+      eq(schema.antrean.pemohonId, pemohonId),
+      or(
+        eq(schema.antrean.status, 'RESERVED'),
+        eq(schema.antrean.status, 'WAITING'),
+        eq(schema.antrean.status, 'CALLED'),
+        eq(schema.antrean.status, 'RECALLED'),
+      ),
+      gte(schema.antrean.createdAt, today),
+      lt(schema.antrean.createdAt, tomorrow),
+    ]
+
+    if (excludeId) {
+      conditions.push(ne(schema.antrean.id, excludeId))
+    }
 
     const [duplicate] = await db
       .select({ id: schema.antrean.id })
       .from(schema.antrean)
-      .where(
-        and(
-          eq(schema.antrean.pemohonId, pemohonId),
-          or(
-            eq(schema.antrean.status, 'RESERVED'),
-            eq(schema.antrean.status, 'WAITING'),
-            eq(schema.antrean.status, 'CALLED'),
-            eq(schema.antrean.status, 'RECALLED'),
-          ),
-          gte(schema.antrean.createdAt, today),
-          lt(schema.antrean.createdAt, tomorrow),
-        ),
-      )
+      .where(and(...conditions))
       .limit(1)
 
     return !!duplicate
@@ -205,7 +209,7 @@ export abstract class KiosService {
       }
     }
 
-    const hasDuplicate = await KiosService.checkDuplicateAntrean(antrean.pemohonId!)
+    const hasDuplicate = await KiosService.checkDuplicateAntrean(antrean.pemohonId!, antrean.id)
     if (hasDuplicate) {
       throw status(409, {
         message: 'Nomor HP ini sudah memiliki antrean aktif hari ini',

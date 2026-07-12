@@ -391,7 +391,7 @@ export function OnlineAntreanPage() {
             </div>
             <div className="flex justify-center">
               <QRCodeSVG
-                value={`${window.location.origin}/track/${reservation.trackingToken}`}
+                value={reservation.trackingToken}
                 size={140}
               />
             </div>
@@ -407,7 +407,7 @@ export function OnlineAntreanPage() {
               </a>
             </div>
             <p className="mt-4 text-xs text-muted-foreground">
-              Tunjukkan QR ini saat check-in di loket pada hari kunjungan
+              Scan QR ini di kios pada hari kunjungan untuk check-in
             </p>
           </div>
           <div className="mt-6 flex flex-col gap-3">
