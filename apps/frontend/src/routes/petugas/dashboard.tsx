@@ -14,8 +14,18 @@ import {
   SkipForward,
   CheckCircle2,
   Users,
+  User,
 } from 'lucide-react'
 import { wita } from '@/lib/dayjs'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
 
 interface PetugasSession {
   loketId: string
@@ -28,6 +38,8 @@ interface ActiveTicket {
   nomorUrut: number | null
   status: string
   namaLayanan: string
+  namaPemohon: string | null
+  noHpPemohon: string | null
 }
 
 interface WaitingItem {
@@ -37,6 +49,8 @@ interface WaitingItem {
   layananId: string
   namaLayanan: string
   createdAt: Date
+  namaPemohon: string | null
+  noHpPemohon: string | null
 }
 
 interface SkippedItem {
@@ -46,6 +60,8 @@ interface SkippedItem {
   status: string
   namaLayanan: string
   skippedAt: Date | string | null
+  namaPemohon: string | null
+  noHpPemohon: string | null
 }
 
 interface DashboardData {
@@ -69,6 +85,10 @@ export function PetugasDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [layananInfo, setLayananInfo] = useState<LayananInfo[]>([])
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [detailItem, setDetailItem] = useState<{
+    nama: string
+    noHp: string
+  } | null>(null)
 
   useEffect(() => {
     const raw = localStorage.getItem('petugasSession')
@@ -242,8 +262,8 @@ export function PetugasDashboardPage() {
           <div className="flex items-center gap-2">
             <span
               className={`size-2 rounded-full shrink-0 ${wsStatus === 'connected' ? 'bg-green-500' :
-                  wsStatus === 'disconnected' ? 'bg-red-500' :
-                    'bg-yellow-500'
+                wsStatus === 'disconnected' ? 'bg-red-500' :
+                  'bg-yellow-500'
                 }`}
             />
             <h1 className="text-2xl font-bold text-foreground">
@@ -327,6 +347,25 @@ export function PetugasDashboardPage() {
                   >
                     <CheckCircle2 className="size-4" />
                     Selesai
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={() => {
+                      const a = data!.aktif!
+                      setDetailItem(
+                        a.namaPemohon || a.noHpPemohon
+                          ? { nama: a.namaPemohon ?? '-', noHp: a.noHpPemohon ?? '-' }
+                          : null,
+                      )
+                    }}
+                    disabled={
+                      !data.aktif!.namaPemohon && !data.aktif!.noHpPemohon
+                    }
+                    title="Detail Pemohon"
+                  >
+                    <User className="size-4" />
                   </Button>
                 </div>
               </CardContent>
@@ -414,9 +453,30 @@ export function PetugasDashboardPage() {
                           {item.namaLayanan}
                         </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {wita(item.createdAt).format('HH:mm')}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-muted-foreground">
+                          {wita(item.createdAt).format('HH:mm')}
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-6"
+                          onClick={() =>
+                            setDetailItem(
+                              item.namaPemohon || item.noHpPemohon
+                                ? {
+                                  nama: item.namaPemohon ?? '-',
+                                  noHp: item.noHpPemohon ?? '-',
+                                }
+                                : null,
+                            )
+                          }
+                          disabled={!item.namaPemohon && !item.noHpPemohon}
+                          title="Detail Pemohon"
+                        >
+                          <User className="size-3" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -460,6 +520,26 @@ export function PetugasDashboardPage() {
                               <div className="flex justify-end gap-1">
                                 <Button
                                   size="sm"
+                                  variant="ghost"
+                                  onClick={() =>
+                                    setDetailItem(
+                                      item.namaPemohon || item.noHpPemohon
+                                        ? {
+                                          nama: item.namaPemohon ?? '-',
+                                          noHp: item.noHpPemohon ?? '-',
+                                        }
+                                        : null,
+                                    )
+                                  }
+                                  disabled={
+                                    !item.namaPemohon && !item.noHpPemohon
+                                  }
+                                  title="Detail Pemohon"
+                                >
+                                  <User className="size-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
                                   variant="outline"
                                   onClick={() => handleCallSkipped(item.id)}
                                   disabled={
@@ -497,6 +577,39 @@ export function PetugasDashboardPage() {
           )}
         </div>
       </div>
+
+      <Dialog
+        open={!!detailItem}
+        onOpenChange={(open) => !open && setDetailItem(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Detail Pemohon</DialogTitle>
+            <DialogDescription>
+              Informasi pemohon antrean
+            </DialogDescription>
+          </DialogHeader>
+          {detailItem && (
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Nama</p>
+                <p className="text-base font-semibold">{detailItem.nama}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  No. HP
+                </p>
+                <p className="text-base font-semibold">{detailItem.noHp}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Tutup</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -63,6 +63,7 @@ export abstract class AntreanService {
         mode: pengaturan?.mode ?? 'FIFO_GLOBAL',
         aktif: null,
         daftarWaiting: [],
+        daftarSkipped: [],
         countPerLayanan: {},
       }
     }
@@ -74,9 +75,12 @@ export abstract class AntreanService {
         nomorUrut: schema.antrean.nomorUrut,
         status: schema.antrean.status,
         namaLayanan: schema.layanan.nama,
+        namaPemohon: schema.pemohon.nama,
+        noHpPemohon: schema.pemohon.noHp,
       })
       .from(schema.antrean)
       .innerJoin(schema.layanan, eq(schema.antrean.layananId, schema.layanan.id))
+      .leftJoin(schema.pemohon, eq(schema.antrean.pemohonId, schema.pemohon.id))
       .where(
         and(
           eq(schema.antrean.loketId, loketId),
@@ -93,9 +97,12 @@ export abstract class AntreanService {
         layananId: schema.antrean.layananId,
         namaLayanan: schema.layanan.nama,
         createdAt: schema.antrean.createdAt,
+        namaPemohon: schema.pemohon.nama,
+        noHpPemohon: schema.pemohon.noHp,
       })
       .from(schema.antrean)
       .innerJoin(schema.layanan, eq(schema.antrean.layananId, schema.layanan.id))
+      .leftJoin(schema.pemohon, eq(schema.antrean.pemohonId, schema.pemohon.id))
       .where(
         and(
           eq(schema.antrean.status, 'WAITING'),
@@ -114,9 +121,12 @@ export abstract class AntreanService {
         status: schema.antrean.status,
         namaLayanan: schema.layanan.nama,
         skippedAt: schema.antrean.skippedAt,
+        namaPemohon: schema.pemohon.nama,
+        noHpPemohon: schema.pemohon.noHp,
       })
       .from(schema.antrean)
       .innerJoin(schema.layanan, eq(schema.antrean.layananId, schema.layanan.id))
+      .leftJoin(schema.pemohon, eq(schema.antrean.pemohonId, schema.pemohon.id))
       .where(
         and(
           eq(schema.antrean.status, 'SKIPPED'),
