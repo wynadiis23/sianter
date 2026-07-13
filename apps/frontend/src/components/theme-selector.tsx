@@ -22,7 +22,7 @@ export function ThemeSelector() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="h-8 w-8">
             <span className="text-xs font-medium tabular-nums">
-              {scheme === 'kpu' ? 'KPU' : 'DF'}
+              {scheme === 'kpu' ? 'KPU' : scheme === 'batik' ? 'BT' : 'DF'}
             </span>
           </Button>
         </DropdownMenuTrigger>
@@ -42,6 +42,14 @@ export function ThemeSelector() {
               KPU
             </span>
             {scheme === 'kpu' && <span className="ml-auto text-muted-foreground">Aktif</span>}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setScheme('batik')}
+          >
+            <span className={scheme === 'batik' ? 'font-medium' : ''}>
+              Batik
+            </span>
+            {scheme === 'batik' && <span className="ml-auto text-muted-foreground">Aktif</span>}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
