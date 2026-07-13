@@ -1,10 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource/atkinson-hyperlegible";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
   --radius: 0.625rem;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
@@ -210,7 +212,7 @@
 
 @theme inline {
   --font-wordmark: 'Fraunces', Georgia, serif;
-  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: var(--font-body);
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Monaco', monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -347,4 +349,94 @@ body,
     background-color: #ffffff !important;
     padding: 32px !important;
   }
+}
+
+/* ─── Accessibility overrides ─── */
+
+/* Text scaling via root font-size */
+[data-a11y-text="large"] {
+  font-size: 112.5%;
+}
+
+[data-a11y-text="extra-large"] {
+  font-size: 125%;
+}
+
+/* High contrast — light mode */
+[data-a11y-contrast="high"] {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0.37 0.22 264);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.87 0 0);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.92 0 0);
+  --muted-foreground: oklch(0.25 0 0);
+  --accent: oklch(0.85 0.15 85);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.5 0.24 27);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0 0 0);
+  --input: oklch(0 0 0);
+  --ring: oklch(0.37 0.22 264);
+  --chart-1: oklch(0.5 0.2 240);
+  --chart-2: oklch(0.5 0.2 160);
+  --chart-3: oklch(0.5 0.2 80);
+  --chart-4: oklch(0.5 0.2 310);
+  --chart-5: oklch(0.5 0.2 10);
+  --sidebar: oklch(0.87 0 0);
+  --sidebar-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(0.37 0.22 264);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.85 0.15 85);
+  --sidebar-accent-foreground: oklch(0 0 0);
+  --sidebar-border: oklch(0 0 0);
+  --sidebar-ring: oklch(0.37 0.22 264);
+}
+
+/* High contrast — dark mode */
+[data-a11y-contrast="high"].dark,
+.dark [data-a11y-contrast="high"] {
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.15 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.15 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(0.7 0.2 264);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.25 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.75 0 0);
+  --accent: oklch(0.6 0.18 85);
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.6 0.24 27);
+  --destructive-foreground: oklch(0 0 0);
+  --border: oklch(1 0 0);
+  --input: oklch(1 0 0);
+  --ring: oklch(0.7 0.2 264);
+  --chart-1: oklch(0.7 0.2 240);
+  --chart-2: oklch(0.7 0.2 160);
+  --chart-3: oklch(0.7 0.2 80);
+  --chart-4: oklch(0.7 0.2 310);
+  --chart-5: oklch(0.7 0.2 10);
+  --sidebar: oklch(0.2 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.7 0.2 264);
+  --sidebar-primary-foreground: oklch(0 0 0);
+  --sidebar-accent: oklch(0.6 0.18 85);
+  --sidebar-accent-foreground: oklch(0 0 0);
+  --sidebar-border: oklch(1 0 0);
+  --sidebar-ring: oklch(0.7 0.2 264);
+}
+
+/* Dyslexic-friendly font */
+[data-a11y-dyslexic="true"] {
+  --font-body: 'Atkinson Hyperlegible', 'OpenDyslexic', 'Tahoma', 'Calibri',
+    sans-serif;
 }

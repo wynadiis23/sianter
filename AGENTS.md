@@ -27,6 +27,7 @@ Database PostgreSQL harus sudah berjalan sebelum menjalankan migrasi.
 | Jalankan hanya frontend | `bun dev:frontend` |
 | Typecheck semua package | `bun typecheck` |
 | Build semua package | `bun build` |
+| Lint frontend | `bun run --filter @sianter/frontend lint` |
 
 ## Database & Migrasi (Drizzle)
 
@@ -55,7 +56,29 @@ di-erase saat build). Klien Eden: `apps/frontend/src/lib/eden.ts`.
 
 ## Lint / Format
 
-Belum ada linter terkonfigurasi. Jalankan `bun typecheck` untuk verifikasi tipe.
+ESLint terkonfigurasi di `apps/frontend/eslint.config.js` dengan
+`eslint-plugin-jsx-a11y` dan `typescript-eslint`.
+
+```bash
+bun run --filter @sianter/frontend lint   # jalankan ESLint
+bun typecheck                             # verifikasi tipe
+```
+
+## Aksesibilitas
+
+Panel aksesibilitas (FAB pojok kanan bawah) via `AccessibilityPanel` yang
+di-render di `App.tsx`.
+
+Preferensi (`textSize`, `contrast`, `dyslexicFont`) di-persist ke localStorage
+dan diterapkan sebagai data-attribute pada `<html>`:
+- `data-a11y-text` — normal / large / extra-large
+- `data-a11y-contrast` — high
+- `data-a11y-dyslexic` — true
+
+CSS overrides ada di `apps/frontend/src/style.css`. Dev auditor
+`@axe-core/react` aktif otomatis saat `import.meta.env.DEV`.
+
+Font ramah disleksia: Atkinson Hyperlegible (dari `@fontsource/atkinson-hyperlegible`).
 
 ## Dev Server Ports
 
