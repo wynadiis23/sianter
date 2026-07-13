@@ -1,12 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { ThemeProvider } from 'next-themes'
 import { Toaster } from '@/components/ui/sonner'
 import { App } from './App'
 import './style.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
-    <Toaster richColors position="top-right" />
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <App />
+      <Toaster richColors position="top-right" />
+    </ThemeProvider>
   </StrictMode>,
 )

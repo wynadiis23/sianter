@@ -13,6 +13,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { AppSidebar } from './app-sidebar'
+import { ThemeSelector } from './theme-selector'
 import type { LucideIcon } from 'lucide-react'
 
 interface NavItem {
@@ -59,6 +60,9 @@ export function DashboardLayout({ navItems }: DashboardLayoutProps) {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
+          </div>
+          <div className="ml-auto flex items-center gap-2 px-4">
+            <ThemeSelector />
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { useMonitorSocket, type WsStatus } from '@/lib/ws'
 import { useSpeech } from '@/hooks/use-speech'
 import { wita } from '@/lib/dayjs'
+import { ThemeSelector } from '@/components/theme-selector'
 import type { WsEvent } from '@sianter/backend'
 
 type MonitorData = NonNullable<
@@ -368,6 +369,7 @@ export function MonitorPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <ThemeSelector />
           <span
             className={`size-2 rounded-full ${wsStatus === 'connected' ? 'bg-green-400' :
               wsStatus === 'disconnected' ? 'bg-red-400' :
