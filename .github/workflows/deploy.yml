@@ -1,0 +1,106 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/sianter-backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/sianter-frontend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute tag
+        id: tag
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "tag=prod" >> $GITHUB_OUTPUT
+          else
+            echo "tag=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/backend/Dockerfile
+          push: true
+          tags: ${{ env.BACKEND_IMAGE }}:${{ steps.tag.outputs.tag }}
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/frontend/Dockerfile
+          push: true
+          tags: ${{ env.FRONTEND_IMAGE }}:${{ steps.tag.outputs.tag }}
+          build-args: |
+            VITE_API_URL=${{ vars.VITE_API_URL || secrets.VITE_API_URL }}
+
+  deploy:
+    runs-on: [self-hosted, sianter-staging]
+    needs: build-and-push
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set environment name
+        id: env_name
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "name=prod" >> $GITHUB_OUTPUT
+          else
+            echo "name=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate .env file
+        working-directory: deploy
+        run: |
+          cat > .env.${{ steps.env_name.outputs.name }} << EOF
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
+          BASE_URL=${{ vars.BASE_URL }}
+          FRONTEND_URL=${{ vars.FRONTEND_URL }}
+          PORT=3000
+          EOF
+
+      - name: Print masked env preview
+        run: |
+          echo "Environment: ${{ steps.env_name.outputs.name }}"
+          echo "DATABASE_URL=$(echo '${{ secrets.DATABASE_URL }}' | head -c 20)****"
+          echo "BETTER_AUTH_SECRET=***masked***"
+          echo "BASE_URL=${{ vars.BASE_URL }}"
+          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy with Docker Compose
+        working-directory: deploy
+        run: |
+          docker compose -f docker-compose.${{ steps.env_name.outputs.name }}.yml pull
+          docker compose -f docker-compose.${{ steps.env_name.outputs.name }}.yml up -d --remove-orphans
+          docker image prune -f
