@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import { AccessibilityPanel } from '@/components/accessibility-panel'
 import { AdminLayout } from './components/admin-layout'
 import { ProtectedRoute } from './components/protected-route'
 import { ErrorBoundary } from './components/error-boundary'
@@ -60,5 +61,10 @@ const router = createBrowserRouter([
 ])
 
 export function App() {
-  return <RouterProvider router={router} />
+  return (
+    <>
+      <RouterProvider router={router} />
+      <AccessibilityPanel />
+    </>
+  )
 }

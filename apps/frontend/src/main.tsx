@@ -13,3 +13,13 @@ createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </StrictMode>,
 )
+
+if (import.meta.env.DEV) {
+  import('react').then((React) =>
+    import('react-dom').then((ReactDOM) =>
+      import('@axe-core/react').then(({ default: axe }) => {
+        axe(React, ReactDOM, 1000)
+      }),
+    ),
+  )
+}
