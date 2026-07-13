@@ -78,8 +78,16 @@ function TrackStatus({ data, token }: { data: TrackData; token: string }) {
                 size={100}
               />
             </div>
+            <div>
+              <p className="mt-2 text-center">
+                <span className="text-sm text-muted-foreground">Kode QR ini berlaku hingga </span>
+                <span className="text-sm font-medium text-foreground">
+                  {wita(data.createdAt).add(1, 'hour').format('HH:mm:ss')} WITA
+                </span>
+              </p>
+            </div>
             <p className="mt-2 text-xs text-muted-foreground text-center">
-              Tunjukkan QR ini saat check-in
+              Tunjukkan QR ini saat check-in atau Tracking Code: <span className="font-medium text-foreground">{token}</span>
             </p>
           </div>
         )}
