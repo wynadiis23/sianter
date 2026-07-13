@@ -6,6 +6,7 @@ import { Printer, CheckCircle2, AlertCircle, RefreshCw, User, ExternalLink, QrCo
 import { QRCodeSVG } from 'qrcode.react'
 import { wita } from '@/lib/dayjs'
 import { QrScanner } from '@/components/qr-scanner'
+import { ThemeSelector } from '@/components/theme-selector'
 
 type PageState = 'loading' | 'select' | 'checkin' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -348,6 +349,7 @@ export function KiosPage() {
             {wita(now).format('HH:mm:ss')}
           </time>
           <span className="kiosk-font-mono text-[10px] text-muted-foreground/60">WITA</span>
+          <ThemeSelector />
         </header>
 
         {/* Stepper */}
