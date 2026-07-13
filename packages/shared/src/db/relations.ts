@@ -10,6 +10,8 @@ import {
   antrean,
   antreanLog,
   pemohon,
+  sesi,
+  sesiLayanan,
 } from './schema'
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -32,6 +34,7 @@ export const verificationRelations = relations(verification, () => ({}))
 export const layananRelations = relations(layanan, ({ many }) => ({
   loketLayanan: many(loketLayanan),
   antrean: many(antrean),
+  sesiLayanan: many(sesiLayanan),
 }))
 
 export const loketRelations = relations(loket, ({ many }) => ({
@@ -56,6 +59,7 @@ export const antreanRelations = relations(antrean, ({ one }) => ({
   loket: one(loket, { fields: [antrean.loketId], references: [loket.id] }),
   petugas: one(user, { fields: [antrean.petugasId], references: [user.id] }),
   pemohon: one(pemohon, { fields: [antrean.pemohonId], references: [pemohon.id] }),
+  sesi: one(sesi, { fields: [antrean.sesiId], references: [sesi.id] }),
 }))
 
 export const antreanLogRelations = relations(antreanLog, ({ one }) => ({
@@ -66,4 +70,15 @@ export const antreanLogRelations = relations(antreanLog, ({ one }) => ({
   loket: one(loket, { fields: [antreanLog.loketId], references: [loket.id] }),
   petugas: one(user, { fields: [antreanLog.petugasId], references: [user.id] }),
   pemohon: one(pemohon, { fields: [antreanLog.pemohonId], references: [pemohon.id] }),
+  sesi: one(sesi, { fields: [antreanLog.sesiId], references: [sesi.id] }),
+}))
+
+export const sesiRelations = relations(sesi, ({ many }) => ({
+  antrean: many(antrean),
+  sesiLayanan: many(sesiLayanan),
+}))
+
+export const sesiLayananRelations = relations(sesiLayanan, ({ one }) => ({
+  sesi: one(sesi, { fields: [sesiLayanan.sesiId], references: [sesi.id] }),
+  layanan: one(layanan, { fields: [sesiLayanan.layananId], references: [layanan.id] }),
 }))

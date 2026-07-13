@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useMonitorSocket, type WsStatus } from '@/lib/ws'
 import { useSpeech } from '@/hooks/use-speech'
+import { wita } from '@/lib/dayjs'
 import type { WsEvent } from '@sianter/backend'
 
 type MonitorData = NonNullable<
@@ -45,19 +46,8 @@ function useClock() {
     return () => clearInterval(timer)
   }, [])
 
-  const pad = (n: number) => n.toString().padStart(2, '0')
-
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000
-  const wita = new Date(utc + 8 * 3600000)
-
-  const time = `${pad(wita.getHours())}:${pad(wita.getMinutes())}:${pad(wita.getSeconds())}`
-
-  const date = wita.toLocaleDateString('id-ID', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
+  const time = wita(now).format('HH:mm:ss')
+  const date = wita(now).format('dddd, D MMMM YYYY')
 
   return { time, date }
 }

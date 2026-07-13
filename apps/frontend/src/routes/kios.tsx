@@ -2,9 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { server } from '@/lib/eden'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { Printer, CheckCircle2, AlertCircle, RefreshCw, User } from 'lucide-react'
+import { Printer, CheckCircle2, AlertCircle, RefreshCw, User, ExternalLink, QrCode, Keyboard } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
+import { wita } from '@/lib/dayjs'
+import { QrScanner } from '@/components/qr-scanner'
 
-type PageState = 'loading' | 'select' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
+type PageState = 'loading' | 'select' | 'checkin' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
 interface LayananItem {
   id: string
@@ -19,33 +22,8 @@ interface TicketData {
   kode: string
   nomorUrut: number
   namaLayanan: string
+  trackingToken: string
 }
-
-const pad = (n: number) => n.toString().padStart(2, '0')
-
-function formatClock(date: Date) {
-  const utc = date.getTime() + date.getTimezoneOffset() * 60000
-  const wita = new Date(utc + 8 * 3600000)
-  return `${pad(wita.getHours())}:${pad(wita.getMinutes())}:${pad(wita.getSeconds())}`
-}
-
-function formatDateLong(date: Date) {
-  const utc = date.getTime() + date.getTimezoneOffset() * 60000
-  const wita = new Date(utc + 8 * 3600000)
-  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu']
-  const months = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-  ]
-  return `${days[wita.getDay()]}, ${wita.getDate()} ${months[wita.getMonth()]} ${wita.getFullYear()}`
-}
-
-function formatDateTime(d: Date) {
-  const utc = d.getTime() + d.getTimezoneOffset() * 60000
-  const wita = new Date(utc + 8 * 3600000)
-  return `${wita.getFullYear()}-${pad(wita.getMonth() + 1)}-${pad(wita.getDate())} ${pad(wita.getHours())}:${pad(wita.getMinutes())}:${pad(wita.getSeconds())} WITA`
-}
-
 
 function Stepper({
   current,
@@ -116,6 +94,9 @@ export function KiosPage() {
   const [nama, setNama] = useState('')
   const [noHp, setNoHp] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
+  const [checkInError, setCheckInError] = useState<string | null>(null)
+  const [checkInToken, setCheckInToken] = useState('')
+  const [inputMode, setInputMode] = useState<'scan' | 'manual'>('scan')
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
@@ -215,6 +196,28 @@ export function KiosPage() {
     setState('ticket')
   }, [selectedLayanan, nama, noHp])
 
+  const handleCheckIn = useCallback(async (token: string) => {
+    setState('creating')
+    setCheckInError(null)
+    setErrorMsg(null)
+    const { data, error } = await server.api.kios['check-in'].post({
+      token,
+    })
+    if (error || !data) {
+      const msg =
+        error?.value && 'message' in error.value
+          ? (error.value as { message: string }).message
+          : 'Gagal check-in. Silakan coba lagi.'
+      setCheckInError(msg)
+      setState('checkin')
+      return
+    }
+    setTicket(data)
+    setNow(new Date())
+    setCountdown(15)
+    setState('ticket')
+  }, [])
+
   const handleReset = useCallback(() => {
     setSelectedLayanan(null)
     setTicket(null)
@@ -222,6 +225,9 @@ export function KiosPage() {
     setNama('')
     setNoHp('')
     setFormError(null)
+    setCheckInError(null)
+    setCheckInToken('')
+    setInputMode('scan')
     setCountdown(15)
     fetchLayanan()
   }, [fetchLayanan])
@@ -299,9 +305,21 @@ export function KiosPage() {
             {ticket?.namaLayanan}
           </p>
           <p className="mt-2 font-body text-sm text-muted-foreground/60">
-            {ticket ? formatDateTime(now) : ''}
+            {ticket ? `${wita(now).format('YYYY-MM-DD HH:mm:ss')} WITA` : ''}
           </p>
           <div className="my-6 border-t border-border" />
+          {ticket?.trackingToken && (
+            <div className="flex justify-center mb-4">
+              <QRCodeSVG
+                value={`${window.location.origin}/track/${ticket.trackingToken}`}
+                size={120}
+              />
+            </div>
+          )}
+          <p className="font-body text-xs text-muted-foreground/60">
+            Scan QR untuk pantau antrean
+          </p>
+          <div className="my-4 border-t border-border" />
           <p className="font-body text-xs text-muted-foreground/60">
             Harap menunggu nomor antrean Anda dipanggil.
           </p>
@@ -327,7 +345,7 @@ export function KiosPage() {
             className="kiosk-font-mono text-lg tracking-widest text-foreground"
             aria-label="Jam saat ini WITA"
           >
-            {formatClock(now)}
+            {wita(now).format('HH:mm:ss')}
           </time>
           <span className="kiosk-font-mono text-[10px] text-muted-foreground/60">WITA</span>
         </header>
@@ -377,6 +395,97 @@ export function KiosPage() {
                     </span>
                   </button>
                 ))}
+              </div>
+            </div>
+            <div className="mt-8 flex justify-center">
+              <Button
+                onClick={() => { setCheckInError(null); setCheckInToken(''); setInputMode('scan'); setState('checkin') }}
+                variant="outline"
+                className="h-14 gap-3 text-base"
+              >
+                <QrCode className="size-5" />
+                Check-In Antrean Online
+              </Button>
+            </div>
+          </main>
+        )}
+
+        {/* ─── Check-In Online ─── */}
+        {state === 'checkin' && (
+          <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
+            <div className="w-full max-w-sm">
+              <div className="mb-6 text-center">
+                <QrCode className="mx-auto mb-3 size-10 text-primary" />
+                <h2 className="kiosk-font-wordmark text-2xl text-foreground">
+                  Check-In Online
+                </h2>
+                <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
+                  {inputMode === 'scan'
+                    ? 'Arahkan QR code tiket Anda ke kamera'
+                    : 'Masukkan token dari tiket online Anda'}
+                </p>
+              </div>
+
+              {inputMode === 'scan' ? (
+                <QrScanner
+                  onScan={(token) => handleCheckIn(token)}
+                  onError={(msg) => setCheckInError(msg)}
+                />
+              ) : (
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="font-body text-sm font-medium text-foreground">
+                      Token Check-In
+                    </label>
+                    <input
+                      type="text"
+                      value={checkInToken}
+                      onChange={(e) => { setCheckInToken(e.target.value); setCheckInError(null) }}
+                      placeholder="Tempel token dari tiket online"
+                      className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => handleCheckIn(checkInToken.trim())}
+                    disabled={!checkInToken.trim()}
+                    className="h-14 w-full text-lg font-body"
+                  >
+                    Check-In
+                  </Button>
+                </div>
+              )}
+
+              {checkInError && (
+                <div className="mt-4 rounded-lg bg-destructive/10 p-3">
+                  <p className="font-body text-sm text-destructive">{checkInError}</p>
+                </div>
+              )}
+
+              <div className="mt-6 flex flex-col gap-3">
+                <Button
+                  onClick={() => { setInputMode(inputMode === 'scan' ? 'manual' : 'scan'); setCheckInError(null); setCheckInToken('') }}
+                  variant="ghost"
+                  className="h-14 w-full text-base font-normal"
+                >
+                  {inputMode === 'scan' ? (
+                    <span className="flex items-center gap-2">
+                      <Keyboard className="size-4" />
+                      Masukkan Token Manual
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <QrCode className="size-4" />
+                      Scan QR Code
+                    </span>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => { setCheckInError(null); setCheckInToken(''); setInputMode('scan'); setState('select') }}
+                  variant="ghost"
+                  className="h-14 w-full text-base font-normal"
+                >
+                  Kembali
+                </Button>
               </div>
             </div>
           </main>
@@ -563,12 +672,29 @@ export function KiosPage() {
                     {ticket.namaLayanan}
                   </p>
                   <p className="mt-2 font-body text-sm leading-relaxed text-muted-foreground/60">
-                    {formatDateLong(now)}
+                    {wita(now).format('dddd, D MMMM YYYY')}
                   </p>
                   <p className="font-body text-sm text-muted-foreground/60">
-                    {formatClock(now)} WITA
+                    {wita(now).format('HH:mm:ss')} WITA
                   </p>
-                  <p className="mt-4 font-body text-xs text-muted-foreground/40">
+                  <div className="mt-4 flex justify-center">
+                    <QRCodeSVG
+                      value={`${window.location.origin}/track/${ticket.trackingToken}`}
+                      size={100}
+                    />
+                  </div>
+                  <div className="mt-2 flex items-center justify-center gap-1">
+                    <ExternalLink className="size-3 text-muted-foreground/40" />
+                    <a
+                      href={`/track/${ticket.trackingToken}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-body text-xs text-muted-foreground/40 hover:text-primary transition-colors underline underline-offset-2"
+                    >
+                      Pantau antrean
+                    </a>
+                  </div>
+                  <p className="mt-3 font-body text-xs text-muted-foreground/40">
                     Harap menunggu nomor Anda dipanggil
                   </p>
                 </div>

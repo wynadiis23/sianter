@@ -2,11 +2,13 @@ export const ROLES = ['SUPER_ADMIN', 'PETUGAS_LOKET'] as const
 export type Role = (typeof ROLES)[number]
 
 export const QUEUE_STATUS = [
+  'RESERVED',
   'WAITING',
   'CALLED',
   'RECALLED',
   'SKIPPED',
   'FINISHED',
+  'EXPIRED',
 ] as const
 export type QueueStatus = (typeof QUEUE_STATUS)[number]
 

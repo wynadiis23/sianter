@@ -57,6 +57,34 @@
       "when": 1783722347879,
       "tag": "0007_romantic_orphan",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783730153848,
+      "tag": "0008_heavy_logan",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783775939679,
+      "tag": "0009_late_colossus",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783778061780,
+      "tag": "0010_even_stick",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1783779630586,
+      "tag": "0011_curved_maddog",
+      "breakpoints": true
     }
   ]
 }

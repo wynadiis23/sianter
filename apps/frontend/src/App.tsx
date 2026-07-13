@@ -2,10 +2,13 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { AdminLayout } from './components/admin-layout'
 import { ProtectedRoute } from './components/protected-route'
 import { KiosPage } from './routes/kios'
+import { OnlineAntreanPage } from './routes/antrean-online'
+import { TrackPage } from './routes/track'
 import { MonitorPage } from './routes/monitor'
 import { LoginPage } from './routes/login'
 import { LayananAdminPage } from './routes/admin/layanan'
 import { LoketAdminPage } from './routes/admin/loket'
+import { SesiAdminPage } from './routes/admin/sesi'
 import { UsersAdminPage } from './routes/admin/users'
 import { SettingsAdminPage } from './routes/admin/settings'
 import { PetugasLayout } from './components/petugas-layout'
@@ -14,6 +17,8 @@ import { PetugasDashboardPage } from './routes/petugas/dashboard'
 
 const router = createBrowserRouter([
   { path: '/kios', element: <KiosPage /> },
+  { path: '/antrean-online', element: <OnlineAntreanPage /> },
+  { path: '/track/:token', element: <TrackPage /> },
   { path: '/monitor', element: <MonitorPage /> },
   {
     path: '/login',
@@ -41,6 +46,7 @@ const router = createBrowserRouter([
       { path: '/admin', element: <Navigate to="/admin/layanan" replace /> },
       { path: '/admin/layanan', element: <LayananAdminPage /> },
       { path: '/admin/loket', element: <LoketAdminPage /> },
+      { path: '/admin/sesi', element: <SesiAdminPage /> },
       { path: '/admin/users', element: <UsersAdminPage /> },
       { path: '/admin/settings', element: <SettingsAdminPage /> },
     ],

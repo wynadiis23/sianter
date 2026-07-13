@@ -30,6 +30,7 @@ interface DashboardLayoutProps {
 const routeLabels: Record<string, string> = {
   '/admin/layanan': 'Layanan',
   '/admin/loket': 'Loket',
+  '/admin/sesi': 'Sesi',
   '/admin/users': 'Pengguna',
   '/admin/settings': 'Pengaturan',
   '/petugas/dashboard': 'Dashboard',

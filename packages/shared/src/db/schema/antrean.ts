@@ -3,19 +3,21 @@ import {
   varchar,
   timestamp,
   integer,
+  date,
 } from 'drizzle-orm/pg-core'
 import { createId } from '@paralleldrive/cuid2'
 import type { QueueStatus } from '../../enums'
 import { user } from './auth'
 import { layanan, loket } from './layanan'
 import { pemohon } from './pemohon'
+import { sesi } from './sesi'
 
 export const antrean = pgTable('antrean', {
   id: varchar('id')
     .$defaultFn(() => createId())
     .primaryKey(),
-  kode: varchar('kode', { length: 10 }).notNull(),
-  nomorUrut: integer('nomor_urut').notNull(),
+  kode: varchar('kode', { length: 10 }),
+  nomorUrut: integer('nomor_urut'),
   layananId: varchar('layanan_id')
     .notNull()
     .references(() => layanan.id, { onDelete: 'restrict' }),
@@ -28,6 +30,13 @@ export const antrean = pgTable('antrean', {
   pemohonId: varchar('pemohon_id').references(() => pemohon.id, {
     onDelete: 'set null',
   }),
+  sesiId: varchar('sesi_id').references(() => sesi.id, {
+    onDelete: 'set null',
+  }),
+  tanggalKunjungan: date('tanggal_kunjungan'),
+  trackingToken: varchar('tracking_token', { length: 32 })
+    .notNull()
+    .unique(),
   status: varchar('status', { length: 20 })
     .$type<QueueStatus>()
     .notNull()
@@ -38,18 +47,23 @@ export const antrean = pgTable('antrean', {
   calledAt: timestamp('called_at', { withTimezone: true }),
   finishedAt: timestamp('finished_at', { withTimezone: true }),
   skippedAt: timestamp('skipped_at', { withTimezone: true }),
+  checkedInAt: timestamp('checked_in_at', { withTimezone: true }),
+  expiredAt: timestamp('expired_at', { withTimezone: true }),
 })
 
 export const antreanLog = pgTable('antrean_log', {
   id: varchar('id')
     .$defaultFn(() => createId())
     .primaryKey(),
-  kode: varchar('kode', { length: 10 }).notNull(),
-  nomorUrut: integer('nomor_urut').notNull(),
+  kode: varchar('kode', { length: 10 }),
+  nomorUrut: integer('nomor_urut'),
   layananId: varchar('layanan_id').notNull(),
   loketId: varchar('loket_id'),
   petugasId: varchar('petugas_id'),
   pemohonId: varchar('pemohon_id'),
+  sesiId: varchar('sesi_id'),
+  tanggalKunjungan: date('tanggal_kunjungan'),
+  trackingToken: varchar('tracking_token', { length: 32 }).notNull(),
   status: varchar('status', { length: 20 })
     .$type<QueueStatus>()
     .notNull(),
@@ -57,6 +71,8 @@ export const antreanLog = pgTable('antrean_log', {
   calledAt: timestamp('called_at', { withTimezone: true }),
   finishedAt: timestamp('finished_at', { withTimezone: true }),
   skippedAt: timestamp('skipped_at', { withTimezone: true }),
+  checkedInAt: timestamp('checked_in_at', { withTimezone: true }),
+  expiredAt: timestamp('expired_at', { withTimezone: true }),
   archivedAt: timestamp('archived_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
