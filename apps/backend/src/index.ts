@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
+import { env } from './env'
 import { authPlugin } from './auth/plugin'
 import { realtimeModule } from './modules/realtime'
 import { healthModule } from './modules/health'
@@ -17,7 +18,7 @@ import { sesiModule } from './modules/sesi'
 const app = new Elysia()
   .use(
     cors({
-      origin: 'http://localhost:5173',
+      origin: env.FRONTEND_URL,
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization'],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -36,7 +37,7 @@ const app = new Elysia()
   .use(trackingModule)
   .use(sesiModule)
   .use(antreanOnlineModule)
-  .listen(3000)
+  .listen(Number(process.env.PORT) || 3000)
 
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
