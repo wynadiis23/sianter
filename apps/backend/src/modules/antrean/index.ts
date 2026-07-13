@@ -50,6 +50,13 @@ export const antreanModule = new Elysia({ prefix: '/api/loket' })
     },
   )
   .post(
+    '/antrean/:id/call-skipped',
+    async ({ params: { id }, request }) => {
+      const session = await requireAuth(request.headers)
+      return await AntreanService.callSkipped(id, session.user.id)
+    },
+  )
+  .post(
     '/antrean/:id/skip',
     async ({ params: { id }, request }) => {
       await requireAuth(request.headers)

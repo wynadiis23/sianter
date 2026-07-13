@@ -244,18 +244,44 @@ export function MonitorPage() {
                       loketNama: d.loketNama,
                     },
                     menunggu: l.menunggu.filter((m) => m.kode !== d.kode),
+                    dilewati: l.dilewati.filter((s) => s.kode !== d.kode),
                   }
                   : l,
               ),
             }
           }
-          case 'antrean:skipped':
+          case 'antrean:skipped': {
+            const d = event.data
+            return {
+              ...prev,
+              layanan: prev.layanan.map((l) =>
+                l.id === d.layananId
+                  ? {
+                    ...l,
+                    dipanggil: null,
+                    dilewati: l.dilewati.length < 5
+                      ? [
+                        ...l.dilewati,
+                        { kode: d.kode, nomorUrut: d.nomorUrut },
+                      ]
+                      : l.dilewati,
+                  }
+                  : l,
+              ),
+            }
+          }
           case 'antrean:finished': {
             const d = event.data
             return {
               ...prev,
               layanan: prev.layanan.map((l) =>
-                l.id === d.layananId ? { ...l, dipanggil: null } : l,
+                l.id === d.layananId
+                  ? {
+                    ...l,
+                    dipanggil: null,
+                    dilewati: l.dilewati.filter((s) => s.kode !== d.kode),
+                  }
+                  : l,
               ),
             }
           }
@@ -369,8 +395,8 @@ export function MonitorPage() {
       </header>
 
       <main className="flex flex-1 min-h-0">
-        <div className="flex w-[60%] flex-col min-w-0">
-          <ScrollArea className="flex-1">
+        <div className="flex w-[60%] flex-col min-w-0 min-h-0">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="grid auto-rows-fr grid-cols-2 gap-4 p-6">
               {data?.layanan.map((l) => (
                 <div
@@ -410,35 +436,60 @@ export function MonitorPage() {
                     )}
                   </div>
                   <div className="border-t px-5 py-3">
-                    <p className="mb-2 text-xs font-medium text-muted-foreground">
-                      MENUNGGU
-                    </p>
-                    {l.menunggu.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {l.menunggu.map((t) => (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="mb-2 text-xs font-medium text-muted-foreground">
+                          MENUNGGU
+                        </p>
+                        {l.menunggu.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {l.menunggu.map((t) => (
 <span
-                          key={t.kode}
-                          className={`rounded px-2 py-0.5 font-mono text-sm tabular-nums ${
-                            l.warna ? '' : 'bg-muted text-muted-foreground'
-                          }`}
-                          style={
-                            l.warna
-                              ? { backgroundColor: `${l.warna}20`, color: l.warna }
-                              : undefined
-                          }
-                        >
-                          {t.kode}
-                        </span>
-                        ))}
+                              key={t.kode}
+                              className={`rounded px-2 py-0.5 font-mono text-sm tabular-nums ${
+                                l.warna ? '' : 'bg-muted text-muted-foreground'
+                              }`}
+                              style={
+                                l.warna
+                                  ? { backgroundColor: `${l.warna}20`, color: l.warna }
+                                  : undefined
+                              }
+                            >
+                              {t.kode}
+                            </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground/50">
+                            Tidak ada
+                          </p>
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground/50">
-                        Tidak ada antrean
-                      </p>
-                    )}
+                      <div>
+                        <p className="mb-2 text-xs font-medium text-destructive">
+                          DILEWATI
+                        </p>
+                        {l.dilewati.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {l.dilewati.map((t) => (
+                              <span
+                                key={t.kode}
+                                className="rounded px-2 py-0.5 font-mono text-sm tabular-nums bg-destructive/10 text-destructive"
+                              >
+                                {t.kode}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground/50">
+                            Tidak ada
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                 </div>
+               ))}
               {(!data || data.layanan.length === 0) && (
                 <div className="col-span-2 flex items-center justify-center py-20">
                   <p className="text-sm text-muted-foreground">

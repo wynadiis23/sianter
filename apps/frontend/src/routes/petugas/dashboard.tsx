@@ -14,8 +14,18 @@ import {
   SkipForward,
   CheckCircle2,
   Users,
+  User,
 } from 'lucide-react'
 import { wita } from '@/lib/dayjs'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
 
 interface PetugasSession {
   loketId: string
@@ -28,6 +38,8 @@ interface ActiveTicket {
   nomorUrut: number | null
   status: string
   namaLayanan: string
+  namaPemohon: string | null
+  noHpPemohon: string | null
 }
 
 interface WaitingItem {
@@ -37,12 +49,26 @@ interface WaitingItem {
   layananId: string
   namaLayanan: string
   createdAt: Date
+  namaPemohon: string | null
+  noHpPemohon: string | null
+}
+
+interface SkippedItem {
+  id: string
+  kode: string | null
+  nomorUrut: number | null
+  status: string
+  namaLayanan: string
+  skippedAt: Date | string | null
+  namaPemohon: string | null
+  noHpPemohon: string | null
 }
 
 interface DashboardData {
   mode: string
   aktif: ActiveTicket | null
   daftarWaiting: WaitingItem[]
+  daftarSkipped: SkippedItem[]
   countPerLayanan: Record<string, number>
 }
 
@@ -59,6 +85,10 @@ export function PetugasDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [layananInfo, setLayananInfo] = useState<LayananInfo[]>([])
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [detailItem, setDetailItem] = useState<{
+    nama: string
+    noHp: string
+  } | null>(null)
 
   useEffect(() => {
     const raw = localStorage.getItem('petugasSession')
@@ -91,6 +121,10 @@ export function PetugasDashboardPage() {
         daftarWaiting: result.daftarWaiting.map((w: any) => ({
           ...w,
           createdAt: new Date(w.createdAt),
+        })),
+        daftarSkipped: (result.daftarSkipped ?? []).map((s: any) => ({
+          ...s,
+          skippedAt: s.skippedAt ?? null,
         })),
       })
     }
@@ -185,6 +219,24 @@ export function PetugasDashboardPage() {
     fetchDashboard()
   }
 
+  const handleCallSkipped = async (id: string) => {
+    setActionLoading(`call-skipped-${id}`)
+    const { error } = await server.api.loket.antrean({ id })['call-skipped'].post()
+    setActionLoading(null)
+    if (error) {
+      const errMsg =
+        (error as any)?.value?.message ?? 'Gagal memanggil ulang antrean'
+      toast.error(errMsg)
+      return
+    }
+    toast.success('Antrean dipanggil')
+    fetchDashboard()
+  }
+
+  const handleFinishSkipped = async (id: string) => {
+    await handleFinish(id)
+  }
+
   const handleGantiLoket = () => {
     localStorage.removeItem('petugasSession')
     navigate('/petugas', { replace: true })
@@ -209,11 +261,10 @@ export function PetugasDashboardPage() {
         <div>
           <div className="flex items-center gap-2">
             <span
-              className={`size-2 rounded-full shrink-0 ${
-                wsStatus === 'connected' ? 'bg-green-500' :
+              className={`size-2 rounded-full shrink-0 ${wsStatus === 'connected' ? 'bg-green-500' :
                 wsStatus === 'disconnected' ? 'bg-red-500' :
-                'bg-yellow-500'
-              }`}
+                  'bg-yellow-500'
+                }`}
             />
             <h1 className="text-2xl font-bold text-foreground">
               Loket {session.nomorLoket}
@@ -296,6 +347,25 @@ export function PetugasDashboardPage() {
                   >
                     <CheckCircle2 className="size-4" />
                     Selesai
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={() => {
+                      const a = data!.aktif!
+                      setDetailItem(
+                        a.namaPemohon || a.noHpPemohon
+                          ? { nama: a.namaPemohon ?? '-', noHp: a.noHpPemohon ?? '-' }
+                          : null,
+                      )
+                    }}
+                    disabled={
+                      !data.aktif!.namaPemohon && !data.aktif!.noHpPemohon
+                    }
+                    title="Detail Pemohon"
+                  >
+                    <User className="size-4" />
                   </Button>
                 </div>
               </CardContent>
@@ -383,17 +453,163 @@ export function PetugasDashboardPage() {
                           {item.namaLayanan}
                         </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {wita(item.createdAt).format('HH:mm')}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-muted-foreground">
+                          {wita(item.createdAt).format('HH:mm')}
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-6"
+                          onClick={() =>
+                            setDetailItem(
+                              item.namaPemohon || item.noHpPemohon
+                                ? {
+                                  nama: item.namaPemohon ?? '-',
+                                  noHp: item.noHpPemohon ?? '-',
+                                }
+                                : null,
+                            )
+                          }
+                          disabled={!item.namaPemohon && !item.noHpPemohon}
+                          title="Detail Pemohon"
+                        >
+                          <User className="size-3" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </CardContent>
           </Card>
+
+          {data?.daftarSkipped && data.daftarSkipped.length > 0 && (
+            <div className="mt-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <SkipForward className="size-4 text-destructive" />
+                    Antrean Dilewati ({data.daftarSkipped.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-left text-xs text-muted-foreground">
+                          <th className="pb-2 font-medium">Kode</th>
+                          <th className="pb-2 font-medium">Layanan</th>
+                          <th className="pb-2 font-medium">Status</th>
+                          <th className="pb-2 font-medium text-right">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.daftarSkipped.map((item) => (
+                          <tr key={item.id} className="border-b last:border-0">
+                            <td className="py-3 font-mono font-bold">
+                              {item.kode ?? '-'}
+                            </td>
+                            <td className="py-3 text-muted-foreground">
+                              {item.namaLayanan}
+                            </td>
+                            <td className="py-3">
+                              <Badge variant="destructive">Dilewati</Badge>
+                            </td>
+                            <td className="py-3">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() =>
+                                    setDetailItem(
+                                      item.namaPemohon || item.noHpPemohon
+                                        ? {
+                                          nama: item.namaPemohon ?? '-',
+                                          noHp: item.noHpPemohon ?? '-',
+                                        }
+                                        : null,
+                                    )
+                                  }
+                                  disabled={
+                                    !item.namaPemohon && !item.noHpPemohon
+                                  }
+                                  title="Detail Pemohon"
+                                >
+                                  <User className="size-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleCallSkipped(item.id)}
+                                  disabled={
+                                    actionLoading === `call-skipped-${item.id}`
+                                  }
+                                >
+                                  {actionLoading === `call-skipped-${item.id}` ? (
+                                    <Spinner className="size-3" />
+                                  ) : (
+                                    <PhoneCall className="size-3" />
+                                  )}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleFinishSkipped(item.id)}
+                                  disabled={actionLoading === `finish-${item.id}`}
+                                >
+                                  {actionLoading === `finish-${item.id}` ? (
+                                    <Spinner className="size-3" />
+                                  ) : (
+                                    <CheckCircle2 className="size-3" />
+                                  )}
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
+
+      <Dialog
+        open={!!detailItem}
+        onOpenChange={(open) => !open && setDetailItem(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Detail Pemohon</DialogTitle>
+            <DialogDescription>
+              Informasi pemohon antrean
+            </DialogDescription>
+          </DialogHeader>
+          {detailItem && (
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Nama</p>
+                <p className="text-base font-semibold">{detailItem.nama}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  No. HP
+                </p>
+                <p className="text-base font-semibold">{detailItem.noHp}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Tutup</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
