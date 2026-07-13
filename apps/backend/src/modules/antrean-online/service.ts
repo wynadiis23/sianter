@@ -1,6 +1,7 @@
 import { eq, and, gte, lt, or, sql } from 'drizzle-orm'
 import { status } from 'elysia'
 import { db, schema } from '../../db/client'
+import { generateShortToken } from '../../lib/token'
 
 export abstract class AntreanOnlineService {
   static async listSesi(layananId?: string) {
@@ -163,6 +164,7 @@ export abstract class AntreanOnlineService {
         sesiId,
         tanggalKunjungan,
         status: 'RESERVED',
+        trackingToken: generateShortToken(),
       })
       .returning()
 

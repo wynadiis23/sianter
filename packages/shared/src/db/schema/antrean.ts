@@ -36,8 +36,7 @@ export const antrean = pgTable('antrean', {
   tanggalKunjungan: date('tanggal_kunjungan'),
   trackingToken: varchar('tracking_token', { length: 32 })
     .notNull()
-    .unique()
-    .$defaultFn(() => createId()),
+    .unique(),
   status: varchar('status', { length: 20 })
     .$type<QueueStatus>()
     .notNull()

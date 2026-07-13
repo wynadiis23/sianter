@@ -2,6 +2,7 @@ import { eq, and, gte, lt, ne, or, sql } from 'drizzle-orm'
 import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 import { emitAntreanEvent } from '../realtime/service'
+import { generateShortToken } from '../../lib/token'
 
 function todayRange() {
   const today = new Date()
@@ -130,6 +131,7 @@ export abstract class KiosService {
         layananId,
         pemohonId,
         status: 'WAITING',
+        trackingToken: generateShortToken(),
       })
       .returning()
 

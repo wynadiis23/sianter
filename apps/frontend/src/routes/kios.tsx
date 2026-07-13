@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { server } from '@/lib/eden'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { Printer, CheckCircle2, AlertCircle, RefreshCw, User, ExternalLink, QrCode } from 'lucide-react'
+import { Printer, CheckCircle2, AlertCircle, RefreshCw, User, ExternalLink, QrCode, Keyboard } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { wita } from '@/lib/dayjs'
 import { QrScanner } from '@/components/qr-scanner'
@@ -95,6 +95,8 @@ export function KiosPage() {
   const [noHp, setNoHp] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
   const [checkInError, setCheckInError] = useState<string | null>(null)
+  const [checkInToken, setCheckInToken] = useState('')
+  const [inputMode, setInputMode] = useState<'scan' | 'manual'>('scan')
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
@@ -224,6 +226,8 @@ export function KiosPage() {
     setNoHp('')
     setFormError(null)
     setCheckInError(null)
+    setCheckInToken('')
+    setInputMode('scan')
     setCountdown(15)
     fetchLayanan()
   }, [fetchLayanan])
@@ -395,7 +399,7 @@ export function KiosPage() {
             </div>
             <div className="mt-8 flex justify-center">
               <Button
-                onClick={() => { setCheckInError(null); setState('checkin') }}
+                onClick={() => { setCheckInError(null); setCheckInToken(''); setInputMode('scan'); setState('checkin') }}
                 variant="outline"
                 className="h-14 gap-3 text-base"
               >
@@ -416,14 +420,40 @@ export function KiosPage() {
                   Check-In Online
                 </h2>
                 <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
-                  Arahkan QR code tiket Anda ke kamera
+                  {inputMode === 'scan'
+                    ? 'Arahkan QR code tiket Anda ke kamera'
+                    : 'Masukkan token dari tiket online Anda'}
                 </p>
               </div>
 
-              <QrScanner
-                onScan={(token) => handleCheckIn(token)}
-                onError={(msg) => setCheckInError(msg)}
-              />
+              {inputMode === 'scan' ? (
+                <QrScanner
+                  onScan={(token) => handleCheckIn(token)}
+                  onError={(msg) => setCheckInError(msg)}
+                />
+              ) : (
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="font-body text-sm font-medium text-foreground">
+                      Token Check-In
+                    </label>
+                    <input
+                      type="text"
+                      value={checkInToken}
+                      onChange={(e) => { setCheckInToken(e.target.value); setCheckInError(null) }}
+                      placeholder="Tempel token dari tiket online"
+                      className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => handleCheckIn(checkInToken.trim())}
+                    disabled={!checkInToken.trim()}
+                    className="h-14 w-full text-lg font-body"
+                  >
+                    Check-In
+                  </Button>
+                </div>
+              )}
 
               {checkInError && (
                 <div className="mt-4 rounded-lg bg-destructive/10 p-3">
@@ -431,9 +461,26 @@ export function KiosPage() {
                 </div>
               )}
 
-              <div className="mt-8">
+              <div className="mt-6 flex flex-col gap-3">
                 <Button
-                  onClick={() => { setCheckInError(null); setState('select') }}
+                  onClick={() => { setInputMode(inputMode === 'scan' ? 'manual' : 'scan'); setCheckInError(null); setCheckInToken('') }}
+                  variant="ghost"
+                  className="h-14 w-full text-base font-normal"
+                >
+                  {inputMode === 'scan' ? (
+                    <span className="flex items-center gap-2">
+                      <Keyboard className="size-4" />
+                      Masukkan Token Manual
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <QrCode className="size-4" />
+                      Scan QR Code
+                    </span>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => { setCheckInError(null); setCheckInToken(''); setInputMode('scan'); setState('select') }}
                   variant="ghost"
                   className="h-14 w-full text-base font-normal"
                 >

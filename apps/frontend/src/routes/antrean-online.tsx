@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Calendar,
   Clock,
+  Printer,
 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { wita } from '@/lib/dayjs'
@@ -164,7 +165,7 @@ export function OnlineAntreanPage() {
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-primary/[0.03] via-background to-background">
-      <header className="border-b border-border bg-card/80 px-4 py-3">
+      <header className="print:hidden border-b border-border bg-card/80 px-4 py-3">
         <div className="mx-auto flex max-w-lg items-center gap-3">
           <div className="flex-1">
             <h1 className="text-lg font-semibold text-foreground">Antrean Online</h1>
@@ -373,56 +374,89 @@ export function OnlineAntreanPage() {
       )}
 
       {step === 'ticket' && reservation && (
-        <main className="mx-auto max-w-sm px-4 py-8">
-          <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-xl shadow-primary/5">
-            <p className="text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">
-              Tiket Dipesan
-            </p>
-            <p className="mt-2 text-2xl font-bold text-primary">
-              {reservation.namaLayanan}
-            </p>
-            <div className="my-4 space-y-1">
-              <p className="text-sm text-muted-foreground">
-                {wita(reservation.tanggalKunjungan).format('dddd, D MMMM YYYY')}
+        <>
+          {/* ─── Print-only ticket ─── */}
+          <div className="hidden print:flex print:fixed print:inset-0 print:flex-col print:items-center print:justify-center print:bg-white print:p-8">
+            <div className="w-[320px] text-center">
+              <img src="/logo-kpu-bali.png" alt="KPU Provinsi Bali" className="mx-auto mb-4 size-11" />
+              <h3 className="text-lg font-semibold text-foreground">KOMISI PEMILIHAN UMUM PROVINSI BALI</h3>
+              <div className="my-6 border-t border-border" />
+              <p className="text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">Tiket Dipesan</p>
+              <p className="mt-2 text-2xl font-bold text-primary">{reservation.namaLayanan}</p>
+              <div className="my-4 space-y-1">
+                <p className="text-sm text-muted-foreground">{wita(reservation.tanggalKunjungan).format('dddd, D MMMM YYYY')}</p>
+                <p className="text-sm font-medium text-foreground">{reservation.namaSesi} ({reservation.jamMulai?.substring(0, 5)}–{reservation.jamSelesai?.substring(0, 5)}) WITA</p>
+              </div>
+              <div className="my-6 border-t border-border" />
+              <div className="flex justify-center">
+                <QRCodeSVG value={reservation.trackingToken} size={120} />
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground/60">Scan QR ini di kios pada hari kunjungan untuk check-in</p>
+              <div className="my-4 border-t border-border" />
+              <p className="text-xs text-muted-foreground/60">Pantau antrean: {window.location.origin}/track/{reservation.trackingToken}</p>
+            </div>
+          </div>
+
+          {/* ─── Screen-only ticket ─── */}
+          <main className="print:hidden mx-auto max-w-sm px-4 py-8">
+            <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-xl shadow-primary/5">
+              <p className="text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">
+                Tiket Dipesan
               </p>
-              <p className="text-sm font-medium text-foreground">
-                {reservation.namaSesi} ({reservation.jamMulai?.substring(0, 5)} – {reservation.jamSelesai?.substring(0, 5)})
+              <p className="mt-2 text-2xl font-bold text-primary">
+                {reservation.namaLayanan}
+              </p>
+              <div className="my-4 space-y-1">
+                <p className="text-sm text-muted-foreground">
+                  {wita(reservation.tanggalKunjungan).format('dddd, D MMMM YYYY')}
+                </p>
+                <p className="text-sm font-medium text-foreground">
+                  {reservation.namaSesi} ({reservation.jamMulai?.substring(0, 5)} – {reservation.jamSelesai?.substring(0, 5)})
+                </p>
+              </div>
+              <div className="flex justify-center">
+                <QRCodeSVG
+                  value={reservation.trackingToken}
+                  size={140}
+                />
+              </div>
+              <div className="mt-3 flex items-center justify-center gap-1">
+                <ExternalLink className="size-3 text-muted-foreground" />
+                <a
+                  href={`/track/${reservation.trackingToken}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
+                >
+                  Pantau antrean
+                </a>
+              </div>
+              <p className="mt-4 text-xs text-muted-foreground">
+                Scan QR ini di kios pada hari kunjungan untuk check-in
               </p>
             </div>
-            <div className="flex justify-center">
-              <QRCodeSVG
-                value={reservation.trackingToken}
-                size={140}
-              />
-            </div>
-            <div className="mt-3 flex items-center justify-center gap-1">
-              <ExternalLink className="size-3 text-muted-foreground" />
-              <a
-                href={`/track/${reservation.trackingToken}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
+            <div className="mt-6 flex flex-col gap-3">
+              <Button
+                onClick={() => window.print()}
+                className="w-full gap-2"
+                variant="outline"
               >
-                Pantau antrean
-              </a>
+                <Printer className="size-4" />
+                Simpan / Cetak Tiket
+              </Button>
+              <Button
+                onClick={() => window.open(`/track/${reservation.trackingToken}`, '_blank')}
+                className="w-full gap-2"
+              >
+                <ExternalLink className="size-4" />
+                Buka Halaman Tracking
+              </Button>
+              <Button onClick={handleReset} variant="outline" className="w-full">
+                Ambil Antrean Lain
+              </Button>
             </div>
-            <p className="mt-4 text-xs text-muted-foreground">
-              Scan QR ini di kios pada hari kunjungan untuk check-in
-            </p>
-          </div>
-          <div className="mt-6 flex flex-col gap-3">
-            <Button
-              onClick={() => window.open(`/track/${reservation.trackingToken}`, '_blank')}
-              className="w-full gap-2"
-            >
-              <ExternalLink className="size-4" />
-              Buka Halaman Tracking
-            </Button>
-            <Button onClick={handleReset} variant="outline" className="w-full">
-              Ambil Antrean Lain
-            </Button>
-          </div>
-        </main>
+          </main>
+        </>
       )}
 
       {step === 'error' && selectedLayanan && (
