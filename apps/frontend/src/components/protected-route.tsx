@@ -26,7 +26,7 @@ export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
   }
 
   if (role && session.user.role !== role && session.user.role !== 'SUPER_ADMIN') {
-    return <Navigate to="/" replace />
+    return <Navigate to="/unauthorized" replace />
   }
 
   return <>{children}</>
