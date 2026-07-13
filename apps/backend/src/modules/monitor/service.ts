@@ -1,4 +1,4 @@
-import { eq, and, inArray, gte, lt } from 'drizzle-orm'
+import { eq, and, inArray, gte, lt, desc, isNotNull } from 'drizzle-orm'
 import { db, schema } from '../../db/client'
 
 export abstract class MonitorService {
@@ -55,6 +55,24 @@ export abstract class MonitorService {
           .orderBy(schema.antrean.createdAt)
           .limit(5)
 
+        const dilewati = await db
+          .select({
+            kode: schema.antrean.kode,
+            nomorUrut: schema.antrean.nomorUrut,
+          })
+          .from(schema.antrean)
+          .where(
+            and(
+              eq(schema.antrean.layananId, l.id),
+              eq(schema.antrean.status, 'SKIPPED'),
+              gte(schema.antrean.createdAt, today),
+              lt(schema.antrean.createdAt, tomorrow),
+              isNotNull(schema.antrean.skippedAt),
+            ),
+          )
+          .orderBy(desc(schema.antrean.skippedAt))
+          .limit(5)
+
         return {
           id: l.id,
           nama: l.nama,
@@ -62,6 +80,7 @@ export abstract class MonitorService {
           warna: l.warna ?? null,
           dipanggil: dipanggil ?? null,
           menunggu,
+          dilewati,
         }
       }),
     )

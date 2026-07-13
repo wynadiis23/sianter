@@ -39,10 +39,20 @@ interface WaitingItem {
   createdAt: Date
 }
 
+interface SkippedItem {
+  id: string
+  kode: string | null
+  nomorUrut: number | null
+  status: string
+  namaLayanan: string
+  skippedAt: Date | string | null
+}
+
 interface DashboardData {
   mode: string
   aktif: ActiveTicket | null
   daftarWaiting: WaitingItem[]
+  daftarSkipped: SkippedItem[]
   countPerLayanan: Record<string, number>
 }
 
@@ -91,6 +101,10 @@ export function PetugasDashboardPage() {
         daftarWaiting: result.daftarWaiting.map((w: any) => ({
           ...w,
           createdAt: new Date(w.createdAt),
+        })),
+        daftarSkipped: (result.daftarSkipped ?? []).map((s: any) => ({
+          ...s,
+          skippedAt: s.skippedAt ?? null,
         })),
       })
     }
@@ -185,6 +199,24 @@ export function PetugasDashboardPage() {
     fetchDashboard()
   }
 
+  const handleCallSkipped = async (id: string) => {
+    setActionLoading(`call-skipped-${id}`)
+    const { error } = await server.api.loket.antrean({ id })['call-skipped'].post()
+    setActionLoading(null)
+    if (error) {
+      const errMsg =
+        (error as any)?.value?.message ?? 'Gagal memanggil ulang antrean'
+      toast.error(errMsg)
+      return
+    }
+    toast.success('Antrean dipanggil')
+    fetchDashboard()
+  }
+
+  const handleFinishSkipped = async (id: string) => {
+    await handleFinish(id)
+  }
+
   const handleGantiLoket = () => {
     localStorage.removeItem('petugasSession')
     navigate('/petugas', { replace: true })
@@ -209,11 +241,10 @@ export function PetugasDashboardPage() {
         <div>
           <div className="flex items-center gap-2">
             <span
-              className={`size-2 rounded-full shrink-0 ${
-                wsStatus === 'connected' ? 'bg-green-500' :
-                wsStatus === 'disconnected' ? 'bg-red-500' :
-                'bg-yellow-500'
-              }`}
+              className={`size-2 rounded-full shrink-0 ${wsStatus === 'connected' ? 'bg-green-500' :
+                  wsStatus === 'disconnected' ? 'bg-red-500' :
+                    'bg-yellow-500'
+                }`}
             />
             <h1 className="text-2xl font-bold text-foreground">
               Loket {session.nomorLoket}
@@ -392,6 +423,78 @@ export function PetugasDashboardPage() {
               )}
             </CardContent>
           </Card>
+
+          {data?.daftarSkipped && data.daftarSkipped.length > 0 && (
+            <div className="mt-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <SkipForward className="size-4 text-destructive" />
+                    Antrean Dilewati ({data.daftarSkipped.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-left text-xs text-muted-foreground">
+                          <th className="pb-2 font-medium">Kode</th>
+                          <th className="pb-2 font-medium">Layanan</th>
+                          <th className="pb-2 font-medium">Status</th>
+                          <th className="pb-2 font-medium text-right">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.daftarSkipped.map((item) => (
+                          <tr key={item.id} className="border-b last:border-0">
+                            <td className="py-3 font-mono font-bold">
+                              {item.kode ?? '-'}
+                            </td>
+                            <td className="py-3 text-muted-foreground">
+                              {item.namaLayanan}
+                            </td>
+                            <td className="py-3">
+                              <Badge variant="destructive">Dilewati</Badge>
+                            </td>
+                            <td className="py-3">
+                              <div className="flex justify-end gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleCallSkipped(item.id)}
+                                  disabled={
+                                    actionLoading === `call-skipped-${item.id}`
+                                  }
+                                >
+                                  {actionLoading === `call-skipped-${item.id}` ? (
+                                    <Spinner className="size-3" />
+                                  ) : (
+                                    <PhoneCall className="size-3" />
+                                  )}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleFinishSkipped(item.id)}
+                                  disabled={actionLoading === `finish-${item.id}`}
+                                >
+                                  {actionLoading === `finish-${item.id}` ? (
+                                    <Spinner className="size-3" />
+                                  ) : (
+                                    <CheckCircle2 className="size-3" />
+                                  )}
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -22,6 +22,12 @@ const MonitorModel = {
             nomorUrut: t.Nullable(t.Integer()),
           }),
         ),
+        dilewati: t.Array(
+          t.Object({
+            kode: t.Nullable(t.String()),
+            nomorUrut: t.Nullable(t.Integer()),
+          }),
+        ),
       }),
     ),
     runningText: t.Nullable(t.String()),

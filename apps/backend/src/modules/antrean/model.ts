@@ -40,6 +40,16 @@ export const AntreanModel = {
         createdAt: t.String(),
       }),
     ),
+    daftarSkipped: t.Array(
+      t.Object({
+        id: t.String(),
+        kode: t.String(),
+        nomorUrut: t.Integer(),
+        status: t.String(),
+        namaLayanan: t.String(),
+        skippedAt: t.Nullable(t.String()),
+      }),
+    ),
     countPerLayanan: t.Record(t.String(), t.Integer()),
   }),
 

@@ -1,4 +1,4 @@
-import { eq, and, gte, lt, inArray } from 'drizzle-orm'
+import { eq, and, gte, lt, inArray, desc, isNotNull } from 'drizzle-orm'
 import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 import { emitAntreanEvent } from '../realtime/service'
@@ -106,6 +106,29 @@ export abstract class AntreanService {
       )
       .orderBy(schema.antrean.createdAt)
 
+    const daftarSkipped = await db
+      .select({
+        id: schema.antrean.id,
+        kode: schema.antrean.kode,
+        nomorUrut: schema.antrean.nomorUrut,
+        status: schema.antrean.status,
+        namaLayanan: schema.layanan.nama,
+        skippedAt: schema.antrean.skippedAt,
+      })
+      .from(schema.antrean)
+      .innerJoin(schema.layanan, eq(schema.antrean.layananId, schema.layanan.id))
+      .where(
+        and(
+          eq(schema.antrean.status, 'SKIPPED'),
+          eq(schema.antrean.loketId, loketId),
+          gte(schema.antrean.createdAt, today),
+          lt(schema.antrean.createdAt, tomorrow),
+          isNotNull(schema.antrean.skippedAt),
+        ),
+      )
+      .orderBy(desc(schema.antrean.skippedAt))
+      .limit(5)
+
     const countPerLayanan: Record<string, number> = {}
     for (const item of daftarWaiting) {
       countPerLayanan[item.layananId] =
@@ -116,6 +139,7 @@ export abstract class AntreanService {
       mode: pengaturan?.mode ?? 'FIFO_GLOBAL',
       aktif: aktif ?? null,
       daftarWaiting,
+      daftarSkipped,
       countPerLayanan,
     }
   }
@@ -218,6 +242,56 @@ export abstract class AntreanService {
       throw status(404, { message: 'Antrean tidak ditemukan atau sudah selesai' })
     }
     await emitAntreanEvent('antrean:recalled', updated.id)
+    return updated
+  }
+
+  static async callSkipped(id: string, petugasId: string) {
+    const [ticket] = await db
+      .select()
+      .from(schema.antrean)
+      .where(eq(schema.antrean.id, id))
+      .limit(1)
+
+    if (!ticket || ticket.status !== 'SKIPPED') {
+      throw status(404, { message: 'Antrean tidak ditemukan atau sudah diproses' })
+    }
+
+    if (!ticket.loketId) {
+      throw status(400, { message: 'Antrean tidak memiliki loket' })
+    }
+
+    const [existing] = await db
+      .select()
+      .from(schema.antrean)
+      .where(
+        and(
+          eq(schema.antrean.loketId, ticket.loketId),
+          inArray(schema.antrean.status, ['CALLED', 'RECALLED']),
+        ),
+      )
+      .limit(1)
+
+    if (existing) {
+      throw status(409, {
+        message: 'Selesaikan atau skip antrean aktif terlebih dahulu',
+      })
+    }
+
+    const [updated] = await db
+      .update(schema.antrean)
+      .set({
+        status: 'CALLED',
+        petugasId,
+        calledAt: new Date(),
+        skippedAt: null,
+      })
+      .where(eq(schema.antrean.id, id))
+      .returning()
+
+    if (updated) {
+      await emitAntreanEvent('antrean:called', updated.id)
+    }
+
     return updated
   }
 
