@@ -30,6 +30,17 @@ const MonitorModel = {
         ),
       }),
     ),
+    kegiatan: t.Array(
+      t.Object({
+        id: t.String(),
+        tanggalWaktu: t.String(),
+        namaKegiatan: t.String(),
+        metodeRapat: t.String(),
+        penyelenggara: t.String(),
+        nomorSurat: t.String(),
+        keterangan: t.String(),
+      }),
+    ),
     runningText: t.Nullable(t.String()),
     mediaUrl: t.Nullable(t.String()),
     youtubeVideoUrl: t.Nullable(t.String()),

@@ -14,6 +14,7 @@ import { monitorModule } from './modules/monitor'
 import { trackingModule } from './modules/tracking'
 import { antreanOnlineModule } from './modules/antrean-online'
 import { sesiModule } from './modules/sesi'
+import { kegiatanModule } from './modules/kegiatan'
 
 const app = new Elysia()
   .use(
@@ -36,6 +37,7 @@ const app = new Elysia()
   .use(monitorModule)
   .use(trackingModule)
   .use(sesiModule)
+  .use(kegiatanModule)
   .use(antreanOnlineModule)
   .listen(Number(process.env.PORT) || 3000)
 

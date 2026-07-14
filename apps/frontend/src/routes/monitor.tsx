@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Youtube, ListVideo, Image, Volume2, VolumeX } from 'lucide-react'
+import { Youtube, ListVideo, Image, Volume2, VolumeX, CalendarDays } from 'lucide-react'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -196,6 +196,84 @@ function MediaPanel({ data }: { data: MonitorData }) {
             interval={data.slideshowInterval}
           />
         )}
+      </div>
+    </div>
+  )
+}
+
+function KegiatanPanel({ data }: { data: MonitorData }) {
+  const kegiatan = data.kegiatan ?? []
+
+  if (kegiatan.length === 0) return null
+
+  const duplicated = [...kegiatan, ...kegiatan]
+
+  return (
+    <div className="mx-6 mb-6 overflow-hidden rounded-lg border bg-card shadow-sm">
+      <div className="flex items-center gap-2 border-b px-5 py-3">
+        <CalendarDays className="size-4 text-muted-foreground" />
+        <h2 className="text-sm font-semibold text-card-foreground">
+          Jadwal Kegiatan
+        </h2>
+      </div>
+      <div className="relative h-[280px] overflow-hidden">
+        <div className="animate-scroll-vertikal">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-muted/50">
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  No
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  Hari/Tanggal/Waktu
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  Kegiatan
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  Metode
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  Penyelenggara
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  Nomor Surat
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                  Keterangan
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {duplicated.map((item, i) => (
+                <tr
+                  key={`${item.id}-${i}`}
+                  className="border-b transition-colors hover:bg-muted/30"
+                >
+                  <td className="px-4 py-2 text-muted-foreground">
+                    {(i % kegiatan.length) + 1}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {item.tanggalWaktu}
+                  </td>
+                  <td className="px-4 py-2 max-w-[300px] truncate">
+                    {item.namaKegiatan}
+                  </td>
+                  <td className="px-4 py-2">{item.metodeRapat}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {item.penyelenggara}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {item.nomorSurat}
+                  </td>
+                  <td className="px-4 py-2 max-w-[200px] truncate">
+                    {item.keterangan}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
@@ -500,6 +578,7 @@ export function MonitorPage() {
                 </div>
               )}
             </div>
+            {data && <KegiatanPanel data={data} />}
           </ScrollArea>
         </div>
 
