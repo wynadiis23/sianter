@@ -38,3 +38,6 @@ bun.lockb.bak
 
 # better-auth
 better-auth*.json
+
+# uploads
+apps/backend/uploads/

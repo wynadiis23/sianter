@@ -43,3 +43,24 @@ export const kegiatanModule = new Elysia({ prefix: '/api/admin/kegiatan' })
       400: KegiatanModel.notFound,
     },
   })
+  .get('/template', async ({ set }) => {
+    set.headers['Content-Disposition'] = 'attachment; filename="template_kegiatan.xlsx"'
+    const buffer = await KegiatanService.getTemplate()
+    return new Uint8Array(buffer)
+  }, {
+    kegiatan: true,
+    response: {
+      200: t.Uint8Array(),
+      404: KegiatanModel.notFound,
+    },
+  })
+  .post('/template', async ({ body }) => {
+    const file = (body as { file: File }).file
+    const buffer = await file.arrayBuffer()
+    return KegiatanService.updateTemplate(buffer)
+  }, {
+    admin: true,
+    body: t.Object({
+      file: t.File({ type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'] }),
+    }),
+  })
