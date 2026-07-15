@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
-import { Plus, MoreHorizontal, Pencil, Trash2, Upload } from 'lucide-react'
+import { Plus, MoreHorizontal, Pencil, Trash2, Upload, Download, FileSpreadsheet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -67,8 +67,10 @@ export function KegiatanAdminPage() {
   const [editing, setEditing] = useState<Kegiatan | null>(null)
   const [form, setForm] = useState<KegiatanForm>(empty)
   const [saving, setSaving] = useState(false)
+  const [importDialogOpen, setImportDialogOpen] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [importing, setImporting] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const importFileInputRef = useRef<HTMLInputElement>(null)
 
   const fetch = useCallback(async () => {
     setLoading(true)
@@ -141,27 +143,32 @@ export function KegiatanAdminPage() {
     }
   }
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null
+    setSelectedFile(file)
+  }
+
+  const handleImportSubmit = async () => {
+    if (!selectedFile) return
 
     setImporting(true)
     const { data, error } = await server.api.admin.kegiatan.import.post({
-      file,
+      file: selectedFile,
     })
-    if (error) {
-      toast.error(
-        error.value?.message ??
-          'Gagal mengimpor file',
-      )
-    } else if (data) {
-      toast.success(
-        `${data.imported} kegiatan diimpor (${data.replaced} data lama diganti)`,
-      )
-      fetch()
-    }
     setImporting(false)
-    if (fileInputRef.current) fileInputRef.current.value = ''
+
+    if (error) {
+      toast.error(error.value?.message ?? 'Gagal mengimpor file')
+      return
+    }
+
+    toast.success(
+      `${data.imported} kegiatan diimpor (${data.replaced} data lama diganti)`,
+    )
+    setImportDialogOpen(false)
+    setSelectedFile(null)
+    if (importFileInputRef.current) importFileInputRef.current.value = ''
+    fetch()
   }
 
   return (
@@ -176,17 +183,10 @@ export function KegiatanAdminPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={importing}>
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
             <Upload className="size-4" />
-            {importing ? 'Mengimpor...' : 'Import Excel'}
+            Import Excel
           </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            className="hidden"
-            onChange={handleImport}
-          />
           <Button onClick={openCreate}>
             <Plus className="size-4" />
             Tambah
@@ -387,6 +387,75 @@ export function KegiatanAdminPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Import Jadwal Kegiatan</DialogTitle>
+            <DialogDescription>
+              Unggah file Excel untuk mengimpor jadwal kegiatan secara massal.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+              <p className="text-sm font-medium">Petunjuk:</p>
+              <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
+                <li>Download template Excel terlebih dahulu</li>
+                <li>Isi template sesuai kolom yang tersedia (Hari/Tanggal/Waktu, Kegiatan, Metode Rapat, Penyelenggara, Nomor Surat, Keterangan)</li>
+                <li>Simpan file dan unggah pada form di bawah</li>
+              </ol>
+            </div>
+            <Button variant="outline" className="w-full" asChild>
+              <a href="/template_kegiatan.xlsx" download>
+                <Download className="size-4" />
+                Download Template
+              </a>
+            </Button>
+            <div className="space-y-2">
+              <Label htmlFor="import-file">File Excel</Label>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => importFileInputRef.current?.click()}
+                >
+                  <FileSpreadsheet className="size-4" />
+                  Pilih File
+                </Button>
+                <span className="text-sm text-muted-foreground truncate">
+                  {selectedFile ? selectedFile.name : 'Belum ada file dipilih'}
+                </span>
+              </div>
+              <input
+                ref={importFileInputRef}
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setImportDialogOpen(false)
+                setSelectedFile(null)
+                if (importFileInputRef.current) importFileInputRef.current.value = ''
+              }}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleImportSubmit}
+              disabled={!selectedFile || importing}
+            >
+              {importing ? 'Mengimpor...' : 'Import'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
