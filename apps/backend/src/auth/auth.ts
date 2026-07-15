@@ -3,7 +3,7 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter'
 import { admin } from 'better-auth/plugins'
 import { db, schema } from '../db/client'
 import { env } from '../env'
-import { ac, adminRole, petugasRole } from './permissions'
+import { ac, adminRole, petugasRole, petugasKegiatanRole } from './permissions'
 
 export const auth = betterAuth({
   baseURL: env.BASE_URL,
@@ -22,6 +22,7 @@ export const auth = betterAuth({
       roles: {
         SUPER_ADMIN: adminRole,
         PETUGAS_LOKET: petugasRole,
+        PETUGAS_KEGIATAN: petugasKegiatanRole,
       },
       defaultRole: 'PETUGAS_LOKET',
       adminRoles: ['SUPER_ADMIN'],

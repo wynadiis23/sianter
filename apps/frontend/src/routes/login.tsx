@@ -46,8 +46,10 @@ export function LoginPage() {
       const role = data?.user?.role
       if (role === 'SUPER_ADMIN') {
         navigate('/admin/layanan', { replace: true })
+      } else if (role === 'PETUGAS_KEGIATAN') {
+        navigate('/petugas/kegiatan', { replace: true })
       } else {
-        navigate('/petugas', { replace: true })
+        navigate('/petugas/loket', { replace: true })
       }
     } else {
       navigate(from, { replace: true })

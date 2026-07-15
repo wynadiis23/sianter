@@ -18,8 +18,10 @@ import { UsersAdminPage } from './routes/admin/users'
 import { SettingsAdminPage } from './routes/admin/settings'
 import { KegiatanAdminPage } from './routes/admin/kegiatan'
 import { PetugasLayout } from './components/petugas-layout'
-import { PilihLoketPage } from './routes/petugas/pilih-loket'
+import { KegiatanLayout } from './components/kegiatan-layout'
 import { PetugasDashboardPage } from './routes/petugas/dashboard'
+import { PilihLoketPage } from './routes/petugas/pilih-loket'
+import { KegiatanPetugasPage } from './routes/petugas/kegiatan'
 
 const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -29,8 +31,9 @@ const router = createBrowserRouter([
   { path: '/monitor', element: <MonitorPage /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/unauthorized', element: <UnauthorizedPage /> },
+  { path: '/petugas', element: <Navigate to="/petugas/loket" replace /> },
   {
-    path: '/petugas',
+    path: '/petugas/loket',
     element: (
       <ProtectedRoute role="PETUGAS_LOKET">
         <PetugasLayout />
@@ -38,8 +41,20 @@ const router = createBrowserRouter([
     ),
     errorElement: <ErrorBoundary />,
     children: [
-      { index: true, element: <PilihLoketPage /> },
-      { path: 'dashboard', element: <PetugasDashboardPage /> },
+      { index: true, element: <PetugasDashboardPage /> },
+      { path: 'select', element: <PilihLoketPage /> },
+    ],
+  },
+  {
+    path: '/petugas/kegiatan',
+    element: (
+      <ProtectedRoute role="PETUGAS_KEGIATAN">
+        <KegiatanLayout />
+      </ProtectedRoute>
+    ),
+    errorElement: <ErrorBoundary />,
+    children: [
+      { index: true, element: <KegiatanPetugasPage /> },
     ],
   },
   {

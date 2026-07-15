@@ -93,7 +93,7 @@ export function PetugasDashboardPage() {
   useEffect(() => {
     const raw = localStorage.getItem('petugasSession')
     if (!raw) {
-      navigate('/petugas', { replace: true })
+      navigate('/petugas/loket/select', { replace: true })
       return
     }
     const s = JSON.parse(raw) as PetugasSession
@@ -239,7 +239,7 @@ export function PetugasDashboardPage() {
 
   const handleGantiLoket = () => {
     localStorage.removeItem('petugasSession')
-    navigate('/petugas', { replace: true })
+    navigate('/petugas/loket/select', { replace: true })
   }
 
   if (!session) return null

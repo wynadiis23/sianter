@@ -25,4 +25,15 @@ export const authPlugin = new Elysia({ name: 'better-auth' })
         }
       },
     },
+    kegiatan: {
+      async resolve({ status, request: { headers } }) {
+        const session = await auth.api.getSession({ headers })
+        if (!session) return status(401)
+        if (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'PETUGAS_KEGIATAN') return status(403)
+        return {
+          user: session.user,
+          session: session.session,
+        }
+      },
+    },
   })

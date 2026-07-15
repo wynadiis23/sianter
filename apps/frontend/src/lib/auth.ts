@@ -1,6 +1,6 @@
 import { createAuthClient } from 'better-auth/react'
 import { adminClient } from 'better-auth/client/plugins'
-import { ac, adminRole, petugasRole } from '@sianter/backend/permissions'
+import { ac, adminRole, petugasRole, petugasKegiatanRole } from '@sianter/backend/permissions'
 
 export const authClient = createAuthClient({
   baseURL: import.meta.env.VITE_API_URL,
@@ -10,6 +10,7 @@ export const authClient = createAuthClient({
       roles: {
         SUPER_ADMIN: adminRole,
         PETUGAS_LOKET: petugasRole,
+        PETUGAS_KEGIATAN: petugasKegiatanRole,
       },
     }),
   ],

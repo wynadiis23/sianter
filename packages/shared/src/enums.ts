@@ -1,4 +1,4 @@
-export const ROLES = ['SUPER_ADMIN', 'PETUGAS_LOKET'] as const
+export const ROLES = ['SUPER_ADMIN', 'PETUGAS_LOKET', 'PETUGAS_KEGIATAN'] as const
 export type Role = (typeof ROLES)[number]
 
 export const QUEUE_STATUS = [
