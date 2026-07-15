@@ -125,13 +125,13 @@ export function KegiatanRotator({
 
         {/* Shape 3: Decorative Ring Kiri Atas */}
         <div
-          className="pointer-events-none absolute -left-8 -top-8 size-28 rounded-full border-[8px]"
+          className="pointer-events-none absolute -left-8 -top-8 size-28 rounded-full border-8"
           style={{ borderColor: p.border, opacity: 0.12 }}
         />
 
         {/* Shape 4: Giant Watermark Icon (Pojok Kanan Bawah) */}
         <WatermarkIcon
-          className="pointer-events-none absolute -right-8 -bottom-8 size-52 rotate-[-12deg]"
+          className="pointer-events-none absolute -right-8 -bottom-8 size-52 -rotate-12"
           style={{
             color: p.border,
             opacity: 0.08,
