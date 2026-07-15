@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Youtube, ListVideo, Image, Volume2, VolumeX, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Youtube, ListVideo, Image, Volume2, VolumeX, CalendarDays } from 'lucide-react'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -7,6 +7,7 @@ import { useMonitorSocket, type WsStatus } from '@/lib/ws'
 import { useSpeech } from '@/hooks/use-speech'
 import { wita } from '@/lib/dayjs'
 import { ThemeSelector } from '@/components/theme-selector'
+import { KegiatanRotator } from '@/components/kegiatan-rotator'
 import type { WsEvent } from '@sianter/backend'
 
 type MonitorData = NonNullable<
@@ -83,101 +84,6 @@ function Slideshow({
           style={{ opacity: i === current ? 1 : 0 }}
         />
       ))}
-    </div>
-  )
-}
-
-function KegiatanRotator({
-  items,
-  interval,
-}: {
-  items: MonitorData['kegiatan']
-  interval: number
-}) {
-  const [current, setCurrent] = useState(0)
-  const [paused, setPaused] = useState(false)
-  const total = items.length
-
-  useEffect(() => {
-    if (total <= 1 || paused) return
-    const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % total)
-    }, interval * 1000)
-    return () => clearInterval(timer)
-  }, [total, interval, paused])
-
-  if (total === 0) return null
-
-  const item = items[current]
-
-  const prev = () => setCurrent((c) => (c === 0 ? total - 1 : c - 1))
-  const next = () => setCurrent((c) => (c + 1) % total)
-
-  return (
-    <div
-      className="flex h-full w-full flex-col p-4"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <CalendarDays className="size-5 text-muted-foreground" />
-          <span className="text-sm font-medium text-muted-foreground">
-            Jadwal Kegiatan
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={prev}
-            className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="size-5" />
-          </button>
-          <span className="min-w-[40px] text-center text-sm tabular-nums text-muted-foreground">
-            {current + 1}/{total}
-          </span>
-          <button
-            onClick={next}
-            className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <ChevronRight className="size-5" />
-          </button>
-        </div>
-      </div>
-      <div className="flex flex-1 flex-col rounded-lg border bg-card shadow-sm transition-opacity duration-500">
-        <div className="border-b bg-muted/20 px-5 py-4">
-          <p className="text-base font-medium text-muted-foreground">
-            {item.tanggalWaktu}
-          </p>
-        </div>
-        <div className="flex flex-1 flex-col justify-center space-y-4 px-5 py-6">
-          <p className="text-xl font-semibold leading-snug text-card-foreground">
-            {item.namaKegiatan}
-          </p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            {item.penyelenggara && (
-              <span className="text-base text-muted-foreground">
-                {item.penyelenggara}
-              </span>
-            )}
-            {item.nomorSurat && (
-              <span className="text-base text-muted-foreground/70">
-                {item.nomorSurat}
-              </span>
-            )}
-            {item.metodeRapat && (
-              <span className="inline-flex items-center rounded-full border px-3 py-0.5 text-sm font-medium text-muted-foreground">
-                {item.metodeRapat}
-              </span>
-            )}
-          </div>
-          {item.keterangan && (
-            <p className="text-base italic text-muted-foreground/60 leading-relaxed">
-              {item.keterangan}
-            </p>
-          )}
-        </div>
-      </div>
     </div>
   )
 }
@@ -512,11 +418,10 @@ export function MonitorPage() {
               {data?.layanan.map((l) => (
                 <div
                   key={l.id}
-                  className={`flex flex-col rounded-lg border bg-card shadow-sm transition-all duration-500 ${
-                    animatingIds.includes(l.id)
+                  className={`flex flex-col rounded-lg border bg-card shadow-sm transition-all duration-500 ${animatingIds.includes(l.id)
                       ? 'ring-2 ring-primary/30 scale-[1.02]'
                       : ''
-                  }`}
+                    }`}
                   style={
                     l.warna
                       ? { borderTopColor: l.warna, borderTopWidth: 4 }
@@ -555,19 +460,18 @@ export function MonitorPage() {
                         {l.menunggu.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {l.menunggu.map((t) => (
-<span
-                              key={t.kode}
-                              className={`rounded px-2 py-0.5 font-mono text-sm tabular-nums ${
-                                l.warna ? '' : 'bg-muted text-muted-foreground'
-                              }`}
-                              style={
-                                l.warna
-                                  ? { backgroundColor: `${l.warna}20`, color: l.warna }
-                                  : undefined
-                              }
-                            >
-                              {t.kode}
-                            </span>
+                              <span
+                                key={t.kode}
+                                className={`rounded px-2 py-0.5 font-mono text-sm tabular-nums ${l.warna ? '' : 'bg-muted text-muted-foreground'
+                                  }`}
+                                style={
+                                  l.warna
+                                    ? { backgroundColor: `${l.warna}20`, color: l.warna }
+                                    : undefined
+                                }
+                              >
+                                {t.kode}
+                              </span>
                             ))}
                           </div>
                         ) : (
@@ -599,8 +503,8 @@ export function MonitorPage() {
                       </div>
                     </div>
                   </div>
-                 </div>
-               ))}
+                </div>
+              ))}
               {(!data || data.layanan.length === 0) && (
                 <div className="col-span-2 flex items-center justify-center py-20">
                   <p className="text-sm text-muted-foreground">
