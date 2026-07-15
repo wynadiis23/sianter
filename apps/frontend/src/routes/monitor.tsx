@@ -8,6 +8,7 @@ import { useSpeech } from '@/hooks/use-speech'
 import { wita } from '@/lib/dayjs'
 import { ThemeSelector } from '@/components/theme-selector'
 import { KegiatanRotator } from '@/components/kegiatan-rotator'
+import { KegiatanTiles } from '@/components/kegiatan-tiles'
 import type { WsEvent } from '@sianter/backend'
 
 type MonitorData = NonNullable<
@@ -92,6 +93,7 @@ type MediaTab = 'video' | 'playlist' | 'slideshow' | 'kegiatan'
 
 function MediaPanel({ data }: { data: MonitorData }) {
   const [tab, setTab] = useState<MediaTab>('video')
+  const [kegiatanMode, setKegiatanMode] = useState<'rotate' | 'tiles'>('rotate')
 
   const youtubeVideoId = data.youtubeVideoUrl
     ? extractYouTubeId(data.youtubeVideoUrl)
@@ -204,10 +206,17 @@ function MediaPanel({ data }: { data: MonitorData }) {
             interval={data.slideshowInterval}
           />
         )}
-        {tab === 'kegiatan' && (
+        {tab === 'kegiatan' && kegiatanMode === 'rotate' && (
           <KegiatanRotator
             items={kegiatanList}
             interval={data.kegiatanInterval}
+            onToggleMode={() => setKegiatanMode('tiles')}
+          />
+        )}
+        {tab === 'kegiatan' && kegiatanMode === 'tiles' && (
+          <KegiatanTiles
+            items={kegiatanList}
+            onToggleMode={() => setKegiatanMode('rotate')}
           />
         )}
       </div>

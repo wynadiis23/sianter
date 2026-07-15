@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { CalendarDays, ChevronLeft, ChevronRight, Video, Users, Blend, Building2 } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, LayoutGrid, Video, Users, Blend, Building2 } from 'lucide-react'
 
 interface KegiatanItem {
   id: string
@@ -14,9 +14,11 @@ interface KegiatanItem {
 export function KegiatanRotator({
   items,
   interval,
+  onToggleMode,
 }: {
   items: KegiatanItem[]
   interval: number
+  onToggleMode?: () => void
 }) {
   const [current, setCurrent] = useState(0)
   const [paused, setPaused] = useState(false)
@@ -71,22 +73,33 @@ export function KegiatanRotator({
             Jadwal Kegiatan
           </span>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={prev}
-            className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="size-5" />
-          </button>
-          <span className="min-w-10 text-center text-sm tabular-nums text-muted-foreground">
-            {current + 1}/{total}
-          </span>
-          <button
-            onClick={next}
-            className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <ChevronRight className="size-5" />
-          </button>
+        <div className="flex items-center gap-2">
+          {onToggleMode && (
+            <button
+              onClick={onToggleMode}
+              className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+            >
+              <LayoutGrid className="size-3.5" />
+              Tile
+            </button>
+          )}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={prev}
+              className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+            <span className="min-w-10 text-center text-sm tabular-nums text-muted-foreground">
+              {current + 1}/{total}
+            </span>
+            <button
+              onClick={next}
+              className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <ChevronRight className="size-5" />
+            </button>
+          </div>
         </div>
       </div>
 
