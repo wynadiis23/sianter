@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Youtube, ListVideo, Image, Volume2, VolumeX } from 'lucide-react'
+import { Youtube, ListVideo, Image, Volume2, VolumeX, CalendarDays } from 'lucide-react'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -7,6 +7,8 @@ import { useMonitorSocket, type WsStatus } from '@/lib/ws'
 import { useSpeech } from '@/hooks/use-speech'
 import { wita } from '@/lib/dayjs'
 import { ThemeSelector } from '@/components/theme-selector'
+import { KegiatanRotator } from '@/components/kegiatan-rotator'
+import { KegiatanTiles } from '@/components/kegiatan-tiles'
 import type { WsEvent } from '@sianter/backend'
 
 type MonitorData = NonNullable<
@@ -87,10 +89,11 @@ function Slideshow({
   )
 }
 
-type MediaTab = 'video' | 'playlist' | 'slideshow'
+type MediaTab = 'video' | 'playlist' | 'slideshow' | 'kegiatan'
 
 function MediaPanel({ data }: { data: MonitorData }) {
   const [tab, setTab] = useState<MediaTab>('video')
+  const [kegiatanMode, setKegiatanMode] = useState<'rotate' | 'tiles'>('rotate')
 
   const youtubeVideoId = data.youtubeVideoUrl
     ? extractYouTubeId(data.youtubeVideoUrl)
@@ -99,6 +102,7 @@ function MediaPanel({ data }: { data: MonitorData }) {
     ? extractPlaylistId(data.youtubePlaylistUrl)
     : null
   const slideshowImages = parseSlideshowImages(data.slideshowImages)
+  const kegiatanList = data.kegiatan ?? []
 
   const availableTabs = [
     {
@@ -118,6 +122,12 @@ function MediaPanel({ data }: { data: MonitorData }) {
       icon: Image,
       label: 'Gambar',
       available: slideshowImages.length > 0,
+    },
+    {
+      key: 'kegiatan' as MediaTab,
+      icon: CalendarDays,
+      label: 'Jadwal',
+      available: kegiatanList.length > 0,
     },
   ].filter((t) => t.available)
 
@@ -194,6 +204,19 @@ function MediaPanel({ data }: { data: MonitorData }) {
           <Slideshow
             images={slideshowImages}
             interval={data.slideshowInterval}
+          />
+        )}
+        {tab === 'kegiatan' && kegiatanMode === 'rotate' && (
+          <KegiatanRotator
+            items={kegiatanList}
+            interval={data.kegiatanInterval}
+            onToggleMode={() => setKegiatanMode('tiles')}
+          />
+        )}
+        {tab === 'kegiatan' && kegiatanMode === 'tiles' && (
+          <KegiatanTiles
+            items={kegiatanList}
+            onToggleMode={() => setKegiatanMode('rotate')}
           />
         )}
       </div>
@@ -313,6 +336,7 @@ export function MonitorPage() {
               youtubePlaylistUrl: d.youtubePlaylistUrl,
               slideshowImages: d.slideshowImages,
               slideshowInterval: d.slideshowInterval,
+              kegiatanInterval: d.kegiatanInterval,
             }
           }
           default:
@@ -403,11 +427,10 @@ export function MonitorPage() {
               {data?.layanan.map((l) => (
                 <div
                   key={l.id}
-                  className={`flex flex-col rounded-lg border bg-card shadow-sm transition-all duration-500 ${
-                    animatingIds.includes(l.id)
+                  className={`flex flex-col rounded-lg border bg-card shadow-sm transition-all duration-500 ${animatingIds.includes(l.id)
                       ? 'ring-2 ring-primary/30 scale-[1.02]'
                       : ''
-                  }`}
+                    }`}
                   style={
                     l.warna
                       ? { borderTopColor: l.warna, borderTopWidth: 4 }
@@ -446,19 +469,18 @@ export function MonitorPage() {
                         {l.menunggu.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
                             {l.menunggu.map((t) => (
-<span
-                              key={t.kode}
-                              className={`rounded px-2 py-0.5 font-mono text-sm tabular-nums ${
-                                l.warna ? '' : 'bg-muted text-muted-foreground'
-                              }`}
-                              style={
-                                l.warna
-                                  ? { backgroundColor: `${l.warna}20`, color: l.warna }
-                                  : undefined
-                              }
-                            >
-                              {t.kode}
-                            </span>
+                              <span
+                                key={t.kode}
+                                className={`rounded px-2 py-0.5 font-mono text-sm tabular-nums ${l.warna ? '' : 'bg-muted text-muted-foreground'
+                                  }`}
+                                style={
+                                  l.warna
+                                    ? { backgroundColor: `${l.warna}20`, color: l.warna }
+                                    : undefined
+                                }
+                              >
+                                {t.kode}
+                              </span>
                             ))}
                           </div>
                         ) : (
@@ -490,8 +512,8 @@ export function MonitorPage() {
                       </div>
                     </div>
                   </div>
-                 </div>
-               ))}
+                </div>
+              ))}
               {(!data || data.layanan.length === 0) && (
                 <div className="col-span-2 flex items-center justify-center py-20">
                   <p className="text-sm text-muted-foreground">

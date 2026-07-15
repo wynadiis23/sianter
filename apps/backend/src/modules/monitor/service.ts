@@ -8,6 +8,19 @@ export abstract class MonitorService {
       .from(schema.pengaturan)
       .limit(1)
 
+    const kegiatanList = await db
+      .select({
+        id: schema.kegiatan.id,
+        tanggalWaktu: schema.kegiatan.tanggalWaktu,
+        namaKegiatan: schema.kegiatan.namaKegiatan,
+        metodeRapat: schema.kegiatan.metodeRapat,
+        penyelenggara: schema.kegiatan.penyelenggara,
+        nomorSurat: schema.kegiatan.nomorSurat,
+        keterangan: schema.kegiatan.keterangan,
+      })
+      .from(schema.kegiatan)
+      .orderBy(schema.kegiatan.tanggalWaktu)
+
     const layananList = await db
       .select()
       .from(schema.layanan)
@@ -87,12 +100,14 @@ export abstract class MonitorService {
 
     return {
       layanan: result,
+      kegiatan: kegiatanList,
       runningText: pengaturan?.runningText ?? null,
       mediaUrl: pengaturan?.mediaUrl ?? null,
       youtubeVideoUrl: pengaturan?.youtubeVideoUrl ?? null,
       youtubePlaylistUrl: pengaturan?.youtubePlaylistUrl ?? null,
       slideshowImages: pengaturan?.slideshowImages ?? null,
       slideshowInterval: pengaturan?.slideshowInterval ?? 5,
+      kegiatanInterval: pengaturan?.kegiatanInterval ?? 8,
     }
   }
 }

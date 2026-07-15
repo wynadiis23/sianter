@@ -16,6 +16,7 @@ import { LoketAdminPage } from './routes/admin/loket'
 import { SesiAdminPage } from './routes/admin/sesi'
 import { UsersAdminPage } from './routes/admin/users'
 import { SettingsAdminPage } from './routes/admin/settings'
+import { KegiatanAdminPage } from './routes/admin/kegiatan'
 import { PetugasLayout } from './components/petugas-layout'
 import { PilihLoketPage } from './routes/petugas/pilih-loket'
 import { PetugasDashboardPage } from './routes/petugas/dashboard'
@@ -53,6 +54,7 @@ const router = createBrowserRouter([
       { path: '/admin/layanan', element: <LayananAdminPage /> },
       { path: '/admin/loket', element: <LoketAdminPage /> },
       { path: '/admin/sesi', element: <SesiAdminPage /> },
+      { path: '/admin/kegiatan', element: <KegiatanAdminPage /> },
       { path: '/admin/users', element: <UsersAdminPage /> },
       { path: '/admin/settings', element: <SettingsAdminPage /> },
     ],

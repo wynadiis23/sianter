@@ -320,6 +320,9 @@ body,
   .animate-marquee {
     animation: none;
   }
+  .animate-scroll-vertikal {
+    animation: none;
+  }
 }
 
 @keyframes marquee {
@@ -333,6 +336,24 @@ body,
 
 .animate-marquee {
   animation: marquee 30s linear infinite;
+}
+
+@keyframes scroll-vertikal {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-scroll-vertikal {
+  animation: scroll-vertikal 40s linear infinite;
+}
+
+.animate-scroll-vertikal:hover,
+.animate-scroll-vertikal.paused {
+  animation-play-state: paused;
 }
 
 

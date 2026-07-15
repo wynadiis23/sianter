@@ -1,0 +1,1 @@
+ALTER TABLE "pengaturan" ADD COLUMN "kegiatan_interval" integer DEFAULT 8 NOT NULL;
