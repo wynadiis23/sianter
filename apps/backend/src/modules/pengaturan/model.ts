@@ -11,6 +11,7 @@ const pengaturanShape = {
   youtubePlaylistUrl: t.Nullable(t.String()),
   slideshowImages: t.Nullable(t.String()),
   slideshowInterval: t.Integer(),
+  kegiatanInterval: t.Integer(),
 }
 
 export const PengaturanModel = {

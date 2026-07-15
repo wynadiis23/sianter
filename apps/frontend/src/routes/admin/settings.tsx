@@ -19,6 +19,7 @@ interface Pengaturan {
   youtubePlaylistUrl: string | null
   slideshowImages: string | null
   slideshowInterval: number
+  kegiatanInterval: number
 }
 
 function parseSlideshowImages(raw: string | null): string[] {
@@ -42,6 +43,7 @@ export function SettingsAdminPage() {
     youtubePlaylistUrl: '',
     slideshowImages: null,
     slideshowInterval: 5,
+    kegiatanInterval: 8,
   })
   const [slideshowImages, setSlideshowImages] = useState<string[]>([])
   const [newImageUrl, setNewImageUrl] = useState('')
@@ -60,6 +62,7 @@ export function SettingsAdminPage() {
         youtubePlaylistUrl: data.youtubePlaylistUrl ?? '',
         slideshowImages: data.slideshowImages ?? null,
         slideshowInterval: data.slideshowInterval ?? 5,
+        kegiatanInterval: data.kegiatanInterval ?? 8,
       })
       setSlideshowImages(parseSlideshowImages(data.slideshowImages))
     }
@@ -81,6 +84,7 @@ export function SettingsAdminPage() {
       youtubePlaylistUrl: form.youtubePlaylistUrl || null,
       slideshowImages: slideshowImages.length > 0 ? JSON.stringify(slideshowImages) : null,
       slideshowInterval: form.slideshowInterval,
+      kegiatanInterval: form.kegiatanInterval,
     }
     const { data, error } = await server.api.admin.pengaturan.put(body)
     setSaving(false)
@@ -95,6 +99,7 @@ export function SettingsAdminPage() {
         youtubePlaylistUrl: data.youtubePlaylistUrl ?? '',
         slideshowImages: data.slideshowImages ?? null,
         slideshowInterval: data.slideshowInterval ?? 5,
+        kegiatanInterval: data.kegiatanInterval ?? 8,
       })
       setSlideshowImages(parseSlideshowImages(data.slideshowImages))
       toast.success('Pengaturan disimpan')
@@ -302,6 +307,27 @@ export function SettingsAdminPage() {
                 }
                 className="w-24"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="kegiatanInterval">Interval Jadwal Kegiatan (detik)</Label>
+              <Input
+                id="kegiatanInterval"
+                type="number"
+                min={3}
+                max={120}
+                value={form.kegiatanInterval}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    kegiatanInterval: Math.max(3, Number(e.target.value)),
+                  })
+                }
+                className="w-24"
+              />
+              <p className="text-xs text-muted-foreground">
+                Durasi rotasi per card kegiatan di monitor (3-120 detik)
+              </p>
             </div>
           </CardContent>
         </Card>

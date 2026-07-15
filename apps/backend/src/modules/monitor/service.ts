@@ -107,6 +107,7 @@ export abstract class MonitorService {
       youtubePlaylistUrl: pengaturan?.youtubePlaylistUrl ?? null,
       slideshowImages: pengaturan?.slideshowImages ?? null,
       slideshowInterval: pengaturan?.slideshowInterval ?? 5,
+      kegiatanInterval: pengaturan?.kegiatanInterval ?? 8,
     }
   }
 }

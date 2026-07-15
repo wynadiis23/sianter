@@ -16,6 +16,7 @@ export const pengaturan = pgTable('pengaturan', {
   youtubePlaylistUrl: text('youtube_playlist_url'),
   slideshowImages: text('slideshow_images'),
   slideshowInterval: integer('slideshow_interval').notNull().default(5),
+  kegiatanInterval: integer('kegiatan_interval').notNull().default(8),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
