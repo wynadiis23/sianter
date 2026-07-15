@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { authClient } from '@/lib/auth'
 import { toast } from 'sonner'
-import { Plus, MoreHorizontal, Trash2, ShieldCheck, User } from 'lucide-react'
+import { Plus, MoreHorizontal, Trash2, ShieldCheck, User, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -85,7 +85,7 @@ const { error } = await authClient.admin.createUser({
       email: form.email,
       password: form.password,
       name: form.name,
-      role: form.role as 'SUPER_ADMIN' | 'PETUGAS_LOKET',
+      role: form.role as 'SUPER_ADMIN' | 'PETUGAS_LOKET' | 'PETUGAS_KEGIATAN',
     })
     setSaving(false)
     if (error) {
@@ -101,7 +101,7 @@ const { error } = await authClient.admin.createUser({
   const handleSetRole = async (userId: string, role: string) => {
     const { error } = await authClient.admin.setRole({
       userId,
-      role: role as 'SUPER_ADMIN' | 'PETUGAS_LOKET',
+      role: role as 'SUPER_ADMIN' | 'PETUGAS_LOKET' | 'PETUGAS_KEGIATAN',
     })
     if (error) {
       toast.error(error.message ?? 'Gagal mengubah role')
@@ -198,6 +198,11 @@ const { error } = await authClient.admin.createUser({
                           <ShieldCheck className="mr-1 size-3" />
                           Super Admin
                         </Badge>
+                      ) : user.role === 'PETUGAS_KEGIATAN' ? (
+                        <Badge variant="secondary">
+                          <Calendar className="mr-1 size-3" />
+                          Petugas Kegiatan
+                        </Badge>
                       ) : (
                         <Badge variant="secondary">
                           <User className="mr-1 size-3" />
@@ -223,7 +228,17 @@ const { error } = await authClient.admin.createUser({
                               Jadikan Super Admin
                             </DropdownMenuItem>
                           )}
-                          {user.role === 'SUPER_ADMIN' && (
+                          {user.role !== 'PETUGAS_KEGIATAN' && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleSetRole(user.id, 'PETUGAS_KEGIATAN')
+                              }
+                            >
+                              <Calendar className="size-4" />
+                              Jadikan Petugas Kegiatan
+                            </DropdownMenuItem>
+                          )}
+                          {user.role !== 'PETUGAS_LOKET' && (
                             <DropdownMenuItem
                               onClick={() =>
                                 handleSetRole(user.id, 'PETUGAS_LOKET')
@@ -302,6 +317,7 @@ const { error } = await authClient.admin.createUser({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PETUGAS_LOKET">Petugas Loket</SelectItem>
+                  <SelectItem value="PETUGAS_KEGIATAN">Petugas Kegiatan</SelectItem>
                   <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
                 </SelectContent>
               </Select>

@@ -76,7 +76,7 @@ export function PilihLoketPage() {
         })),
       }),
     )
-    navigate('/petugas/dashboard', { replace: true })
+    navigate('/petugas/loket', { replace: true })
   }
 
   if (loading) {

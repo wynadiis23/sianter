@@ -46,8 +46,10 @@ export function LoginPage() {
       const role = data?.user?.role
       if (role === 'SUPER_ADMIN') {
         navigate('/admin/layanan', { replace: true })
+      } else if (role === 'PETUGAS_KEGIATAN') {
+        navigate('/petugas/kegiatan', { replace: true })
       } else {
-        navigate('/petugas', { replace: true })
+        navigate('/petugas/loket', { replace: true })
       }
     } else {
       navigate(from, { replace: true })
@@ -113,7 +115,7 @@ export function LoginPage() {
                 </FieldDescription>
               </FieldGroup>
             </form>
-            <div className="relative hidden flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/20 md:flex">
+            <div className="relative hidden flex-col items-center justify-center bg-linear-to-br from-primary/5 to-primary/20 md:flex">
               <div className="text-center">
                 <Ticket className="mx-auto size-16 text-primary/60" />
                 <h2 className="mt-4 text-2xl font-bold text-foreground/80">

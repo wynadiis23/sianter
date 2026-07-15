@@ -1,8 +1,15 @@
+import { existsSync, mkdirSync } from 'fs'
+import { join } from 'path'
 import { eq } from 'drizzle-orm'
 import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 import type { KegiatanModel } from './model'
 import * as XLSX from 'xlsx'
+
+const MODULE_DIR = import.meta.dir
+const UPLOADS_DIR = join(MODULE_DIR, '../../../../uploads')
+const TEMPLATE_PATH = join(UPLOADS_DIR, 'template_kegiatan.xlsx')
+const DEFAULT_TEMPLATE_SRC = join(MODULE_DIR, '../../../../template_kegiatan.xlsx')
 
 export abstract class KegiatanService {
   static async list() {
@@ -81,5 +88,24 @@ export abstract class KegiatanService {
     })
 
     return { imported: parsed.length, replaced }
+  }
+
+  static ensureDefaultTemplate() {
+    if (!existsSync(UPLOADS_DIR)) mkdirSync(UPLOADS_DIR, { recursive: true })
+    if (!existsSync(TEMPLATE_PATH) && existsSync(DEFAULT_TEMPLATE_SRC)) {
+      Bun.write(TEMPLATE_PATH, Bun.file(DEFAULT_TEMPLATE_SRC))
+    }
+  }
+
+  static getTemplate() {
+    this.ensureDefaultTemplate()
+    if (!existsSync(TEMPLATE_PATH)) throw status(404, { message: 'Template tidak tersedia' })
+    return Bun.file(TEMPLATE_PATH).arrayBuffer()
+  }
+
+  static async updateTemplate(buffer: ArrayBuffer) {
+    if (!existsSync(UPLOADS_DIR)) mkdirSync(UPLOADS_DIR, { recursive: true })
+    await Bun.write(TEMPLATE_PATH, buffer)
+    return { success: true as const }
   }
 }
