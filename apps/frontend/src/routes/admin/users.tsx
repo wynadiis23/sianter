@@ -1,13 +1,14 @@
 import { useEffect, useState, useCallback } from 'react'
 import { authClient } from '@/lib/auth'
 import { toast } from 'sonner'
-import { Plus, MoreHorizontal, Trash2, ShieldCheck, User, Calendar } from 'lucide-react'
+import { MoreHorizontal, Trash2, ShieldCheck, User, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { AdminPageHeader } from '@/components/admin-page-header'
 import {
   Table,
   TableBody,
@@ -133,23 +134,11 @@ const { error } = await authClient.admin.createUser({
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Pengguna</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Kelola akun petugas loket dan admin
-          </p>
-        </div>
-        <Button
-          onClick={() => {
-            setForm(emptyForm)
-            setDialogOpen(true)
-          }}
-        >
-          <Plus className="size-4" />
-          Tambah
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Pengguna"
+        description="Kelola akun petugas loket dan admin"
+        onButtonClick={() => { setForm(emptyForm); setDialogOpen(true) }}
+      />
 
       <div className="mt-6 rounded-lg border">
         <Table>

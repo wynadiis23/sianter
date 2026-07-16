@@ -15,6 +15,8 @@ import {
 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { wita } from '@/lib/dayjs'
+import { IdentityForm } from '@/components/identity-form'
+import { ServiceCard } from '@/components/service-card'
 
 type Step = 'select' | 'jadwal' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -182,29 +184,18 @@ export function OnlineAntreanPage() {
           </div>
           <div className="space-y-3">
             {layananList.map((layanan) => (
-              <button
+              <ServiceCard
                 key={layanan.id}
-                type="button"
+                prefix={layanan.prefix}
+                nama={layanan.nama}
+                warna={layanan.warna}
+                deskripsi={layanan.deskripsi}
                 onClick={() => handleSelectLayanan(layanan)}
-                className="flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.99]"
-              >
-                <span
-                  className="flex size-12 shrink-0 items-center justify-center rounded-lg text-xl font-bold"
-                  style={{
-                    backgroundColor: layanan.warna ? `${layanan.warna}15` : 'var(--color-primary)',
-                    color: layanan.warna ?? 'var(--color-primary)',
-                  }}
-                >
-                  {layanan.prefix}
-                </span>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground">{layanan.nama}</p>
-                  {layanan.deskripsi && (
-                    <p className="mt-0.5 text-sm text-muted-foreground">{layanan.deskripsi}</p>
-                  )}
-                </div>
-                <ChevronLeft className="size-5 rotate-180 text-muted-foreground" />
-              </button>
+                variant="list"
+                rightElement={
+                  <ChevronLeft className="size-5 rotate-180 text-muted-foreground" />
+                }
+              />
             ))}
           </div>
         </main>
@@ -275,51 +266,15 @@ export function OnlineAntreanPage() {
             <h2 className="text-xl font-semibold text-foreground">Isi Identitas</h2>
             <p className="mt-1 text-sm text-muted-foreground">Masukkan data diri Anda</p>
           </div>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                Nama Lengkap <span className="text-destructive">*</span>
-              </label>
-              <Input
-                value={nama}
-                onChange={(e) => setNama(e.target.value)}
-                placeholder="Nama sesuai KTP"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                Nomor HP <span className="text-destructive">*</span>
-              </label>
-              <Input
-                type="tel"
-                inputMode="tel"
-                value={noHp}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '')
-                  setNoHp(val)
-                }}
-                placeholder="08xxxxxxxxxx"
-                maxLength={15}
-              />
-            </div>
-            {formError && (
-              <div className="rounded-lg bg-destructive/10 p-3">
-                <p className="text-sm text-destructive">{formError}</p>
-              </div>
-            )}
-          </div>
-          <div className="mt-8 flex flex-col gap-3">
-            <Button
-              onClick={handleIdentitySubmit}
-              disabled={!nama.trim() || !noHp.trim()}
-              className="w-full"
-            >
-              Lanjut
-            </Button>
-            <Button onClick={() => setStep('jadwal')} variant="ghost" className="w-full">
-              Kembali
-            </Button>
-          </div>
+          <IdentityForm
+            nama={nama}
+            noHp={noHp}
+            onNamaChange={setNama}
+            onNoHpChange={setNoHp}
+            error={formError}
+            onSubmit={handleIdentitySubmit}
+            onBack={() => setStep('jadwal')}
+          />
         </main>
       )}
 

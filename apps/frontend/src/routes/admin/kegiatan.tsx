@@ -2,12 +2,13 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { server } from '@/lib/eden'
 import { useSession } from '@/lib/auth'
 import { toast } from 'sonner'
-import { Plus, MoreHorizontal, Pencil, Trash2, Upload, Download, FileSpreadsheet, DownloadCloud } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Upload, Download, FileSpreadsheet, DownloadCloud } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AdminPageHeader } from '@/components/admin-page-header'
 import {
   Table,
   TableBody,
@@ -202,32 +203,25 @@ export function KegiatanAdminPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Jadwal Kegiatan
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Kelola jadwal kegiatan yang ditampilkan di monitor
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
-            <Upload className="size-4" />
-            Import Excel
-          </Button>
-          {session?.user.role === 'SUPER_ADMIN' && (
-            <Button variant="outline" onClick={() => setTemplateDialogOpen(true)}>
-              <DownloadCloud className="size-4" />
-              Kelola Template
+      <AdminPageHeader
+        title="Jadwal Kegiatan"
+        description="Kelola jadwal kegiatan yang ditampilkan di monitor"
+        onButtonClick={openCreate}
+        extraActions={
+          <>
+            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+              <Upload className="size-4" />
+              Import Excel
             </Button>
-          )}
-          <Button onClick={openCreate}>
-            <Plus className="size-4" />
-            Tambah
-          </Button>
-        </div>
-      </div>
+            {session?.user.role === 'SUPER_ADMIN' && (
+              <Button variant="outline" onClick={() => setTemplateDialogOpen(true)}>
+                <DownloadCloud className="size-4" />
+                Kelola Template
+              </Button>
+            )}
+          </>
+        }
+      />
 
       <div className="mt-6 rounded-lg border">
         <Table>

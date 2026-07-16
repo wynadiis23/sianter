@@ -7,6 +7,9 @@ import { QRCodeSVG } from 'qrcode.react'
 import { wita } from '@/lib/dayjs'
 import { QrScanner } from '@/components/qr-scanner'
 import { ThemeSelector } from '@/components/theme-selector'
+import { Stepper } from '@/components/stepper'
+import { IdentityForm } from '@/components/identity-form'
+import { ServiceCard } from '@/components/service-card'
 
 type PageState = 'loading' | 'select' | 'checkin' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -26,62 +29,7 @@ interface TicketData {
   trackingToken: string
 }
 
-function Stepper({
-  current,
-  error,
-}: {
-  current: number
-  error?: boolean
-}) {
-  const steps = ['Pilih Layanan', 'Isi Identitas', 'Konfirmasi', 'Ambil Tiket']
-
-  return (
-    <nav aria-label="Langkah pengambilan antrean" className="border-b border-border bg-card">
-      <ol className="mx-auto flex max-w-xl items-center justify-center gap-0 px-4 py-4">
-        {steps.map((label, i) => {
-          const step = i + 1
-          const isActive = step === current
-          const isCompleted = step < current
-          const isError = error && isActive
-
-          return (
-            <li key={label} className="flex items-center">
-              <div className="flex flex-col items-center gap-1.5">
-                <div
-                  className={`flex size-8 items-center justify-center rounded-full text-sm font-semibold transition-colors
-                    ${isError ? 'bg-destructive text-destructive-foreground' : ''}
-                    ${isActive && !isError ? 'bg-primary text-primary-foreground ring-2 ring-ring ring-offset-2 ring-offset-card' : ''}
-                    ${isCompleted ? 'bg-primary/10 text-primary' : ''}
-                    ${!isActive && !isCompleted && !isError ? 'bg-muted text-muted-foreground/40' : ''}`}
-                >
-                  {isCompleted ? (
-                    <CheckCircle2 className="size-4" />
-                  ) : (
-                    <span className="font-bold">{step}</span>
-                  )}
-                </div>
-                <span
-                  className={`hidden whitespace-nowrap text-xs sm:block font-wordmark
-                    ${isActive ? 'font-semibold text-foreground' : ''}
-                    ${isCompleted ? 'text-muted-foreground' : ''}
-                    ${!isActive && !isCompleted ? 'text-muted-foreground/40' : ''}`}
-                >
-                  {label}
-                </span>
-              </div>
-              {i < steps.length - 1 && (
-                <div
-                  className={`mx-2 mb-6 h-px w-10 sm:w-16 md:w-24
-                    ${step <= current ? 'bg-primary/30' : 'bg-border'}`}
-                />
-              )}
-            </li>
-          )
-        })}
-      </ol>
-    </nav>
-  )
-}
+const KIOS_STEPS = ['Pilih Layanan', 'Isi Identitas', 'Konfirmasi', 'Ambil Tiket']
 
 export function KiosPage() {
   const [state, setState] = useState<PageState>('loading')
@@ -354,6 +302,7 @@ export function KiosPage() {
 
         {/* Stepper */}
         <Stepper
+          steps={KIOS_STEPS}
           current={currentStep}
           error={state === 'error' && !!selectedLayanan}
         />
@@ -372,29 +321,13 @@ export function KiosPage() {
               </div>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                 {layananList.map((layanan) => (
-                  <button
+                  <ServiceCard
                     key={layanan.id}
-                    type="button"
+                    prefix={layanan.prefix}
+                    nama={layanan.nama}
+                    warna={layanan.warna}
                     onClick={() => handleSelectLayanan(layanan)}
-                    className={`flex min-h-45 flex-col items-center justify-center gap-2 rounded-xl border bg-card p-5 text-center shadow-sm transition-all duration-150 hover:shadow-md active:scale-[0.97] active:bg-primary active:border-primary active:text-primary-foreground ${layanan.warna ? 'border-t-4' : 'border-border'
-                      }`}
-                    style={
-                      layanan.warna
-                        ? ({
-                          backgroundColor: `${layanan.warna}15`,
-                          borderColor: `${layanan.warna}40`,
-                          borderTopColor: layanan.warna,
-                        } as React.CSSProperties)
-                        : undefined
-                    }
-                  >
-                    <span className="kiosk-font-wordmark text-5xl leading-none text-inherit">
-                      {layanan.prefix}
-                    </span>
-                    <span className="font-body text-base font-medium text-inherit">
-                      {layanan.nama}
-                    </span>
-                  </button>
+                  />
                 ))}
               </div>
             </div>
@@ -495,73 +428,24 @@ export function KiosPage() {
         {/* ─── Step 2: Identity ─── */}
         {state === 'identity' && (
           <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
-            <div className="w-full max-w-sm">
-              <div className="mb-6 text-center">
-                <User className="mx-auto mb-3 size-10 text-primary" />
-                <h2 className="kiosk-font-wordmark text-2xl text-foreground">
-                  Isi Identitas
-                </h2>
-                <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
-                  Masukkan data diri Anda
-                </p>
-              </div>
-
-              <div className="space-y-5">
-                <div className="space-y-2">
-                  <label className="font-body text-sm font-medium text-foreground">
-                    Nama Lengkap <span className="text-destructive">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={nama}
-                    onChange={(e) => setNama(e.target.value)}
-                    placeholder="Nama sesuai KTP"
-                    className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="font-body text-sm font-medium text-foreground">
-                    Nomor HP <span className="text-destructive">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="tel"
-                    value={noHp}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '')
-                      setNoHp(val)
-                    }}
-                    placeholder="08xxxxxxxxxx"
-                    maxLength={15}
-                    className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-
-                {formError && (
-                  <div className="rounded-lg bg-destructive/10 p-3">
-                    <p className="font-body text-sm text-destructive">{formError}</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-8 flex flex-col gap-4">
-                <Button
-                  onClick={handleIdentitySubmit}
-                  disabled={!nama.trim() || !noHp.trim()}
-                  className="h-14 w-full text-lg font-body"
-                >
-                  Lanjut
-                </Button>
-                <Button
-                  onClick={handleBackToSelect}
-                  variant="ghost"
-                  className="h-14 w-full text-base font-normal"
-                >
-                  Kembali
-                </Button>
-              </div>
+            <div className="mb-6 text-center">
+              <User className="mx-auto mb-3 size-10 text-primary" />
+              <h2 className="kiosk-font-wordmark text-2xl text-foreground">
+                Isi Identitas
+              </h2>
+              <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
+                Masukkan data diri Anda
+              </p>
             </div>
+            <IdentityForm
+              nama={nama}
+              noHp={noHp}
+              onNamaChange={setNama}
+              onNoHpChange={setNoHp}
+              error={formError}
+              onSubmit={handleIdentitySubmit}
+              onBack={handleBackToSelect}
+            />
           </main>
         )}
 

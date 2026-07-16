@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AdminPageHeader } from '@/components/admin-page-header'
 import {
   Select,
   SelectContent,
@@ -249,18 +250,16 @@ export function RekapAdminPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Rekap Antrean</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Lihat dan export data antrean berdasarkan periode
-          </p>
-        </div>
-        <Button onClick={exportCSV} variant="outline" disabled={loading || items.length === 0}>
-          <Download className="size-4" />
-          Export CSV
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Rekap Antrean"
+        description="Lihat dan export data antrean berdasarkan periode"
+        extraActions={
+          <Button onClick={exportCSV} variant="outline" disabled={loading || items.length === 0}>
+            <Download className="size-4" />
+            Export CSV
+          </Button>
+        }
+      />
 
       <div className="mt-6 rounded-lg border bg-card p-4">
         <div className="flex flex-wrap items-end gap-3">

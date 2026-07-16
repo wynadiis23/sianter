@@ -1,14 +1,15 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
-import { Plus, MoreHorizontal, Pencil, Trash2, Upload, X } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AdminPageHeader } from '@/components/admin-page-header'
+import { AktifSwitch } from '@/components/aktif-switch'
 import {
   Table,
   TableBody,
@@ -166,18 +167,11 @@ export function LayananAdminPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Layanan</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Kelola daftar layanan, prefix, deskripsi, dan ikon
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" />
-          Tambah
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Layanan"
+        description="Kelola daftar layanan, prefix, deskripsi, dan ikon"
+        onButtonClick={openCreate}
+      />
 
       <div className="mt-6 rounded-lg border">
         <Table>
@@ -415,19 +409,11 @@ export function LayananAdminPage() {
                 })}
               </div>
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div>
-                <Label htmlFor="aktif">Status Aktif</Label>
-                <p className="text-sm text-muted-foreground">
-                  Layanan nonaktif tidak muncul di kios tiket
-                </p>
-              </div>
-              <Switch
-                id="aktif"
-                checked={form.aktif}
-                onCheckedChange={(v) => setForm({ ...form, aktif: v })}
-              />
-            </div>
+            <AktifSwitch
+              checked={form.aktif ?? false}
+              onCheckedChange={(v) => setForm({ ...form, aktif: v })}
+              helperText="Layanan nonaktif tidak muncul di kios tiket"
+            />
             <DialogFooter>
               <Button
                 type="button"
