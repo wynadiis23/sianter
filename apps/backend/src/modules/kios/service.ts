@@ -131,6 +131,7 @@ export abstract class KiosService {
         layananId,
         pemohonId,
         status: 'WAITING',
+        sumber: 'KIOS',
         trackingToken: generateShortToken(),
       })
       .returning()

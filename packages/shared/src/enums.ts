@@ -14,3 +14,6 @@ export type QueueStatus = (typeof QUEUE_STATUS)[number]
 
 export const QUEUE_MODE = ['FIFO_GLOBAL', 'SELECTIVE'] as const
 export type QueueMode = (typeof QUEUE_MODE)[number]
+
+export const SUMBER = ['KIOS', 'ONLINE'] as const
+export type Sumber = (typeof SUMBER)[number]
