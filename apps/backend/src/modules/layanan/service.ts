@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 import type { LayananModel } from './model'
+import { broadcastLayananChanged } from '../realtime/service'
 
 export abstract class LayananService {
   static async list() {
@@ -38,6 +39,14 @@ export abstract class LayananService {
       )
     }
 
+    broadcastLayananChanged({
+      action: 'created',
+      id: created.id,
+      nama: created.nama,
+      prefix: created.prefix,
+      warna: created.warna,
+      aktif: created.aktif,
+    })
     return created
   }
 
@@ -56,6 +65,14 @@ export abstract class LayananService {
       .where(eq(schema.layanan.id, id))
       .returning()
     if (!updated) throw status(404, { message: 'Layanan tidak ditemukan' })
+    broadcastLayananChanged({
+      action: 'updated',
+      id: updated.id,
+      nama: updated.nama,
+      prefix: updated.prefix,
+      warna: updated.warna,
+      aktif: updated.aktif,
+    })
     return updated
   }
 
@@ -65,6 +82,14 @@ export abstract class LayananService {
       .where(eq(schema.layanan.id, id))
       .returning()
     if (!deleted) throw status(404, { message: 'Layanan tidak ditemukan' })
+    broadcastLayananChanged({
+      action: 'deleted',
+      id: deleted.id,
+      nama: deleted.nama,
+      prefix: deleted.prefix,
+      warna: deleted.warna,
+      aktif: deleted.aktif,
+    })
     return { success: true as const }
   }
 }

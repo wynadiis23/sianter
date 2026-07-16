@@ -23,6 +23,26 @@ const pengaturanData = t.Object({
   kegiatanInterval: t.Integer(),
 })
 
+const layananChangedData = t.Object({
+  action: t.Union([t.Literal('created'), t.Literal('updated'), t.Literal('deleted')]),
+  id: t.String(),
+  nama: t.String(),
+  prefix: t.String(),
+  warna: t.Nullable(t.String()),
+  aktif: t.Boolean(),
+})
+
+const kegiatanChangedData = t.Object({
+  action: t.Union([t.Literal('created'), t.Literal('updated'), t.Literal('deleted'), t.Literal('replaced')]),
+  id: t.String(),
+  tanggalWaktu: t.String(),
+  namaKegiatan: t.String(),
+  metodeRapat: t.String(),
+  penyelenggara: t.String(),
+  nomorSurat: t.String(),
+  keterangan: t.String(),
+})
+
 export const WsModel = {
   event: t.Union([
     t.Object({ type: t.Literal('antrean:called'), data: antreanData }),
@@ -31,6 +51,8 @@ export const WsModel = {
     t.Object({ type: t.Literal('antrean:finished'), data: antreanData }),
     t.Object({ type: t.Literal('antrean:created'), data: antreanData }),
     t.Object({ type: t.Literal('pengaturan:updated'), data: pengaturanData }),
+    t.Object({ type: t.Literal('layanan:changed'), data: layananChangedData }),
+    t.Object({ type: t.Literal('kegiatan:changed'), data: kegiatanChangedData }),
   ]),
 } as const
 
@@ -41,3 +63,5 @@ export type WsModel = {
 export type WsEvent = WsModel['event']
 export type AntreanEventData = UnwrapSchema<typeof antreanData>
 export type PengaturanEventData = UnwrapSchema<typeof pengaturanData>
+export type LayananChangedData = UnwrapSchema<typeof layananChangedData>
+export type KegiatanChangedData = UnwrapSchema<typeof kegiatanChangedData>

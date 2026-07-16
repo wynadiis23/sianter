@@ -137,7 +137,7 @@ export function PetugasDashboardPage() {
 
   const handleWsEvent = useCallback(
     (event: WsEvent) => {
-      if (event.type === 'pengaturan:updated') {
+      if (event.type === 'pengaturan:updated' || event.type === 'layanan:changed' || event.type === 'kegiatan:changed') {
         fetchDashboard()
         return
       }

@@ -60,7 +60,7 @@ export function useSpeech() {
         const source = ctx.createBufferSource()
         source.buffer = output
         source.connect(ctx.destination)
-        // source.playbackRate.value = 1.0
+        source.playbackRate.value = 1.0
         source.start()
         sourceRef.current = source
       } catch {
