@@ -1,6 +1,9 @@
 import { Elysia, t } from 'elysia'
 import { KegiatanService } from './service'
 import { KegiatanModel } from './model'
+import * as XLSX from 'xlsx'
+
+const MAX_FILE_SIZE = 2 * 1024 * 1024
 
 export const kegiatanModule = new Elysia({ prefix: '/api/admin/kegiatan' })
   .get('/', () => KegiatanService.list(), {
@@ -36,11 +39,11 @@ export const kegiatanModule = new Elysia({ prefix: '/api/admin/kegiatan' })
   }, {
     kegiatan: true,
     body: t.Object({
-      file: t.File({ type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'] }),
+      file: t.File({ type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'], maxSize: MAX_FILE_SIZE }),
     }),
     response: {
       200: KegiatanModel.importResponse,
-      400: KegiatanModel.notFound,
+      400: t.Union([KegiatanModel.notFound, KegiatanModel.validationError, KegiatanModel.structureError]),
     },
   })
   .get('/template', async ({ set }) => {
@@ -57,10 +60,17 @@ export const kegiatanModule = new Elysia({ prefix: '/api/admin/kegiatan' })
   .post('/template', async ({ body }) => {
     const file = (body as { file: File }).file
     const buffer = await file.arrayBuffer()
+    const workbook = XLSX.read(buffer, { type: 'buffer' })
+    const sheet = workbook.Sheets[workbook.SheetNames[0]]
+    KegiatanService.validateHeaders(sheet)
     return KegiatanService.updateTemplate(buffer)
   }, {
     admin: true,
     body: t.Object({
-      file: t.File({ type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'] }),
+      file: t.File({ type: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'], maxSize: MAX_FILE_SIZE }),
     }),
+    response: {
+      200: KegiatanModel.deleted,
+      400: t.Union([KegiatanModel.notFound, KegiatanModel.validationError, KegiatanModel.structureError]),
+    },
   })
