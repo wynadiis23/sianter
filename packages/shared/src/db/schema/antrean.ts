@@ -6,7 +6,7 @@ import {
   date,
 } from 'drizzle-orm/pg-core'
 import { createId } from '@paralleldrive/cuid2'
-import type { QueueStatus } from '../../enums'
+import type { QueueStatus, Sumber } from '../../enums'
 import { user } from './auth'
 import { layanan, loket } from './layanan'
 import { pemohon } from './pemohon'
@@ -41,6 +41,10 @@ export const antrean = pgTable('antrean', {
     .$type<QueueStatus>()
     .notNull()
     .default('WAITING'),
+  sumber: varchar('sumber', { length: 10 })
+    .$type<Sumber>()
+    .notNull()
+    .default('KIOS'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -64,6 +68,10 @@ export const antreanLog = pgTable('antrean_log', {
   sesiId: varchar('sesi_id'),
   tanggalKunjungan: date('tanggal_kunjungan'),
   trackingToken: varchar('tracking_token', { length: 32 }).notNull(),
+  sumber: varchar('sumber', { length: 10 })
+    .$type<Sumber>()
+    .notNull()
+    .default('KIOS'),
   status: varchar('status', { length: 20 })
     .$type<QueueStatus>()
     .notNull(),

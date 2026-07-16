@@ -1,6 +1,6 @@
 import { and, eq, gte, lt, SQL, count } from 'drizzle-orm'
 import { db, schema } from '../../db/client'
-import { QUEUE_STATUS, type QueueStatus } from '@sianter/shared'
+import { QUEUE_STATUS, SUMBER, type QueueStatus, type Sumber } from '@sianter/shared'
 
 interface RekapQuery {
   mode?: string
@@ -10,6 +10,7 @@ interface RekapQuery {
   layananId?: string
   loketId?: string
   status?: string
+  sumber?: string
   page?: number
   limit?: number
 }
@@ -55,6 +56,10 @@ function buildFilterConditions(q: RekapQuery) {
     conditions.push(eq(schema.antrean.status, q.status as QueueStatus))
   }
 
+  if (q.sumber && (SUMBER as readonly string[]).includes(q.sumber)) {
+    conditions.push(eq(schema.antrean.sumber, q.sumber as Sumber))
+  }
+
   return conditions
 }
 
@@ -80,6 +85,7 @@ export abstract class RekapService {
         kode: schema.antrean.kode,
         nomorUrut: schema.antrean.nomorUrut,
         status: schema.antrean.status,
+        sumber: schema.antrean.sumber,
         namaLayanan: schema.layanan.nama,
         prefixLayanan: schema.layanan.prefix,
         nomorLoket: schema.loket.nomor,

@@ -49,6 +49,7 @@ interface RekapItem {
   kode: string | null
   nomorUrut: number | null
   status: string
+  sumber: string
   namaLayanan: string
   prefixLayanan: string
   nomorLoket: number | null
@@ -123,6 +124,7 @@ export function RekapAdminPage() {
   const [layananId, setLayananId] = useState('')
   const [loketId, setLoketId] = useState('')
   const [status, setStatus] = useState('')
+  const [sumber, setSumber] = useState('')
 
   const [layananList, setLayananList] = useState<LayananOption[]>([])
   const [loketList, setLoketList] = useState<LoketOption[]>([])
@@ -155,8 +157,9 @@ export function RekapAdminPage() {
     if (layananId) q.layananId = layananId
     if (loketId) q.loketId = loketId
     if (status) q.status = status
+    if (sumber) q.sumber = sumber
     return q
-  }, [mode, tanggal, bulan, tahun, layananId, loketId, status, page])
+  }, [mode, tanggal, bulan, tahun, layananId, loketId, status, sumber, page])
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -193,7 +196,7 @@ export function RekapAdminPage() {
 
     const header = [
       'Kode', 'Nomor Urut', 'Layanan', 'Loket', 'Pemohon',
-      'No HP', 'Status', 'Tanggal Kunjungan',
+      'No HP', 'Sumber', 'Status', 'Tanggal Kunjungan',
       'Dibuat', 'Dipanggil', 'Selesai', 'Dilewati',
     ].join(',')
 
@@ -210,6 +213,7 @@ export function RekapAdminPage() {
         item.nomorLoket ? `Loket ${item.nomorLoket}` : '',
         escape(item.namaPemohon),
         escape(item.noHpPemohon),
+        item.sumber === 'ONLINE' ? 'Online' : 'Kios',
         STATUS_LABEL[item.status] ?? item.status,
         item.tanggalKunjungan ?? '',
         formatDateShort(item.createdAt),
@@ -233,14 +237,14 @@ export function RekapAdminPage() {
 
   const summaryCards = summary
     ? [
-        { label: 'Total', key: 'total', color: 'bg-primary/10 text-primary' },
-        { label: 'Menunggu', key: 'waiting', color: 'bg-blue-500/10 text-blue-600' },
-        { label: 'Dipanggil', key: 'called', color: 'bg-amber-500/10 text-amber-600' },
-        { label: 'Selesai', key: 'finished', color: 'bg-emerald-500/10 text-emerald-600' },
-        { label: 'Dilewati', key: 'skipped', color: 'bg-orange-500/10 text-orange-600' },
-        { label: 'Kedaluwarsa', key: 'expired', color: 'bg-red-500/10 text-red-600' },
-        { label: 'Dipesan', key: 'reserved', color: 'bg-purple-500/10 text-purple-600' },
-      ]
+      { label: 'Total', key: 'total', color: 'bg-primary/10 text-primary' },
+      { label: 'Menunggu', key: 'waiting', color: 'bg-blue-500/10 text-blue-600' },
+      { label: 'Dipanggil', key: 'called', color: 'bg-amber-500/10 text-amber-600' },
+      { label: 'Selesai', key: 'finished', color: 'bg-emerald-500/10 text-emerald-600' },
+      { label: 'Dilewati', key: 'skipped', color: 'bg-orange-500/10 text-orange-600' },
+      { label: 'Kedaluwarsa', key: 'expired', color: 'bg-red-500/10 text-red-600' },
+      { label: 'Dipesan', key: 'reserved', color: 'bg-purple-500/10 text-purple-600' },
+    ]
     : []
 
   return (
@@ -260,7 +264,7 @@ export function RekapAdminPage() {
 
       <div className="mt-6 rounded-lg border bg-card p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <div className="space-y-1.5">
+          <div className="space-y-2.5">
             <Label>Mode</Label>
             <Select value={mode} onValueChange={(v: Mode) => setMode(v)}>
               <SelectTrigger className="w-32">
@@ -274,7 +278,7 @@ export function RekapAdminPage() {
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2.5">
             <Label>
               {mode === 'tanggal' ? 'Tanggal' : mode === 'bulan' ? 'Bulan' : 'Tahun'}
             </Label>
@@ -306,7 +310,7 @@ export function RekapAdminPage() {
             )}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2.5">
             <Label>Layanan</Label>
             <Select value={layananId} onValueChange={setLayananId}>
               <SelectTrigger className="w-44">
@@ -323,7 +327,7 @@ export function RekapAdminPage() {
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2.5">
             <Label>Loket</Label>
             <Select value={loketId} onValueChange={setLoketId}>
               <SelectTrigger className="w-40">
@@ -340,7 +344,7 @@ export function RekapAdminPage() {
             </Select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2.5">
             <Label>Status</Label>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger className="w-40">
@@ -353,6 +357,20 @@ export function RekapAdminPage() {
                     {label}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2.5">
+            <Label>Sumber</Label>
+            <Select value={sumber} onValueChange={setSumber}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Semua" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Semua</SelectItem>
+                <SelectItem value="KIOS">Kios</SelectItem>
+                <SelectItem value="ONLINE">Online</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -411,6 +429,7 @@ export function RekapAdminPage() {
                     <TableRow>
                       <TableHead>Layanan</TableHead>
                       <TableHead className="text-right">Total</TableHead>
+                      <TableHead className="text-right">Dipesan</TableHead>
                       <TableHead className="text-right">Menunggu</TableHead>
                       <TableHead className="text-right">Dipanggil</TableHead>
                       <TableHead className="text-right">Selesai</TableHead>
@@ -427,6 +446,7 @@ export function RekapAdminPage() {
                           {pl.nama}
                         </TableCell>
                         <TableCell className="text-right font-medium">{pl.total}</TableCell>
+                        <TableCell className="text-right text-red-600">{pl.reserved}</TableCell>
                         <TableCell className="text-right text-blue-600">{pl.waiting}</TableCell>
                         <TableCell className="text-right text-amber-600">{pl.called + pl.recalled}</TableCell>
                         <TableCell className="text-right text-emerald-600">{pl.finished}</TableCell>
@@ -449,6 +469,7 @@ export function RekapAdminPage() {
                     <TableHead>Layanan</TableHead>
                     <TableHead>Loket</TableHead>
                     <TableHead className="hidden md:table-cell">Pemohon</TableHead>
+                    <TableHead className="w-16">Sumber</TableHead>
                     <TableHead className="w-24">Status</TableHead>
                     <TableHead className="hidden sm:table-cell">Waktu</TableHead>
                   </TableRow>
@@ -456,7 +477,7 @@ export function RekapAdminPage() {
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                      <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
                         <Calendar className="mx-auto mb-2 size-8 opacity-50" />
                         Tidak ada data antrean untuk filter ini
                       </TableCell>
@@ -478,6 +499,11 @@ export function RekapAdminPage() {
                         </TableCell>
                         <TableCell className="hidden max-w-[160px] truncate md:table-cell">
                           {item.namaPemohon || '—'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={item.sumber === 'ONLINE' ? 'default' : 'secondary'}>
+                            {item.sumber === 'ONLINE' ? 'Online' : 'Kios'}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <Badge variant={STATUS_VARIANTS[item.status] ?? 'outline'}>

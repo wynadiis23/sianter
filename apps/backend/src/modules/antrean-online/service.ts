@@ -164,6 +164,7 @@ export abstract class AntreanOnlineService {
         sesiId,
         tanggalKunjungan,
         status: 'RESERVED',
+        sumber: 'ONLINE',
         trackingToken: generateShortToken(),
       })
       .returning()

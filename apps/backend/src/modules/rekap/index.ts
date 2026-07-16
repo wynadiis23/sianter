@@ -16,6 +16,7 @@ export const rekapModule = new Elysia({ prefix: '/api/admin/rekap' }).get(
         layananId: t.Optional(t.String()),
         loketId: t.Optional(t.String()),
         status: t.Optional(t.String()),
+        sumber: t.Optional(t.String()),
         page: t.Optional(t.Numeric()),
         limit: t.Optional(t.Numeric()),
       }),
