@@ -34,6 +34,7 @@ const routeLabels: Record<string, string> = {
   '/admin/sesi': 'Sesi',
   '/admin/users': 'Pengguna',
   '/admin/settings': 'Pengaturan',
+  '/admin/rekap': 'Rekap',
   '/petugas/loket': 'Loket',
   '/petugas/loket/select': 'Pilih Loket',
   '/petugas/kegiatan': 'Kegiatan',

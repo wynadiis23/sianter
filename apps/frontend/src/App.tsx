@@ -17,6 +17,7 @@ import { SesiAdminPage } from './routes/admin/sesi'
 import { UsersAdminPage } from './routes/admin/users'
 import { SettingsAdminPage } from './routes/admin/settings'
 import { KegiatanAdminPage } from './routes/admin/kegiatan'
+import { RekapAdminPage } from './routes/admin/rekap'
 import { PetugasLayout } from './components/petugas-layout'
 import { KegiatanLayout } from './components/kegiatan-layout'
 import { PetugasDashboardPage } from './routes/petugas/dashboard'
@@ -72,6 +73,7 @@ const router = createBrowserRouter([
       { path: '/admin/kegiatan', element: <KegiatanAdminPage /> },
       { path: '/admin/users', element: <UsersAdminPage /> },
       { path: '/admin/settings', element: <SettingsAdminPage /> },
+      { path: '/admin/rekap', element: <RekapAdminPage /> },
     ],
   },
   { path: '*', element: <NotFoundPage /> },
