@@ -12,6 +12,9 @@ const UPLOADS_DIR = join(MODULE_DIR, '../../../../uploads')
 const TEMPLATE_PATH = join(UPLOADS_DIR, 'template_kegiatan.xlsx')
 const DEFAULT_TEMPLATE_SRC = join(MODULE_DIR, '../../../../template_kegiatan.xlsx')
 
+const EXPECTED_HEADERS = ['No', 'Hari/Tanggal/Waktu', 'Kegiatan', 'Metode Rapat', 'Penyelenggara', 'Nomor Surat', 'Keterangan']
+const DATA_COLUMNS = ['Hari/Tanggal/Waktu', 'Kegiatan', 'Metode Rapat', 'Penyelenggara', 'Nomor Surat', 'Keterangan']
+
 export abstract class KegiatanService {
   static async list() {
     return db.select().from(schema.kegiatan).orderBy(schema.kegiatan.tanggalWaktu)
@@ -83,12 +86,78 @@ export abstract class KegiatanService {
     return { success: true as const }
   }
 
+  static validateHeaders(sheet: XLSX.WorkSheet) {
+    const rawRows = XLSX.utils.sheet_to_json<string[]>(sheet, {
+      header: 1,
+      defval: '',
+    }) as unknown as unknown[][]
+
+    const headerRow = rawRows[0] as string[] | undefined
+    if (!headerRow || headerRow.length === 0) {
+      throw status(400, { message: 'File Excel tidak memiliki header' })
+    }
+
+    const normalizedFound = headerRow.map((h) => String(h ?? '').trim())
+    const normalizedExpected = EXPECTED_HEADERS
+
+    if (normalizedFound.length !== normalizedExpected.length) {
+      throw status(400, {
+        message: 'Struktur template tidak valid: jumlah kolom tidak sesuai',
+        expected: normalizedExpected,
+        found: normalizedFound,
+      })
+    }
+
+    for (let i = 0; i < normalizedExpected.length; i++) {
+      if (normalizedFound[i] !== normalizedExpected[i]) {
+        throw status(400, {
+          message: `Struktur template tidak valid: kolom "${normalizedFound[i]}" tidak sesuai, seharusnya "${normalizedExpected[i]}"`,
+          expected: normalizedExpected,
+          found: normalizedFound,
+        })
+      }
+    }
+  }
+
+  static validateEmptyCells(sheet: XLSX.WorkSheet) {
+    const errors: { row: number; column: string }[] = []
+    const sheetRows = XLSX.utils.sheet_to_json<Record<string, string>>(sheet, {
+      range: 0,
+      header: EXPECTED_HEADERS,
+      defval: '',
+    })
+
+    for (let i = 1; i < sheetRows.length; i++) {
+      const row = sheetRows[i]
+      const isAllEmpty = DATA_COLUMNS.every((col) => !String(row[col] ?? '').trim())
+      if (isAllEmpty) continue
+
+      for (const col of DATA_COLUMNS) {
+        const val = String(row[col] ?? '').trim()
+        if (!val) {
+          errors.push({ row: i + 1, column: col })
+        }
+      }
+    }
+
+    if (errors.length > 0) {
+      throw status(400, {
+        message: `Terdapat ${errors.length} cell kosong. Lengkapi semua kolom yang wajib diisi.`,
+        errors,
+      })
+    }
+  }
+
   static async importExcel(buffer: ArrayBuffer) {
     const workbook = XLSX.read(buffer, { type: 'buffer' })
     const sheet = workbook.Sheets[workbook.SheetNames[0]]
 
+    this.validateHeaders(sheet)
+    this.validateEmptyCells(sheet)
+
     const rows = XLSX.utils.sheet_to_json<Record<string, string>>(sheet, {
       range: 1,
+      defval: '',
     })
 
     const parsed = rows

@@ -73,6 +73,12 @@ export function KegiatanAdminPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [importing, setImporting] = useState(false)
   const importFileInputRef = useRef<HTMLInputElement>(null)
+  const [importValidation, setImportValidation] = useState<{
+    message: string
+    errors?: Array<{ row: number; column: string }>
+    expected?: string[]
+    found?: string[]
+  } | null>(null)
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false)
   const [templateFile, setTemplateFile] = useState<File | null>(null)
   const [templateUploading, setTemplateUploading] = useState(false)
@@ -166,11 +172,13 @@ export function KegiatanAdminPage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null
     setSelectedFile(file)
+    setImportValidation(null)
   }
 
   const handleImportSubmit = async () => {
     if (!selectedFile) return
 
+    setImportValidation(null)
     setImporting(true)
     const { data, error } = await server.api.admin.kegiatan.import.post({
       file: selectedFile,
@@ -178,7 +186,7 @@ export function KegiatanAdminPage() {
     setImporting(false)
 
     if (error) {
-      toast.error(error.value?.message ?? 'Gagal mengimpor file')
+      setImportValidation(error.value as typeof importValidation)
       return
     }
 
@@ -187,6 +195,7 @@ export function KegiatanAdminPage() {
     )
     setImportDialogOpen(false)
     setSelectedFile(null)
+    setImportValidation(null)
     if (importFileInputRef.current) importFileInputRef.current.value = ''
     fetch()
   }
@@ -416,7 +425,10 @@ export function KegiatanAdminPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+      <Dialog open={importDialogOpen} onOpenChange={(open) => {
+        setImportDialogOpen(open)
+        if (!open) setImportValidation(null)
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Import Jadwal Kegiatan</DialogTitle>
@@ -439,6 +451,27 @@ export function KegiatanAdminPage() {
                 Download Template
               </a>
             </Button>
+            {importValidation && (
+              <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 space-y-2">
+                <p className="text-sm font-medium text-destructive">{importValidation.message}</p>
+                {importValidation.errors && importValidation.errors.length > 0 && (
+                  <div className="max-h-32 overflow-y-auto">
+                    {importValidation.errors.slice(0, 10).map((e, i) => (
+                      <p key={i} className="text-xs text-destructive/80">Baris {e.row}: kolom &quot;{e.column}&quot;</p>
+                    ))}
+                    {importValidation.errors.length > 10 && (
+                      <p className="text-xs text-muted-foreground mt-1">...dan {importValidation.errors.length - 10} cell lainnya</p>
+                    )}
+                  </div>
+                )}
+                {importValidation.expected && (
+                  <div className="text-xs text-destructive/80 space-y-0.5">
+                    <p>Diharapkan: {importValidation.expected.join(', ')}</p>
+                    {importValidation.found && <p>Ditemukan: {importValidation.found.join(', ')}</p>}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="import-file">File Excel</Label>
               <div className="flex items-center gap-3">
@@ -470,6 +503,7 @@ export function KegiatanAdminPage() {
               onClick={() => {
                 setImportDialogOpen(false)
                 setSelectedFile(null)
+                setImportValidation(null)
                 if (importFileInputRef.current) importFileInputRef.current.value = ''
               }}
             >

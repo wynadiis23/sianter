@@ -28,6 +28,20 @@ export const KegiatanModel = {
   }),
 
   notFound: t.Object({ message: t.String() }),
+  validationError: t.Object({
+    message: t.String(),
+    errors: t.Array(
+      t.Object({
+        row: t.Number(),
+        column: t.String(),
+      }),
+    ),
+  }),
+  structureError: t.Object({
+    message: t.String(),
+    expected: t.Array(t.String()),
+    found: t.Array(t.String()),
+  }),
   deleted: t.Object({ success: t.Literal(true) }),
 } as const
 
