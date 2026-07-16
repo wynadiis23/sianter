@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { db, schema } from '../../db/client'
-import type { WsEvent, PengaturanEventData } from './model'
+import type { WsEvent, PengaturanEventData, LayananChangedData, KegiatanChangedData } from './model'
 
 const monitorClients = new Set<any>()
 const loketClients = new Set<any>()
@@ -74,4 +74,16 @@ export async function emitPengaturanEvent(data: PengaturanEventData) {
   } catch (err) {
     console.error('[realtime] emitPengaturanEvent failed:', err)
   }
+}
+
+export function broadcastLayananChanged(data: LayananChangedData) {
+  const event = { type: 'layanan:changed', data } as WsEvent
+  broadcastMonitor(event)
+  broadcastLoket(event)
+}
+
+export function broadcastKegiatanChanged(data: KegiatanChangedData) {
+  const event = { type: 'kegiatan:changed', data } as WsEvent
+  broadcastMonitor(event)
+  broadcastLoket(event)
 }

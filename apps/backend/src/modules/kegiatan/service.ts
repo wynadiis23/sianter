@@ -5,6 +5,7 @@ import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 import type { KegiatanModel } from './model'
 import * as XLSX from 'xlsx'
+import { broadcastKegiatanChanged } from '../realtime/service'
 
 const MODULE_DIR = import.meta.dir
 const UPLOADS_DIR = join(MODULE_DIR, '../../../../uploads')
@@ -21,6 +22,16 @@ export abstract class KegiatanService {
       .insert(schema.kegiatan)
       .values(body)
       .returning()
+    broadcastKegiatanChanged({
+      action: 'created',
+      id: created.id,
+      tanggalWaktu: created.tanggalWaktu,
+      namaKegiatan: created.namaKegiatan,
+      metodeRapat: created.metodeRapat,
+      penyelenggara: created.penyelenggara,
+      nomorSurat: created.nomorSurat,
+      keterangan: created.keterangan,
+    })
     return created
   }
 
@@ -37,6 +48,16 @@ export abstract class KegiatanService {
       .set(body)
       .where(eq(schema.kegiatan.id, id))
       .returning()
+    broadcastKegiatanChanged({
+      action: 'updated',
+      id: updated.id,
+      tanggalWaktu: updated.tanggalWaktu,
+      namaKegiatan: updated.namaKegiatan,
+      metodeRapat: updated.metodeRapat,
+      penyelenggara: updated.penyelenggara,
+      nomorSurat: updated.nomorSurat,
+      keterangan: updated.keterangan,
+    })
     return updated
   }
 
@@ -49,6 +70,16 @@ export abstract class KegiatanService {
     if (!existing) throw status(404, { message: 'Kegiatan tidak ditemukan' })
 
     await db.delete(schema.kegiatan).where(eq(schema.kegiatan.id, id))
+    broadcastKegiatanChanged({
+      action: 'deleted',
+      id: existing.id,
+      tanggalWaktu: existing.tanggalWaktu,
+      namaKegiatan: existing.namaKegiatan,
+      metodeRapat: existing.metodeRapat,
+      penyelenggara: existing.penyelenggara,
+      nomorSurat: existing.nomorSurat,
+      keterangan: existing.keterangan,
+    })
     return { success: true as const }
   }
 
@@ -87,6 +118,16 @@ export abstract class KegiatanService {
       await tx.insert(schema.kegiatan).values(parsed);
     })
 
+    broadcastKegiatanChanged({
+      action: 'replaced',
+      id: '',
+      tanggalWaktu: '',
+      namaKegiatan: '',
+      metodeRapat: '',
+      penyelenggara: '',
+      nomorSurat: '',
+      keterangan: '',
+    })
     return { imported: parsed.length, replaced }
   }
 

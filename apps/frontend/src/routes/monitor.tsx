@@ -92,8 +92,8 @@ function Slideshow({
 type MediaTab = 'video' | 'playlist' | 'slideshow' | 'kegiatan'
 
 function MediaPanel({ data }: { data: MonitorData }) {
-  const [tab, setTab] = useState<MediaTab>('video')
-  const [kegiatanMode, setKegiatanMode] = useState<'rotate' | 'tiles'>('rotate')
+  const [tab, setTab] = useState<MediaTab>('kegiatan')
+  const [kegiatanMode, setKegiatanMode] = useState<'rotate' | 'tiles'>('tiles')
 
   const youtubeVideoId = data.youtubeVideoUrl
     ? extractYouTubeId(data.youtubeVideoUrl)
@@ -105,6 +105,12 @@ function MediaPanel({ data }: { data: MonitorData }) {
   const kegiatanList = data.kegiatan ?? []
 
   const availableTabs = [
+    {
+      key: 'kegiatan' as MediaTab,
+      icon: CalendarDays,
+      label: 'Jadwal',
+      available: kegiatanList.length > 0,
+    },
     {
       key: 'video' as MediaTab,
       icon: Youtube,
@@ -122,13 +128,7 @@ function MediaPanel({ data }: { data: MonitorData }) {
       icon: Image,
       label: 'Gambar',
       available: slideshowImages.length > 0,
-    },
-    {
-      key: 'kegiatan' as MediaTab,
-      icon: CalendarDays,
-      label: 'Jadwal',
-      available: kegiatanList.length > 0,
-    },
+    }
   ].filter((t) => t.available)
 
   useEffect(() => {
@@ -249,6 +249,11 @@ export function MonitorPage() {
         )
       }
 
+      if (event.type === 'kegiatan:changed' && event.data.action === 'replaced') {
+        fetchData()
+        return
+      }
+
       setData((prev) => {
         if (!prev) return prev
         switch (event.type) {
@@ -339,12 +344,63 @@ export function MonitorPage() {
               kegiatanInterval: d.kegiatanInterval,
             }
           }
+          case 'layanan:changed': {
+            const d = event.data
+            if (d.action === 'deleted' || !d.aktif) {
+              return { ...prev, layanan: prev.layanan.filter((l) => l.id !== d.id) }
+            }
+            const existing = prev.layanan.find((l) => l.id === d.id)
+            if (existing) {
+              return {
+                ...prev,
+                layanan: prev.layanan.map((l) =>
+                  l.id === d.id
+                    ? { ...l, nama: d.nama, prefix: d.prefix, warna: d.warna }
+                    : l,
+                ),
+              }
+            }
+            return {
+              ...prev,
+              layanan: [
+                ...prev.layanan,
+                {
+                  id: d.id,
+                  nama: d.nama,
+                  prefix: d.prefix,
+                  warna: d.warna,
+                  dipanggil: null,
+                  menunggu: [],
+                  dilewati: [],
+                },
+              ],
+            }
+          }
+          case 'kegiatan:changed': {
+            const { action, ...item } = event.data
+            if (action === 'deleted') {
+              return {
+                ...prev,
+                kegiatan: (prev.kegiatan ?? []).filter((k) => k.id !== item.id),
+              }
+            }
+            const ex = (prev.kegiatan ?? []).find((k) => k.id === item.id)
+            if (ex) {
+              return {
+                ...prev,
+                kegiatan: (prev.kegiatan ?? []).map((k) =>
+                  k.id === item.id ? { ...k, ...item } : k,
+                ),
+              }
+            }
+            return { ...prev, kegiatan: [...(prev.kegiatan ?? []), item] }
+          }
           default:
             return prev
         }
       })
     },
-    [speak],
+    [speak, fetchData],
   )
 
   const wsStatus = useMonitorSocket(handleWsEvent, fetchData)
@@ -428,8 +484,8 @@ export function MonitorPage() {
                 <div
                   key={l.id}
                   className={`flex flex-col rounded-lg border bg-card shadow-sm transition-all duration-500 ${animatingIds.includes(l.id)
-                      ? 'ring-2 ring-primary/30 scale-[1.02]'
-                      : ''
+                    ? 'ring-2 ring-primary/30 scale-[1.02]'
+                    : ''
                     }`}
                   style={
                     l.warna
