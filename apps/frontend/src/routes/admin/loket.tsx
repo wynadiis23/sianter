@@ -1,14 +1,15 @@
 import { useEffect, useState, useCallback } from 'react'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
-import { Plus, MoreHorizontal, Pencil, Trash2, Layers } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Layers } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Checkbox } from '@/components/ui/checkbox'
+import { AdminPageHeader } from '@/components/admin-page-header'
+import { AktifSwitch } from '@/components/aktif-switch'
 import {
   Table,
   TableBody,
@@ -177,18 +178,11 @@ export function LoketAdminPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Loket</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Kelola nomor loket dan status aktif
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" />
-          Tambah
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Loket"
+        description="Kelola nomor loket dan status aktif"
+        onButtonClick={openCreate}
+      />
 
       <div className="mt-6 rounded-lg border">
         <Table>
@@ -294,19 +288,11 @@ export function LoketAdminPage() {
                 placeholder="Contoh: Loket A"
               />
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div>
-                <Label htmlFor="aktif">Status Aktif</Label>
-                <p className="text-sm text-muted-foreground">
-                  Loket nonaktif tidak bisa dipilih petugas
-                </p>
-              </div>
-              <Switch
-                id="aktif"
-                checked={form.aktif}
-                onCheckedChange={(v) => setForm({ ...form, aktif: v })}
-              />
-            </div>
+            <AktifSwitch
+              checked={form.aktif ?? false}
+              onCheckedChange={(v) => setForm({ ...form, aktif: v })}
+              helperText="Loket nonaktif tidak bisa dipilih petugas"
+            />
             <DialogFooter>
               <Button
                 type="button"
@@ -342,24 +328,26 @@ export function LoketAdminPage() {
             ) : layananForLoket.length === 0 ? (
               <p className="text-sm text-muted-foreground">Tidak ada layanan aktif</p>
             ) : (
-              layananForLoket.map((layanan) => (
-                <label
-                  key={layanan.id}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 has-data-[state=checked]:border-primary"
-                >
-                  <Checkbox
-                    checked={selectedLayanan.has(layanan.id)}
-                    onCheckedChange={() => toggleLayanan(layanan.id)}
-                  />
-                  <div className="flex items-center gap-2">
-                    <Layers className="size-4 text-muted-foreground" />
-                    <span className="font-medium">{layanan.nama}</span>
-                    <span className="text-xs text-muted-foreground">
-                      ({layanan.prefix})
-                    </span>
+              layananForLoket.map((layanan) => {
+                const checkboxId = `layanan-${layanan.id}`
+                return (
+                  <div
+                    key={layanan.id}
+                    className="flex items-center gap-3 rounded-lg border p-3 has-data-[state=checked]:border-primary"
+                  >
+                    <Checkbox
+                      id={checkboxId}
+                      checked={selectedLayanan.has(layanan.id)}
+                      onCheckedChange={() => toggleLayanan(layanan.id)}
+                    />
+                    <label htmlFor={checkboxId} className="flex cursor-pointer items-center gap-2">
+                      <Layers className="size-4 text-muted-foreground" />
+                      <span className="font-medium">{layanan.nama}</span>
+                      <span className="text-xs text-muted-foreground">({layanan.prefix})</span>
+                    </label>
                   </div>
-                </label>
-              ))
+                )
+              })
             )}
           </div>
           <DialogFooter>

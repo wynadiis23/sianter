@@ -2,12 +2,13 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { server } from '@/lib/eden'
 import { useSession } from '@/lib/auth'
 import { toast } from 'sonner'
-import { Plus, MoreHorizontal, Pencil, Trash2, Upload, Download, FileSpreadsheet, DownloadCloud } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Upload, DownloadCloud } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AdminPageHeader } from '@/components/admin-page-header'
+import { KegiatanFormDialog } from '@/routes/admin/kegiatan/kegiatan-form-dialog'
+import { KegiatanImportDialog } from '@/routes/admin/kegiatan/kegiatan-import-dialog'
+import { KegiatanTemplateDialog } from '@/routes/admin/kegiatan/kegiatan-template-dialog'
 import {
   Table,
   TableBody,
@@ -16,14 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -202,32 +195,25 @@ export function KegiatanAdminPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            Jadwal Kegiatan
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Kelola jadwal kegiatan yang ditampilkan di monitor
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
-            <Upload className="size-4" />
-            Import Excel
-          </Button>
-          {session?.user.role === 'SUPER_ADMIN' && (
-            <Button variant="outline" onClick={() => setTemplateDialogOpen(true)}>
-              <DownloadCloud className="size-4" />
-              Kelola Template
+      <AdminPageHeader
+        title="Jadwal Kegiatan"
+        description="Kelola jadwal kegiatan yang ditampilkan di monitor"
+        onButtonClick={openCreate}
+        extraActions={
+          <>
+            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+              <Upload className="size-4" />
+              Import Excel
             </Button>
-          )}
-          <Button onClick={openCreate}>
-            <Plus className="size-4" />
-            Tambah
-          </Button>
-        </div>
-      </div>
+            {session?.user.role === 'SUPER_ADMIN' && (
+              <Button variant="outline" onClick={() => setTemplateDialogOpen(true)}>
+                <DownloadCloud className="size-4" />
+                Kelola Template
+              </Button>
+            )}
+          </>
+        }
+      />
 
       <div className="mt-6 rounded-lg border">
         <Table>
@@ -320,264 +306,36 @@ export function KegiatanAdminPage() {
         </Table>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>
-              {editing ? 'Edit Kegiatan' : 'Tambah Kegiatan'}
-            </DialogTitle>
-            <DialogDescription>
-              {editing
-                ? 'Ubah detail kegiatan'
-                : 'Buat data kegiatan baru'}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="tanggalWaktu">Hari/Tanggal/Waktu</Label>
-              <Input
-                id="tanggalWaktu"
-                value={form.tanggalWaktu}
-                onChange={(e) =>
-                  setForm({ ...form, tanggalWaktu: e.target.value })
-                }
-                placeholder="Contoh: Selasa, 14 Juli 2026 Pukul 08.00 WITA"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="namaKegiatan">Kegiatan</Label>
-              <Textarea
-                id="namaKegiatan"
-                value={form.namaKegiatan}
-                onChange={(e) =>
-                  setForm({ ...form, namaKegiatan: e.target.value })
-                }
-                placeholder="Nama/deskripsi kegiatan"
-                rows={3}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="metodeRapat">Metode Rapat</Label>
-                <Input
-                  id="metodeRapat"
-                  value={form.metodeRapat}
-                  onChange={(e) =>
-                    setForm({ ...form, metodeRapat: e.target.value })
-                  }
-                  placeholder="Luring / Daring"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="penyelenggara">Penyelenggara</Label>
-                <Input
-                  id="penyelenggara"
-                  value={form.penyelenggara}
-                  onChange={(e) =>
-                    setForm({ ...form, penyelenggara: e.target.value })
-                  }
-                  placeholder="Nama instansi"
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="nomorSurat">Nomor Surat</Label>
-              <Input
-                id="nomorSurat"
-                value={form.nomorSurat}
-                onChange={(e) =>
-                  setForm({ ...form, nomorSurat: e.target.value })
-                }
-                placeholder="Contoh: 165/B.M/VI/2026"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="keterangan">Keterangan</Label>
-              <Textarea
-                id="keterangan"
-                value={form.keterangan}
-                onChange={(e) =>
-                  setForm({ ...form, keterangan: e.target.value })
-                }
-                placeholder="Keterangan tambahan"
-                rows={2}
-                required
-              />
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setDialogOpen(false)}
-              >
-                Batal
-              </Button>
-              <Button type="submit" disabled={saving}>
-                {saving ? 'Menyimpan...' : 'Simpan'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <KegiatanFormDialog
+        open={dialogOpen}
+        editing={!!editing}
+        form={form}
+        saving={saving}
+        onOpenChange={setDialogOpen}
+        onFormChange={setForm}
+        onSave={handleSave}
+      />
 
-      <Dialog open={importDialogOpen} onOpenChange={(open) => {
-        setImportDialogOpen(open)
-        if (!open) setImportValidation(null)
-      }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Import Jadwal Kegiatan</DialogTitle>
-            <DialogDescription>
-              Unggah file Excel untuk mengimpor jadwal kegiatan secara massal.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-              <p className="text-sm font-medium">Petunjuk:</p>
-              <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
-                <li>Download template Excel terlebih dahulu</li>
-                <li>Isi template sesuai kolom yang tersedia (Hari/Tanggal/Waktu, Kegiatan, Metode Rapat, Penyelenggara, Nomor Surat, Keterangan)</li>
-                <li>Simpan file dan unggah pada form di bawah</li>
-              </ol>
-            </div>
-            <Button variant="outline" className="w-full" asChild>
-              <a href={`${import.meta.env.VITE_API_URL}/api/admin/kegiatan/template`} download>
-                <Download className="size-4" />
-                Download Template
-              </a>
-            </Button>
-            {importValidation && (
-              <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 space-y-2">
-                <p className="text-sm font-medium text-destructive">{importValidation.message}</p>
-                {importValidation.errors && importValidation.errors.length > 0 && (
-                  <div className="max-h-32 overflow-y-auto">
-                    {importValidation.errors.slice(0, 10).map((e, i) => (
-                      <p key={i} className="text-xs text-destructive/80">Baris {e.row}: kolom &quot;{e.column}&quot;</p>
-                    ))}
-                    {importValidation.errors.length > 10 && (
-                      <p className="text-xs text-muted-foreground mt-1">...dan {importValidation.errors.length - 10} cell lainnya</p>
-                    )}
-                  </div>
-                )}
-                {importValidation.expected && (
-                  <div className="text-xs text-destructive/80 space-y-0.5">
-                    <p>Diharapkan: {importValidation.expected.join(', ')}</p>
-                    {importValidation.found && <p>Ditemukan: {importValidation.found.join(', ')}</p>}
-                  </div>
-                )}
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="import-file">File Excel</Label>
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => importFileInputRef.current?.click()}
-                >
-                  <FileSpreadsheet className="size-4" />
-                  Pilih File
-                </Button>
-                <span className="text-sm text-muted-foreground truncate">
-                  {selectedFile ? selectedFile.name : 'Belum ada file dipilih'}
-                </span>
-              </div>
-              <input
-                ref={importFileInputRef}
-                type="file"
-                accept=".xlsx,.xls"
-                className="hidden"
-                onChange={handleFileSelect}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setImportDialogOpen(false)
-                setSelectedFile(null)
-                setImportValidation(null)
-                if (importFileInputRef.current) importFileInputRef.current.value = ''
-              }}
-            >
-              Batal
-            </Button>
-            <Button
-              onClick={handleImportSubmit}
-              disabled={!selectedFile || importing}
-            >
-              {importing ? 'Mengimpor...' : 'Import'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <KegiatanImportDialog
+        open={importDialogOpen}
+        selectedFile={selectedFile}
+        importing={importing}
+        validation={importValidation}
+        onOpenChange={(open) => { setImportDialogOpen(open); if (!open) setImportValidation(null) }}
+        onFileSelect={handleFileSelect}
+        onSubmit={handleImportSubmit}
+        inputRef={importFileInputRef}
+      />
 
-      <Dialog open={templateDialogOpen} onOpenChange={setTemplateDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Kelola Template</DialogTitle>
-            <DialogDescription>
-              Download atau upload template Excel untuk import jadwal kegiatan.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Button variant="outline" className="w-full" asChild>
-              <a href={`${import.meta.env.VITE_API_URL}/api/admin/kegiatan/template`} download>
-                <Download className="size-4" />
-                Download Template Saat Ini
-              </a>
-            </Button>
-            <div className="space-y-2">
-              <Label htmlFor="template-file">Upload Template Baru</Label>
-              <div className="flex items-center gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => templateFileInputRef.current?.click()}
-                >
-                  <FileSpreadsheet className="size-4" />
-                  Pilih File
-                </Button>
-                <span className="text-sm text-muted-foreground truncate">
-                  {templateFile ? templateFile.name : 'Belum ada file dipilih'}
-                </span>
-              </div>
-              <input
-                ref={templateFileInputRef}
-                type="file"
-                accept=".xlsx,.xls"
-                className="hidden"
-                onChange={(e) => setTemplateFile(e.target.files?.[0] ?? null)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setTemplateDialogOpen(false)
-                setTemplateFile(null)
-              }}
-            >
-              Batal
-            </Button>
-            <Button
-              onClick={handleTemplateUpload}
-              disabled={!templateFile || templateUploading}
-            >
-              {templateUploading ? 'Mengupload...' : 'Simpan Template'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <KegiatanTemplateDialog
+        open={templateDialogOpen}
+        templateFile={templateFile}
+        uploading={templateUploading}
+        onOpenChange={(open) => { setTemplateDialogOpen(open); if (!open) setTemplateFile(null) }}
+        onFileSelect={setTemplateFile}
+        onUpload={handleTemplateUpload}
+        inputRef={templateFileInputRef}
+      />
     </div>
   )
 }

@@ -5,7 +5,6 @@ import type { LoketModel } from './model'
 
 export abstract class LoketService {
   static async list() {
-    console.log('Fetching list of lokets from database...')
     return await db
       .select()
       .from(schema.loket)

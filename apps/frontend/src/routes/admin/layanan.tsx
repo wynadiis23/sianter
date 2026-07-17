@@ -1,14 +1,15 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
-import { Plus, MoreHorizontal, Pencil, Trash2, Upload, X } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AdminPageHeader } from '@/components/admin-page-header'
+import { AktifSwitch } from '@/components/aktif-switch'
 import {
   Table,
   TableBody,
@@ -166,18 +167,11 @@ export function LayananAdminPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Layanan</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Kelola daftar layanan, prefix, deskripsi, dan ikon
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" />
-          Tambah
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Layanan"
+        description="Kelola daftar layanan, prefix, deskripsi, dan ikon"
+        onButtonClick={openCreate}
+      />
 
       <div className="mt-6 rounded-lg border">
         <Table>
@@ -194,90 +188,90 @@ export function LayananAdminPage() {
           <TableBody>
             {loading
               ? Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell>
-                      <Skeleton className="size-8 rounded" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-40" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-10" />
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Skeleton className="h-5 w-32" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-20" />
-                    </TableCell>
-                    <TableCell></TableCell>
-                  </TableRow>
-                ))
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className="size-8 rounded" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-40" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-10" />
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <Skeleton className="h-5 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-20" />
+                  </TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              ))
               : items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      {item.gambar ? (
-                        <img
-                          src={item.gambar}
-                          alt=""
-                          className="size-8 rounded object-cover"
-                        />
-                      ) : (
-                        <div className="flex size-8 items-center justify-center rounded bg-muted text-xs font-bold text-muted-foreground">
-                          {item.prefix}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">{item.nama}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        style={
-                          item.warna
-                            ? {
-                                borderColor: item.warna,
-                                color: item.warna,
-                              }
-                            : undefined
-                        }
-                      >
+                <TableRow key={item.id}>
+                  <TableCell>
+                    {item.gambar ? (
+                      <img
+                        src={item.gambar}
+                        alt=""
+                        className="size-8 rounded object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-8 items-center justify-center rounded bg-muted text-xs font-bold text-muted-foreground">
                         {item.prefix}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden max-w-[200px] truncate text-sm text-muted-foreground md:table-cell">
-                      {item.deskripsi || '—'}
-                    </TableCell>
-                    <TableCell>
-                      {item.aktif ? (
-                        <Badge>Aktif</Badge>
-                      ) : (
-                        <Badge variant="secondary">Nonaktif</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEdit(item)}>
-                            <Pencil className="size-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => item.id && handleDelete(item.id)}
-                          >
-                            <Trash2 className="size-4" />
-                            Hapus
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">{item.nama}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      style={
+                        item.warna
+                          ? {
+                            borderColor: item.warna,
+                            color: item.warna,
+                          }
+                          : undefined
+                      }
+                    >
+                      {item.prefix}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="hidden max-w-[200px] truncate text-sm text-muted-foreground md:table-cell">
+                    {item.deskripsi || '—'}
+                  </TableCell>
+                  <TableCell>
+                    {item.aktif ? (
+                      <Badge>Aktif</Badge>
+                    ) : (
+                      <Badge variant="secondary">Nonaktif</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEdit(item)}>
+                          <Pencil className="size-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => item.id && handleDelete(item.id)}
+                        >
+                          <Trash2 className="size-4" />
+                          Hapus
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </div>
@@ -380,9 +374,8 @@ export function LayananAdminPage() {
                 <button
                   type="button"
                   onClick={() => setForm({ ...form, warna: '' })}
-                  className={`flex size-8 items-center justify-center rounded-full border-2 text-[10px] font-bold text-muted-foreground ${
-                    !form.warna ? 'border-foreground' : 'border-muted-foreground/30'
-                  }`}
+                  className={`flex size-8 items-center justify-center rounded-full border-2 text-[10px] font-bold text-muted-foreground ${!form.warna ? 'border-foreground' : 'border-muted-foreground/30'
+                    }`}
                   title="Default"
                 >
                   ∅
@@ -399,9 +392,8 @@ export function LayananAdminPage() {
                           warna: selected ? '' : c.value,
                         })
                       }
-                      className={`size-8 rounded-full border-2 ${
-                        selected ? 'border-foreground' : 'border-transparent'
-                      }`}
+                      className={`size-8 rounded-full border-2 ${selected ? 'border-foreground' : 'border-transparent'
+                        }`}
                       style={{ backgroundColor: c.value }}
                       title={c.label}
                     >
@@ -415,19 +407,11 @@ export function LayananAdminPage() {
                 })}
               </div>
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div>
-                <Label htmlFor="aktif">Status Aktif</Label>
-                <p className="text-sm text-muted-foreground">
-                  Layanan nonaktif tidak muncul di kios tiket
-                </p>
-              </div>
-              <Switch
-                id="aktif"
-                checked={form.aktif}
-                onCheckedChange={(v) => setForm({ ...form, aktif: v })}
-              />
-            </div>
+            <AktifSwitch
+              checked={form.aktif ?? false}
+              onCheckedChange={(v) => setForm({ ...form, aktif: v })}
+              helperText="Layanan nonaktif tidak muncul di kios tiket"
+            />
             <DialogFooter>
               <Button
                 type="button"

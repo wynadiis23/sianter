@@ -2,11 +2,15 @@ import { useState, useEffect, useCallback } from 'react'
 import { server } from '@/lib/eden'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { Printer, CheckCircle2, AlertCircle, RefreshCw, User, ExternalLink, QrCode, Keyboard } from 'lucide-react'
-import { QRCodeSVG } from 'qrcode.react'
-import { wita } from '@/lib/dayjs'
-import { QrScanner } from '@/components/qr-scanner'
-import { ThemeSelector } from '@/components/theme-selector'
+import { AlertCircle, RefreshCw, User } from 'lucide-react'
+import { Stepper } from '@/components/stepper'
+import { IdentityForm } from '@/components/identity-form'
+import { KiosHeader } from '@/routes/kios/kios-header'
+import { KiosServiceSelect } from '@/routes/kios/kios-service-select'
+import { KiosCheckIn } from '@/routes/kios/kios-check-in'
+import { KiosConfirm } from '@/routes/kios/kios-confirm'
+import { KiosTicket } from '@/routes/kios/kios-ticket'
+import { KiosPrintReceipt } from '@/routes/kios/kios-print-receipt'
 
 type PageState = 'loading' | 'select' | 'checkin' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -26,62 +30,7 @@ interface TicketData {
   trackingToken: string
 }
 
-function Stepper({
-  current,
-  error,
-}: {
-  current: number
-  error?: boolean
-}) {
-  const steps = ['Pilih Layanan', 'Isi Identitas', 'Konfirmasi', 'Ambil Tiket']
-
-  return (
-    <nav aria-label="Langkah pengambilan antrean" className="border-b border-border bg-card">
-      <ol className="mx-auto flex max-w-xl items-center justify-center gap-0 px-4 py-4">
-        {steps.map((label, i) => {
-          const step = i + 1
-          const isActive = step === current
-          const isCompleted = step < current
-          const isError = error && isActive
-
-          return (
-            <li key={label} className="flex items-center">
-              <div className="flex flex-col items-center gap-1.5">
-                <div
-                  className={`flex size-8 items-center justify-center rounded-full text-sm font-semibold transition-colors
-                    ${isError ? 'bg-destructive text-destructive-foreground' : ''}
-                    ${isActive && !isError ? 'bg-primary text-primary-foreground ring-2 ring-ring ring-offset-2 ring-offset-card' : ''}
-                    ${isCompleted ? 'bg-primary/10 text-primary' : ''}
-                    ${!isActive && !isCompleted && !isError ? 'bg-muted text-muted-foreground/40' : ''}`}
-                >
-                  {isCompleted ? (
-                    <CheckCircle2 className="size-4" />
-                  ) : (
-                    <span className="font-bold">{step}</span>
-                  )}
-                </div>
-                <span
-                  className={`hidden whitespace-nowrap text-xs sm:block font-wordmark
-                    ${isActive ? 'font-semibold text-foreground' : ''}
-                    ${isCompleted ? 'text-muted-foreground' : ''}
-                    ${!isActive && !isCompleted ? 'text-muted-foreground/40' : ''}`}
-                >
-                  {label}
-                </span>
-              </div>
-              {i < steps.length - 1 && (
-                <div
-                  className={`mx-2 mb-6 h-px w-10 sm:w-16 md:w-24
-                    ${step <= current ? 'bg-primary/30' : 'bg-border'}`}
-                />
-              )}
-            </li>
-          )
-        })}
-      </ol>
-    </nav>
-  )
-}
+const KIOS_STEPS = ['Pilih Layanan', 'Isi Identitas', 'Konfirmasi', 'Ambil Tiket']
 
 export function KiosPage() {
   const [state, setState] = useState<PageState>('loading')
@@ -257,7 +206,6 @@ export function KiosPage() {
     }
   }, [countdown, state, handleReset])
 
-  /* ─── Loading ─── */
   if (state === 'loading') {
     return (
       <div className="flex h-dvh flex-col items-center justify-center gap-6 bg-background">
@@ -267,7 +215,6 @@ export function KiosPage() {
     )
   }
 
-  /* ─── Error tanpa flow ─── */
   if (state === 'error' && !selectedLayanan) {
     return (
       <div className="flex h-dvh flex-col items-center justify-center gap-6 bg-background px-6">
@@ -284,448 +231,93 @@ export function KiosPage() {
     )
   }
 
-  /* ─── Main layout with stepper ─── */
   return (
     <>
-      {/* ─── Print receipt (outside the hidden parent) ─── */}
-      <div className="hidden print:flex print:fixed print:inset-0 print:flex-col print:items-center print:justify-center print:bg-white print:p-8">
-        <div className="w-[320px] text-center">
-          <img src="/logo-kpu-bali.png" alt="KPU Provinsi Bali" className="mx-auto mb-4 size-11" />
-          <h3 className="kiosk-font-wordmark text-lg text-foreground">
-            KOMISI PEMILIHAN UMUM PROVINSI BALI
-          </h3>
-          <div className="my-6 border-t border-border" />
-          <p className="kiosk-font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">
-            Nomor Antrean
-          </p>
-          <p className="kiosk-font-mono mt-4 text-5xl font-bold tracking-[0.12em] text-primary leading-none">
-            {ticket?.kode}
-          </p>
-          <div className="my-6 border-t border-border" />
-          <p className="font-body text-base text-foreground">
-            {ticket?.namaLayanan}
-          </p>
-          <p className="mt-2 font-body text-sm text-muted-foreground/60">
-            {ticket ? `${wita(now).format('YYYY-MM-DD HH:mm:ss')} WITA` : ''}
-          </p>
-          <div className="my-6 border-t border-border" />
-          {ticket?.trackingToken && (
-            <div className="flex justify-center mb-4">
-              <QRCodeSVG
-                value={`${window.location.origin}/track/${ticket.trackingToken}`}
-                size={120}
-              />
-            </div>
-          )}
-          <p className="font-body text-xs text-muted-foreground/60">
-            Scan QR untuk pantau antrean
-          </p>
-          <div className="my-4 border-t border-border" />
-          <p className="font-body text-xs text-muted-foreground/60">
-            Harap menunggu nomor antrean Anda dipanggil.
-          </p>
-          <p className="font-body text-xs text-muted-foreground/60">
-            Terima kasih telah menggunakan layanan ini.
-          </p>
-        </div>
-      </div>
+      <KiosPrintReceipt
+        kode={ticket?.kode}
+        namaLayanan={ticket?.namaLayanan}
+        trackingToken={ticket?.trackingToken}
+        timestamp={now}
+      />
 
       <div className="kiosk flex h-dvh flex-col bg-linear-to-b from-primary/4 via-background to-background print:hidden">
-        {/* Masthead */}
-        <header className="flex items-center gap-3 border-b border-border bg-card/80 px-5 py-3 shadow-sm backdrop-blur-sm">
-          <img src="/logo-kpu-bali.png" alt="KPU Provinsi Bali" className="size-11" />
-          <div className="flex-1">
-            <h1 className="kiosk-font-wordmark text-2xl leading-tight tracking-tight text-foreground">
-              KPU PROVINSI BALI
-            </h1>
-            <p className="kiosk-font-mono text-[10px] tracking-wider text-muted-foreground/60">
-              SISTEM INFORMASI ANTREAN
-            </p>
-          </div>
-          <time
-            className="kiosk-font-mono text-lg tracking-widest text-foreground"
-            aria-label="Jam saat ini WITA"
-          >
-            {wita(now).format('HH:mm:ss')}
-          </time>
-          <span className="kiosk-font-mono text-[10px] text-muted-foreground/60">WITA</span>
-          <ThemeSelector />
-        </header>
+        <KiosHeader now={now} />
 
-        {/* Stepper */}
         <Stepper
+          steps={KIOS_STEPS}
           current={currentStep}
           error={state === 'error' && !!selectedLayanan}
         />
 
-        {/* ─── Step 1: Select service ─── */}
         {state === 'select' && (
-          <main className="flex flex-1 flex-col overflow-auto px-6 py-8">
-            <div className="mx-auto w-full max-w-5xl">
-              <div className="mb-6 text-center">
-                <h2 className="kiosk-font-wordmark text-2xl text-foreground">
-                  Pilih Layanan
-                </h2>
-                <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
-                  Ketuk layanan yang Anda butuhkan
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                {layananList.map((layanan) => (
-                  <button
-                    key={layanan.id}
-                    type="button"
-                    onClick={() => handleSelectLayanan(layanan)}
-                    className={`flex min-h-45 flex-col items-center justify-center gap-2 rounded-xl border bg-card p-5 text-center shadow-sm transition-all duration-150 hover:shadow-md active:scale-[0.97] active:bg-primary active:border-primary active:text-primary-foreground ${layanan.warna ? 'border-t-4' : 'border-border'
-                      }`}
-                    style={
-                      layanan.warna
-                        ? ({
-                          backgroundColor: `${layanan.warna}15`,
-                          borderColor: `${layanan.warna}40`,
-                          borderTopColor: layanan.warna,
-                        } as React.CSSProperties)
-                        : undefined
-                    }
-                  >
-                    <span className="kiosk-font-wordmark text-5xl leading-none text-inherit">
-                      {layanan.prefix}
-                    </span>
-                    <span className="font-body text-base font-medium text-inherit">
-                      {layanan.nama}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mt-8 flex justify-center">
-              <Button
-                onClick={() => { setCheckInError(null); setCheckInToken(''); setInputMode('scan'); setState('checkin') }}
-                variant="outline"
-                className="h-14 gap-3 text-base"
-              >
-                <QrCode className="size-5" />
-                Check-In Antrean Online
-              </Button>
-            </div>
-          </main>
+          <KiosServiceSelect
+            layananList={layananList}
+            onSelectLayanan={handleSelectLayanan}
+            onOpenCheckIn={() => { setCheckInError(null); setCheckInToken(''); setInputMode('scan'); setState('checkin') }}
+          />
         )}
 
-        {/* ─── Check-In Online ─── */}
         {state === 'checkin' && (
-          <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
-            <div className="w-full max-w-sm">
-              <div className="mb-6 text-center">
-                <QrCode className="mx-auto mb-3 size-10 text-primary" />
-                <h2 className="kiosk-font-wordmark text-2xl text-foreground">
-                  Check-In Online
-                </h2>
-                <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
-                  {inputMode === 'scan'
-                    ? 'Arahkan QR code tiket Anda ke kamera'
-                    : 'Masukkan token dari tiket online Anda'}
-                </p>
-              </div>
-
-              {inputMode === 'scan' ? (
-                <QrScanner
-                  onScan={(token) => handleCheckIn(token)}
-                  onError={(msg) => setCheckInError(msg)}
-                />
-              ) : (
-                <div className="space-y-5">
-                  <div className="space-y-2">
-                    <label className="font-body text-sm font-medium text-foreground">
-                      Token Check-In
-                    </label>
-                    <input
-                      type="text"
-                      value={checkInToken}
-                      onChange={(e) => { setCheckInToken(e.target.value); setCheckInError(null) }}
-                      placeholder="Tempel token dari tiket online"
-                      className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    />
-                  </div>
-                  <Button
-                    onClick={() => handleCheckIn(checkInToken.trim())}
-                    disabled={!checkInToken.trim()}
-                    className="h-14 w-full text-lg font-body"
-                  >
-                    Check-In
-                  </Button>
-                </div>
-              )}
-
-              {checkInError && (
-                <div className="mt-4 rounded-lg bg-destructive/10 p-3">
-                  <p className="font-body text-sm text-destructive">{checkInError}</p>
-                </div>
-              )}
-
-              <div className="mt-6 flex flex-col gap-3">
-                <Button
-                  onClick={() => { setInputMode(inputMode === 'scan' ? 'manual' : 'scan'); setCheckInError(null); setCheckInToken('') }}
-                  variant="ghost"
-                  className="h-14 w-full text-base font-normal"
-                >
-                  {inputMode === 'scan' ? (
-                    <span className="flex items-center gap-2">
-                      <Keyboard className="size-4" />
-                      Masukkan Token Manual
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <QrCode className="size-4" />
-                      Scan QR Code
-                    </span>
-                  )}
-                </Button>
-                <Button
-                  onClick={() => { setCheckInError(null); setCheckInToken(''); setInputMode('scan'); setState('select') }}
-                  variant="ghost"
-                  className="h-14 w-full text-base font-normal"
-                >
-                  Kembali
-                </Button>
-              </div>
-            </div>
-          </main>
+          <KiosCheckIn
+            inputMode={inputMode}
+            checkInToken={checkInToken}
+            checkInError={checkInError}
+            onInputModeToggle={() => { setInputMode(inputMode === 'scan' ? 'manual' : 'scan'); setCheckInError(null); setCheckInToken('') }}
+            onTokenChange={(v) => { setCheckInToken(v); setCheckInError(null) }}
+            onCheckIn={handleCheckIn}
+            onScan={handleCheckIn}
+            onScanError={setCheckInError}
+            onBack={() => { setCheckInError(null); setCheckInToken(''); setInputMode('scan'); setState('select') }}
+          />
         )}
 
-        {/* ─── Step 2: Identity ─── */}
         {state === 'identity' && (
           <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
-            <div className="w-full max-w-sm">
-              <div className="mb-6 text-center">
-                <User className="mx-auto mb-3 size-10 text-primary" />
-                <h2 className="kiosk-font-wordmark text-2xl text-foreground">
-                  Isi Identitas
-                </h2>
-                <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
-                  Masukkan data diri Anda
-                </p>
-              </div>
-
-              <div className="space-y-5">
-                <div className="space-y-2">
-                  <label className="font-body text-sm font-medium text-foreground">
-                    Nama Lengkap <span className="text-destructive">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={nama}
-                    onChange={(e) => setNama(e.target.value)}
-                    placeholder="Nama sesuai KTP"
-                    className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="font-body text-sm font-medium text-foreground">
-                    Nomor HP <span className="text-destructive">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="tel"
-                    value={noHp}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '')
-                      setNoHp(val)
-                    }}
-                    placeholder="08xxxxxxxxxx"
-                    maxLength={15}
-                    className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-
-                {formError && (
-                  <div className="rounded-lg bg-destructive/10 p-3">
-                    <p className="font-body text-sm text-destructive">{formError}</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-8 flex flex-col gap-4">
-                <Button
-                  onClick={handleIdentitySubmit}
-                  disabled={!nama.trim() || !noHp.trim()}
-                  className="h-14 w-full text-lg font-body"
-                >
-                  Lanjut
-                </Button>
-                <Button
-                  onClick={handleBackToSelect}
-                  variant="ghost"
-                  className="h-14 w-full text-base font-normal"
-                >
-                  Kembali
-                </Button>
-              </div>
+            <div className="mb-6 text-center">
+              <User className="mx-auto mb-3 size-10 text-primary" />
+              <h2 className="kiosk-font-wordmark text-2xl text-foreground">
+                Isi Identitas
+              </h2>
+              <p className="mt-0.5 font-body text-sm text-muted-foreground/70">
+                Masukkan data diri Anda
+              </p>
             </div>
+            <IdentityForm
+              nama={nama}
+              noHp={noHp}
+              onNamaChange={setNama}
+              onNoHpChange={setNoHp}
+              error={formError}
+              onSubmit={handleIdentitySubmit}
+              onBack={handleBackToSelect}
+            />
           </main>
         )}
 
-        {/* ─── Step 3: Confirm / Creating / Error ─── */}
         {(state === 'confirm' || state === 'creating' || (state === 'error' && selectedLayanan)) && (
-          <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
-            {state === 'confirm' && selectedLayanan && (
-              <div className="flex flex-col items-center gap-6 text-center">
-                <CheckCircle2 className="size-14 text-primary" />
-                <div>
-                  <h2 className="kiosk-font-wordmark text-2xl text-foreground">
-                    Konfirmasi
-                  </h2>
-                  <p className="mt-1 font-body text-base text-muted-foreground/70">
-                    Anda akan mengambil antrean untuk:
-                  </p>
-                </div>
-                <p className="kiosk-font-wordmark text-4xl leading-tight text-foreground">
-                  {selectedLayanan.nama}
-                </p>
-                <div className="w-full max-w-sm rounded-xl border border-border bg-card px-6 py-4 text-left">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="font-body text-sm text-muted-foreground">Nama</span>
-                      <span className="font-body text-sm font-medium text-foreground">{nama}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-body text-sm text-muted-foreground">No. HP</span>
-                      <span className="font-body text-sm font-medium text-foreground">{noHp}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-2 flex flex-col gap-4">
-                  <Button
-                    onClick={handleCreateAntrean}
-                    className="h-14 min-w-65 text-lg font-body"
-                  >
-                    Ya, Ambil Antrean
-                  </Button>
-                  <Button
-                    onClick={handleBackToIdentity}
-                    variant="ghost"
-                    className="h-14 min-w-65 text-base font-normal"
-                  >
-                    Kembali
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {state === 'creating' && (
-              <div className="flex flex-col items-center gap-6 text-center">
-                <Spinner className="size-12 text-primary" />
-                <p className="font-body text-base text-muted-foreground/70">
-                  Memproses antrean...
-                </p>
-              </div>
-            )}
-
-            {state === 'error' && selectedLayanan && (
-              <div className="flex flex-col items-center gap-6 text-center">
-                <AlertCircle className="size-12 text-destructive" />
-                <p className="font-body text-base text-foreground">{errorMsg}</p>
-                <div className="flex flex-col gap-4">
-                  <Button
-                    onClick={handleCreateAntrean}
-                    className="h-13 min-w-60 gap-3 text-base"
-                  >
-                    <RefreshCw className="size-4" />
-                    Coba Lagi
-                  </Button>
-                  <Button
-                    onClick={handleReset}
-                    variant="ghost"
-                    className="h-13 min-w-60 text-base font-normal"
-                  >
-                    Kembali ke Awal
-                  </Button>
-                </div>
-              </div>
-            )}
-          </main>
+          <KiosConfirm
+            state={state === 'error' ? 'error' : state}
+            namaLayanan={selectedLayanan?.nama}
+            nama={nama}
+            noHp={noHp}
+            errorMsg={errorMsg}
+            onConfirm={handleCreateAntrean}
+            onBack={handleBackToIdentity}
+            onRetry={handleCreateAntrean}
+            onReset={handleReset}
+          />
         )}
 
-        {/* ─── Step 4: Ticket ─── */}
         {state === 'ticket' && ticket && (
-          <main className="flex flex-1 flex-col items-center justify-center px-6 py-8">
-            <div className="kiosk-stub-enter flex flex-col items-center gap-8 text-center">
-              <div className="w-full max-w-95 rounded-2xl border border-border bg-card shadow-xl shadow-primary/5">
-                {/* Stub top — number */}
-                <div className="px-10 pt-10 pb-6">
-                  <p className="kiosk-font-mono text-[10px] tracking-[0.2em] text-muted-foreground/40 uppercase">
-                    Nomor Antrean
-                  </p>
-                  <p
-                    className="kiosk-font-mono mt-3 text-6xl font-bold tracking-[0.12em] text-primary leading-none"
-                    aria-label={`Nomor antrean ${ticket.kode}`}
-                  >
-                    {ticket.kode}
-                  </p>
-                </div>
-
-                {/* Perforation */}
-                <div className="kiosk-perforation" />
-
-                {/* Stub bottom — info */}
-                <div className="px-10 pt-6 pb-10">
-                  <p className="font-body text-lg font-medium text-foreground">
-                    {ticket.namaLayanan}
-                  </p>
-                  <p className="mt-2 font-body text-sm leading-relaxed text-muted-foreground/60">
-                    {wita(now).format('dddd, D MMMM YYYY')}
-                  </p>
-                  <p className="font-body text-sm text-muted-foreground/60">
-                    {wita(now).format('HH:mm:ss')} WITA
-                  </p>
-                  <div className="mt-4 flex justify-center">
-                    <QRCodeSVG
-                      value={`${window.location.origin}/track/${ticket.trackingToken}`}
-                      size={100}
-                    />
-                  </div>
-                  <div className="mt-2 flex items-center justify-center gap-1">
-                    <ExternalLink className="size-3 text-muted-foreground/40" />
-                    <a
-                      href={`/track/${ticket.trackingToken}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-body text-xs text-muted-foreground/40 hover:text-primary transition-colors underline underline-offset-2"
-                    >
-                      Pantau antrean
-                    </a>
-                  </div>
-                  <p className="mt-3 font-body text-xs text-muted-foreground/40">
-                    Harap menunggu nomor Anda dipanggil
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <Button
-                  onClick={handlePrint}
-                  className="h-14 min-w-65 gap-3 text-base"
-                >
-                  <Printer className="size-5" />
-                  Cetak Struk
-                </Button>
-                <Button
-                  onClick={handleReset}
-                  variant="ghost"
-                  className="h-14 min-w-65 text-base font-normal"
-                >
-                  Selesai
-                  {countdown > 0 && (
-                    <span className="kiosk-font-mono ml-2 text-sm text-muted-foreground/50">
-                      ({countdown})
-                    </span>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </main>
+          <KiosTicket
+            ticket={ticket}
+            timestamp={now}
+            countdown={countdown}
+            onPrint={handlePrint}
+            onReset={handleReset}
+          />
         )}
-
-      </div></>
+      </div>
+    </>
   )
 }

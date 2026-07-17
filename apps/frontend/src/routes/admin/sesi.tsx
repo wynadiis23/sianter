@@ -1,14 +1,15 @@
 import { useEffect, useState, useCallback } from 'react'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
-import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AdminPageHeader } from '@/components/admin-page-header'
+import { AktifSwitch } from '@/components/aktif-switch'
 import {
   Table,
   TableBody,
@@ -167,18 +168,11 @@ export function SesiAdminPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Sesi Antrean</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Kelola sesi waktu antrean per layanan
-          </p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="size-4" />
-          Tambah
-        </Button>
-      </div>
+      <AdminPageHeader
+        title="Sesi Antrean"
+        description="Kelola sesi waktu antrean per layanan"
+        onButtonClick={openCreate}
+      />
 
       <div className="mt-6 rounded-lg border">
         <Table>
@@ -327,19 +321,11 @@ export function SesiAdminPage() {
                 <p className="text-xs text-destructive">Pilih minimal 1 layanan</p>
               )}
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div>
-                <Label htmlFor="aktif">Status Aktif</Label>
-                <p className="text-sm text-muted-foreground">
-                  Sesi nonaktif tidak muncul di pemesanan online
-                </p>
-              </div>
-              <Switch
-                id="aktif"
-                checked={form.aktif}
-                onCheckedChange={(v) => setForm({ ...form, aktif: v })}
-              />
-            </div>
+            <AktifSwitch
+              checked={form.aktif ?? false}
+              onCheckedChange={(v) => setForm({ ...form, aktif: v })}
+              helperText="Sesi nonaktif tidak muncul di pemesanan online"
+            />
             <DialogFooter>
               <Button
                 type="button"
