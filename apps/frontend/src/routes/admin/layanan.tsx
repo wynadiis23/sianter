@@ -188,90 +188,90 @@ export function LayananAdminPage() {
           <TableBody>
             {loading
               ? Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell>
-                      <Skeleton className="size-8 rounded" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-40" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-10" />
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Skeleton className="h-5 w-32" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-20" />
-                    </TableCell>
-                    <TableCell></TableCell>
-                  </TableRow>
-                ))
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className="size-8 rounded" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-40" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-10" />
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <Skeleton className="h-5 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-20" />
+                  </TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              ))
               : items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      {item.gambar ? (
-                        <img
-                          src={item.gambar}
-                          alt=""
-                          className="size-8 rounded object-cover"
-                        />
-                      ) : (
-                        <div className="flex size-8 items-center justify-center rounded bg-muted text-xs font-bold text-muted-foreground">
-                          {item.prefix}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">{item.nama}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        style={
-                          item.warna
-                            ? {
-                                borderColor: item.warna,
-                                color: item.warna,
-                              }
-                            : undefined
-                        }
-                      >
+                <TableRow key={item.id}>
+                  <TableCell>
+                    {item.gambar ? (
+                      <img
+                        src={item.gambar}
+                        alt=""
+                        className="size-8 rounded object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-8 items-center justify-center rounded bg-muted text-xs font-bold text-muted-foreground">
                         {item.prefix}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden max-w-[200px] truncate text-sm text-muted-foreground md:table-cell">
-                      {item.deskripsi || '—'}
-                    </TableCell>
-                    <TableCell>
-                      {item.aktif ? (
-                        <Badge>Aktif</Badge>
-                      ) : (
-                        <Badge variant="secondary">Nonaktif</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="size-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEdit(item)}>
-                            <Pencil className="size-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => item.id && handleDelete(item.id)}
-                          >
-                            <Trash2 className="size-4" />
-                            Hapus
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">{item.nama}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="outline"
+                      style={
+                        item.warna
+                          ? {
+                            borderColor: item.warna,
+                            color: item.warna,
+                          }
+                          : undefined
+                      }
+                    >
+                      {item.prefix}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="hidden max-w-[200px] truncate text-sm text-muted-foreground md:table-cell">
+                    {item.deskripsi || '—'}
+                  </TableCell>
+                  <TableCell>
+                    {item.aktif ? (
+                      <Badge>Aktif</Badge>
+                    ) : (
+                      <Badge variant="secondary">Nonaktif</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEdit(item)}>
+                          <Pencil className="size-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => item.id && handleDelete(item.id)}
+                        >
+                          <Trash2 className="size-4" />
+                          Hapus
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </div>
@@ -374,9 +374,8 @@ export function LayananAdminPage() {
                 <button
                   type="button"
                   onClick={() => setForm({ ...form, warna: '' })}
-                  className={`flex size-8 items-center justify-center rounded-full border-2 text-[10px] font-bold text-muted-foreground ${
-                    !form.warna ? 'border-foreground' : 'border-muted-foreground/30'
-                  }`}
+                  className={`flex size-8 items-center justify-center rounded-full border-2 text-[10px] font-bold text-muted-foreground ${!form.warna ? 'border-foreground' : 'border-muted-foreground/30'
+                    }`}
                   title="Default"
                 >
                   ∅
@@ -393,9 +392,8 @@ export function LayananAdminPage() {
                           warna: selected ? '' : c.value,
                         })
                       }
-                      className={`size-8 rounded-full border-2 ${
-                        selected ? 'border-foreground' : 'border-transparent'
-                      }`}
+                      className={`size-8 rounded-full border-2 ${selected ? 'border-foreground' : 'border-transparent'
+                        }`}
                       style={{ backgroundColor: c.value }}
                       title={c.label}
                     >

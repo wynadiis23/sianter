@@ -82,7 +82,7 @@ export function UsersAdminPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-const { error } = await authClient.admin.createUser({
+    const { error } = await authClient.admin.createUser({
       email: form.email,
       password: form.password,
       name: form.name,

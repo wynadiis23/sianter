@@ -328,24 +328,26 @@ export function LoketAdminPage() {
             ) : layananForLoket.length === 0 ? (
               <p className="text-sm text-muted-foreground">Tidak ada layanan aktif</p>
             ) : (
-              layananForLoket.map((layanan) => (
-                <label
-                  key={layanan.id}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 has-data-[state=checked]:border-primary"
-                >
-                  <Checkbox
-                    checked={selectedLayanan.has(layanan.id)}
-                    onCheckedChange={() => toggleLayanan(layanan.id)}
-                  />
-                  <div className="flex items-center gap-2">
-                    <Layers className="size-4 text-muted-foreground" />
-                    <span className="font-medium">{layanan.nama}</span>
-                    <span className="text-xs text-muted-foreground">
-                      ({layanan.prefix})
-                    </span>
+              layananForLoket.map((layanan) => {
+                const checkboxId = `layanan-${layanan.id}`
+                return (
+                  <div
+                    key={layanan.id}
+                    className="flex items-center gap-3 rounded-lg border p-3 has-data-[state=checked]:border-primary"
+                  >
+                    <Checkbox
+                      id={checkboxId}
+                      checked={selectedLayanan.has(layanan.id)}
+                      onCheckedChange={() => toggleLayanan(layanan.id)}
+                    />
+                    <label htmlFor={checkboxId} className="flex cursor-pointer items-center gap-2">
+                      <Layers className="size-4 text-muted-foreground" />
+                      <span className="font-medium">{layanan.nama}</span>
+                      <span className="text-xs text-muted-foreground">({layanan.prefix})</span>
+                    </label>
                   </div>
-                </label>
-              ))
+                )
+              })
             )}
           </div>
           <DialogFooter>
