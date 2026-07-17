@@ -9,11 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { Users } from 'lucide-react'
-import { ActiveTicketCard } from '@/routes/petugas/dashboard/active-ticket-card'
-import { CallButtons } from '@/routes/petugas/dashboard/call-buttons'
-import { WaitingList } from '@/routes/petugas/dashboard/waiting-list'
-import { SkippedList } from '@/routes/petugas/dashboard/skipped-list'
-import { DetailPemohonDialog } from '@/routes/petugas/dashboard/detail-pemohon-dialog'
+import { ActiveTicketCard } from '@/routes/petugas/loket/active-ticket-card'
+import { CallButtons } from '@/routes/petugas/loket/call-buttons'
+import { WaitingList } from '@/routes/petugas/loket/waiting-list'
+import { SkippedList } from '@/routes/petugas/loket/skipped-list'
+import { DetailPemohonDialog } from '@/routes/petugas/loket/detail-pemohon-dialog'
 
 interface PetugasSession {
   loketId: string
@@ -66,7 +66,7 @@ interface LayananInfo {
   prefix: string
 }
 
-export function PetugasDashboardPage() {
+export function PetugasLoketPage() {
   const navigate = useNavigate()
   const [session, setSession] = useState<PetugasSession | null>(null)
   const [data, setData] = useState<DashboardData | null>(null)
@@ -86,7 +86,7 @@ export function PetugasDashboardPage() {
     }
     const s = JSON.parse(raw) as PetugasSession
     setSession(s)
-    setLayananInfo((s as any).layanan ?? [])
+    setLayananInfo((s).layanan ?? [])
   }, [navigate])
 
   const fetchDashboard = useCallback(async () => {
@@ -106,11 +106,11 @@ export function PetugasDashboardPage() {
     if (result) {
       setData({
         ...result,
-        daftarWaiting: result.daftarWaiting.map((w: any) => ({
+        daftarWaiting: result.daftarWaiting.map((w) => ({
           ...w,
           createdAt: new Date(w.createdAt),
         })),
-        daftarSkipped: (result.daftarSkipped ?? []).map((s: any) => ({
+        daftarSkipped: (result.daftarSkipped ?? []).map((s) => ({
           ...s,
           skippedAt: s.skippedAt ?? null,
         })),
@@ -163,7 +163,7 @@ export function PetugasDashboardPage() {
     setActionLoading(null)
     if (error) {
       const errMsg =
-        (error as any)?.value?.message ?? 'Gagal memanggil antrean'
+        (error)?.value?.message ?? 'Gagal memanggil antrean'
       toast.error(errMsg)
       return
     }
@@ -213,7 +213,7 @@ export function PetugasDashboardPage() {
     setActionLoading(null)
     if (error) {
       const errMsg =
-        (error as any)?.value?.message ?? 'Gagal memanggil ulang antrean'
+        (error)?.value?.message ?? 'Gagal memanggil ulang antrean'
       toast.error(errMsg)
       return
     }
