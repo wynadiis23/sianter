@@ -104,7 +104,7 @@ export function KegiatanRotator({
       </div>
 
       <div
-        className="relative flex flex-1 flex-col overflow-hidden rounded-xl border shadow-md transition-all duration-700 ease-in-out"
+        className="relative flex flex-1 flex-col overflow-hidden rounded-xl border shadow-md transition-[opacity] duration-500 ease-on-screen"
         style={{
           borderLeftColor: p.border,
           borderLeftWidth: 5,

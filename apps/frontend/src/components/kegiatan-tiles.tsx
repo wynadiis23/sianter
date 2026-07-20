@@ -98,7 +98,7 @@ export function KegiatanTiles({
                 <div
                   key={`${item.id}-${i}`}
                   onClick={() => openDetail(i)}
-                  className="relative flex flex-col overflow-hidden rounded-lg border shadow-sm transition-all duration-200 hover:shadow-md cursor-pointer"
+                  className="relative flex flex-col overflow-hidden rounded-lg border shadow-sm transition-[transform,box-shadow] duration-200 ease-enter hover:shadow-md cursor-pointer"
                   style={{
                     borderLeftColor: p.border,
                     borderLeftWidth: 4,

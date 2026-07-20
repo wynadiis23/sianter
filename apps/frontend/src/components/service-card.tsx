@@ -26,7 +26,7 @@ export function ServiceCard({
       <button
         type="button"
         onClick={onClick}
-        className="flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.99]"
+        className="flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-[transform,box-shadow] duration-150 ease-enter hover:shadow-md active:scale-[0.99]"
       >
         {gambar ? (
           <img
@@ -60,7 +60,7 @@ export function ServiceCard({
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-h-45 flex-col items-center justify-center gap-2 rounded-xl border bg-card p-5 text-center shadow-sm transition-all duration-150 hover:shadow-md active:scale-[0.97] active:bg-primary active:border-primary active:text-primary-foreground ${warna ? 'border-t-4' : 'border-border'
+      className={`flex min-h-45 flex-col items-center justify-center gap-2 rounded-xl border bg-card p-5 text-center shadow-sm transition-[transform,box-shadow,background-color,border-color,color] duration-150 ease-enter hover:shadow-md active:scale-[0.97] active:bg-primary active:border-primary active:text-primary-foreground ${warna ? 'border-t-4' : 'border-border'
         }`}
       style={
         warna

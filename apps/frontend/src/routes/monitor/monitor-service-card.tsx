@@ -29,7 +29,7 @@ export function MonitorServiceCard({
 }: MonitorServiceCardProps) {
   return (
     <div
-      className={`flex flex-col rounded-lg border bg-card shadow-sm transition-all duration-500 ${isAnimating ? 'ring-2 ring-primary/30 scale-[1.02]' : ''}`}
+      className={`flex flex-col rounded-lg border bg-card shadow-sm transition-[transform,box-shadow] duration-400 ease-on-screen ${isAnimating ? 'ring-2 ring-primary/30 scale-[1.02]' : ''}`}
       style={
         warna
           ? { borderTopColor: warna, borderTopWidth: 4 }

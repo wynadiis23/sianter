@@ -231,7 +231,7 @@ export function OnlineAntreanPage() {
                 key={sesi.id}
                 type="button"
                 onClick={() => handleSelectSesi(sesi)}
-                className="flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.99]"
+                className="flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-[transform,box-shadow] duration-150 ease-enter hover:shadow-md active:scale-[0.99]"
               >
                 <Clock className="size-8 text-primary" />
                 <div className="flex-1">
