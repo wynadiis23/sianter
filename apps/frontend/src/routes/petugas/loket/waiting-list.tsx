@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Users, User } from 'lucide-react'
 import { wita } from '@/lib/dayjs'
 
@@ -7,6 +8,7 @@ interface WaitingItem {
   id: string
   kode: string | null
   namaLayanan: string
+  sumber: string
   createdAt: Date
   namaPemohon: string | null
   noHpPemohon: string | null
@@ -38,8 +40,15 @@ export function WaitingList({ items, onDetail }: WaitingListProps) {
                 key={item.id}
                 className="flex items-center justify-between py-3"
               >
-                <div>
-                  <p className="font-mono font-bold">{item.kode ?? '-'}</p>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <p className="font-mono font-bold">{item.kode ?? '-'}</p>
+                    {item.sumber === 'ONLINE' && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                        Online
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     {item.namaLayanan}
                   </p>

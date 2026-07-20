@@ -7,6 +7,7 @@ import { SkipForward, PhoneCall, CheckCircle2, User } from 'lucide-react'
 interface SkippedItem {
   id: string
   kode: string | null
+  sumber: string
   namaLayanan: string
   namaPemohon: string | null
   noHpPemohon: string | null

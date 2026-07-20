@@ -13,6 +13,7 @@ import { ActiveTicketCard } from '@/routes/petugas/loket/active-ticket-card'
 import { CallButtons } from '@/routes/petugas/loket/call-buttons'
 import { WaitingList } from '@/routes/petugas/loket/waiting-list'
 import { SkippedList } from '@/routes/petugas/loket/skipped-list'
+import { OnlineReservationsCard } from '@/routes/petugas/loket/online-reservations-card'
 import { DetailPemohonDialog } from '@/routes/petugas/loket/detail-pemohon-dialog'
 
 interface PetugasSession {
@@ -25,6 +26,7 @@ interface ActiveTicket {
   kode: string | null
   nomorUrut: number | null
   status: string
+  sumber: string
   namaLayanan: string
   namaPemohon: string | null
   noHpPemohon: string | null
@@ -35,6 +37,7 @@ interface WaitingItem {
   kode: string | null
   nomorUrut: number | null
   layananId: string
+  sumber: string
   namaLayanan: string
   createdAt: Date
   namaPemohon: string | null
@@ -46,10 +49,25 @@ interface SkippedItem {
   kode: string | null
   nomorUrut: number | null
   status: string
+  sumber: string
   namaLayanan: string
   skippedAt: Date | string | null
   namaPemohon: string | null
   noHpPemohon: string | null
+}
+
+interface OnlineReservation {
+  id: string
+  kode: string | null
+  nomorUrut: number | null
+  sumber: string
+  namaLayanan: string
+  namaPemohon: string | null
+  noHpPemohon: string | null
+  namaSesi: string
+  jamMulai: string
+  jamSelesai: string
+  tanggalKunjungan: string | null
 }
 
 interface DashboardData {
@@ -57,6 +75,7 @@ interface DashboardData {
   aktif: ActiveTicket | null
   daftarWaiting: WaitingItem[]
   daftarSkipped: SkippedItem[]
+  daftarOnline: OnlineReservation[]
   countPerLayanan: Record<string, number>
 }
 
@@ -86,7 +105,7 @@ export function PetugasLoketPage() {
     }
     const s = JSON.parse(raw) as PetugasSession
     setSession(s)
-    setLayananInfo((s).layanan ?? [])
+    setLayananInfo((s as any).layanan ?? [])
   }, [navigate])
 
   const fetchDashboard = useCallback(async () => {
@@ -106,6 +125,7 @@ export function PetugasLoketPage() {
     if (result) {
       setData({
         ...result,
+        daftarOnline: result.daftarOnline ?? [],
         daftarWaiting: result.daftarWaiting.map((w) => ({
           ...w,
           createdAt: new Date(w.createdAt),
@@ -316,6 +336,11 @@ export function PetugasLoketPage() {
         <div>
           <WaitingList
             items={data?.daftarWaiting ?? []}
+            onDetail={setDetailItem}
+          />
+
+          <OnlineReservationsCard
+            items={data?.daftarOnline ?? []}
             onDetail={setDetailItem}
           />
 
