@@ -135,7 +135,7 @@ export function MonitorMediaPanel({
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${tab === t.key
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-[color,background-color,border-color,transform] duration-150 ease-enter active:scale-[0.97] ${tab === t.key
                 ? 'border-b-2 border-primary text-primary'
                 : 'text-muted-foreground hover:text-foreground'
                 }`}

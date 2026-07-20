@@ -77,7 +77,7 @@ export function KegiatanRotator({
           {onToggleMode && (
             <button
               onClick={onToggleMode}
-              className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+              className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2.5 py-1 text-xs font-medium text-muted-foreground transition-[color,background-color,transform] duration-150 ease-enter hover:bg-muted active:scale-[0.97]"
             >
               <LayoutGrid className="size-3.5" />
               Tile
@@ -86,7 +86,7 @@ export function KegiatanRotator({
           <div className="flex items-center gap-1">
             <button
               onClick={prev}
-              className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="rounded p-0.5 text-muted-foreground transition-[color,background-color,transform] duration-150 ease-enter hover:bg-muted hover:text-foreground active:scale-[0.92]"
             >
               <ChevronLeft className="size-5" />
             </button>
@@ -95,7 +95,7 @@ export function KegiatanRotator({
             </span>
             <button
               onClick={next}
-              className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              className="rounded p-0.5 text-muted-foreground transition-[color,background-color,transform] duration-150 ease-enter hover:bg-muted hover:text-foreground active:scale-[0.92]"
             >
               <ChevronRight className="size-5" />
             </button>

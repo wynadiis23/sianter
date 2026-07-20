@@ -60,7 +60,7 @@ export function KiosCheckIn({
                 value={checkInToken}
                 onChange={(e) => { onTokenChange(e.target.value) }}
                 placeholder="Tempel token dari tiket online"
-                className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="h-13 w-full rounded-lg border border-input bg-card px-4 text-lg text-foreground shadow-sm transition-[color,box-shadow,transform] duration-150 ease-enter outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <Button

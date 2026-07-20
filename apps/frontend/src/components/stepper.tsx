@@ -20,7 +20,7 @@ export function Stepper({ steps, current, error }: StepperProps) {
             <li key={label} className="flex items-center">
               <div className="flex flex-col items-center gap-1.5">
                 <div
-                  className={`flex size-8 items-center justify-center rounded-full text-sm font-semibold transition-colors
+                  className={`flex size-8 items-center justify-center rounded-full text-sm font-semibold transition-[color,background-color] duration-150 ease-enter
                     ${isError ? 'bg-destructive text-destructive-foreground' : ''}
                     ${isActive && !isError ? 'bg-primary text-primary-foreground ring-2 ring-ring ring-offset-2 ring-offset-card' : ''}
                     ${isCompleted ? 'bg-primary/10 text-primary' : ''}

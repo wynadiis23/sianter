@@ -381,7 +381,7 @@ export function OnlineAntreanPage() {
                   href={`/track/${reservation.trackingToken}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
+                  className="text-sm text-muted-foreground transition-[color] duration-150 ease-enter hover:text-primary active:opacity-70 underline underline-offset-2"
                 >
                   Pantau antrean
                 </a>

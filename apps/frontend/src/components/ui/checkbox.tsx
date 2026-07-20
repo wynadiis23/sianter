@@ -18,7 +18,7 @@ function Checkbox({
     <label
       data-slot="checkbox"
       className={cn(
-        'inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-input shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+        'inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-input shadow-xs outline-none transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-enter active:scale-[0.95] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
         checked && 'border-primary bg-primary text-primary-foreground',
         className,
       )}
