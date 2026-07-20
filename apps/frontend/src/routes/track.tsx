@@ -180,7 +180,7 @@ export function TrackPage() {
         <p className="text-center text-lg text-foreground">{error ?? 'Antrean tidak ditemukan'}</p>
         <button
           onClick={() => { setLoading(true); setError(null); fetchTrack() }}
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-6 py-2.5 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-6 py-2.5 text-sm font-medium text-foreground shadow-sm transition-[color,background-color,transform] duration-150 ease-enter hover:bg-muted active:scale-[0.97]"
         >
           <RefreshCw className="size-4" />
           Coba Lagi

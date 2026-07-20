@@ -336,7 +336,7 @@ export function LayananAdminPage() {
                     <button
                       type="button"
                       onClick={clearImage}
-                      className="absolute -right-2 -top-2 flex size-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
+                      className="absolute -right-2 -top-2 flex size-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground transition-transform duration-150 ease-enter active:scale-[0.85]"
                     >
                       <X className="size-3" />
                     </button>
@@ -374,8 +374,8 @@ export function LayananAdminPage() {
                 <button
                   type="button"
                   onClick={() => setForm({ ...form, warna: '' })}
-                  className={`flex size-8 items-center justify-center rounded-full border-2 text-[10px] font-bold text-muted-foreground ${!form.warna ? 'border-foreground' : 'border-muted-foreground/30'
-                    }`}
+                  className={`flex size-8 items-center justify-center rounded-full border-2 text-[10px] font-bold text-muted-foreground transition-transform duration-150 ease-enter active:scale-[0.90] hover:ring-2 hover:ring-ring ${!form.warna ? 'border-foreground' : 'border-muted-foreground/30'
+                  }`}
                   title="Default"
                 >
                   ∅
@@ -392,8 +392,8 @@ export function LayananAdminPage() {
                           warna: selected ? '' : c.value,
                         })
                       }
-                      className={`size-8 rounded-full border-2 ${selected ? 'border-foreground' : 'border-transparent'
-                        }`}
+                      className={`size-8 rounded-full border-2 transition-transform duration-150 ease-enter active:scale-[0.90] hover:ring-2 hover:ring-ring ${selected ? 'border-foreground' : 'border-transparent'
+                      }`}
                       style={{ backgroundColor: c.value }}
                       title={c.label}
                     >

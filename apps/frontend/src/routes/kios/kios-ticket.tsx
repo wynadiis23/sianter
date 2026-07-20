@@ -58,7 +58,7 @@ export function KiosTicket({ ticket, timestamp, countdown, onPrint, onReset }: K
                 href={`/track/${ticket.trackingToken}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-body text-xs text-muted-foreground/40 hover:text-primary transition-colors underline underline-offset-2"
+                className="font-body text-xs text-muted-foreground/40 transition-[color] duration-150 ease-enter hover:text-primary active:opacity-70 underline underline-offset-2"
               >
                 Pantau antrean
               </a>

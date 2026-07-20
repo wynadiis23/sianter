@@ -78,7 +78,7 @@ export function KegiatanTiles({
         </div>
         <button
           onClick={onToggleMode}
-          className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+          className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2.5 py-1 text-xs font-medium text-muted-foreground transition-[color,background-color,transform] duration-150 ease-enter hover:bg-muted active:scale-[0.97]"
         >
           <RotateCw className="size-3.5" />
           Rotate
@@ -98,7 +98,7 @@ export function KegiatanTiles({
                 <div
                   key={`${item.id}-${i}`}
                   onClick={() => openDetail(i)}
-                  className="relative flex flex-col overflow-hidden rounded-lg border shadow-sm transition-all duration-200 hover:shadow-md cursor-pointer"
+                  className="relative flex flex-col overflow-hidden rounded-lg border shadow-sm transition-[transform,box-shadow] duration-200 ease-enter hover:shadow-md active:scale-[0.97] cursor-pointer"
                   style={{
                     borderLeftColor: p.border,
                     borderLeftWidth: 4,
@@ -176,7 +176,7 @@ export function KegiatanTiles({
 
                 <div className="relative z-10 flex items-center justify-between border-b px-5 py-4 backdrop-blur-md" style={{ borderColor: `${p.border}20`, backgroundColor: 'rgba(255,255,255,0.5)' }}>
                   <p className="text-base font-semibold" style={{ color: p.bg3 }}>{selected.tanggalWaktu}</p>
-                  <button onClick={() => setDialogOpen(false)} className="rounded p-1 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors">
+                  <button onClick={() => setDialogOpen(false)} className="rounded p-1 text-muted-foreground transition-[color,background-color,transform] duration-150 ease-enter hover:bg-muted/50 hover:text-foreground active:scale-[0.92]">
                     <X className="size-5" />
                   </button>
                 </div>

@@ -231,7 +231,7 @@ export function OnlineAntreanPage() {
                 key={sesi.id}
                 type="button"
                 onClick={() => handleSelectSesi(sesi)}
-                className="flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-all hover:shadow-md active:scale-[0.99]"
+                className="flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-[transform,box-shadow] duration-150 ease-enter hover:shadow-md active:scale-[0.99]"
               >
                 <Clock className="size-8 text-primary" />
                 <div className="flex-1">
@@ -381,7 +381,7 @@ export function OnlineAntreanPage() {
                   href={`/track/${reservation.trackingToken}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
+                  className="text-sm text-muted-foreground transition-[color] duration-150 ease-enter hover:text-primary active:opacity-70 underline underline-offset-2"
                 >
                   Pantau antrean
                 </a>

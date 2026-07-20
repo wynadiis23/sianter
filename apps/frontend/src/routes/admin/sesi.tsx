@@ -307,7 +307,7 @@ export function SesiAdminPage() {
                 {layananOptions.map((l) => (
                   <label
                     key={l.id}
-                    className="flex cursor-pointer items-center gap-3 rounded-md p-1.5 hover:bg-muted transition-colors"
+                    className="flex cursor-pointer items-center gap-3 rounded-md p-1.5 transition-[color,background-color,transform] duration-150 ease-enter hover:bg-muted active:scale-[0.99]"
                   >
                     <Checkbox
                       checked={form.layananIds.includes(l.id)}

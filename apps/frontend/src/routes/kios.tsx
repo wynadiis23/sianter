@@ -249,6 +249,7 @@ export function KiosPage() {
           error={state === 'error' && !!selectedLayanan}
         />
 
+        <div className="kiosk-step-container flex flex-1 flex-col">
         {state === 'select' && (
           <KiosServiceSelect
             layananList={layananList}
@@ -317,6 +318,7 @@ export function KiosPage() {
             onReset={handleReset}
           />
         )}
+        </div>
       </div>
     </>
   )

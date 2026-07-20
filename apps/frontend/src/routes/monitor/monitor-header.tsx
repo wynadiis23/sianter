@@ -37,7 +37,7 @@ export function MonitorHeader({ time, wsStatus, speechEnabled, onToggleSpeech }:
         </time>
         <button
           onClick={onToggleSpeech}
-          className="rounded p-1 text-foreground hover:bg-foreground/10 transition-colors"
+          className="rounded p-1 text-foreground transition-[color,background-color,transform] duration-150 ease-enter hover:bg-foreground/10 active:scale-[0.92]"
           title={speechEnabled ? 'Matikan suara' : 'Nyalakan suara'}
         >
           {speechEnabled ? (

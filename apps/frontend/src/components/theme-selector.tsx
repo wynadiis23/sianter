@@ -59,8 +59,8 @@ export function ThemeSelector() {
         className="h-8 w-8"
         onClick={() => setTheme(isDark ? 'light' : 'dark')}
       >
-        <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-        <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        <Sun className="h-4 w-4 rotate-0 scale-100 opacity-100 transition-[transform,opacity] duration-200 ease-on-screen dark:-rotate-90 dark:scale-95 dark:opacity-0" />
+        <Moon className="absolute h-4 w-4 rotate-90 scale-95 opacity-0 transition-[transform,opacity] duration-200 ease-on-screen dark:rotate-0 dark:scale-100 dark:opacity-100" />
         <span className="sr-only">Toggle theme</span>
       </Button>
     </div>
