@@ -20,7 +20,7 @@ import { KegiatanAdminPage } from './routes/admin/kegiatan'
 import { RekapAdminPage } from './routes/admin/rekap'
 import { PetugasLayout } from './components/petugas-layout'
 import { KegiatanLayout } from './components/kegiatan-layout'
-import { PetugasDashboardPage } from './routes/petugas/dashboard'
+import { PetugasLoketPage } from './routes/petugas/loket'
 import { PilihLoketPage } from './routes/petugas/pilih-loket'
 import { KegiatanPetugasPage } from './routes/petugas/kegiatan'
 
@@ -42,7 +42,7 @@ const router = createBrowserRouter([
     ),
     errorElement: <ErrorBoundary />,
     children: [
-      { index: true, element: <PetugasDashboardPage /> },
+      { index: true, element: <PetugasLoketPage /> },
       { path: 'select', element: <PilihLoketPage /> },
     ],
   },

@@ -74,6 +74,7 @@ export abstract class AntreanService {
         kode: schema.antrean.kode,
         nomorUrut: schema.antrean.nomorUrut,
         status: schema.antrean.status,
+        sumber: schema.antrean.sumber,
         namaLayanan: schema.layanan.nama,
         namaPemohon: schema.pemohon.nama,
         noHpPemohon: schema.pemohon.noHp,
@@ -95,6 +96,7 @@ export abstract class AntreanService {
         kode: schema.antrean.kode,
         nomorUrut: schema.antrean.nomorUrut,
         layananId: schema.antrean.layananId,
+        sumber: schema.antrean.sumber,
         namaLayanan: schema.layanan.nama,
         createdAt: schema.antrean.createdAt,
         namaPemohon: schema.pemohon.nama,
@@ -119,6 +121,7 @@ export abstract class AntreanService {
         kode: schema.antrean.kode,
         nomorUrut: schema.antrean.nomorUrut,
         status: schema.antrean.status,
+        sumber: schema.antrean.sumber,
         namaLayanan: schema.layanan.nama,
         skippedAt: schema.antrean.skippedAt,
         namaPemohon: schema.pemohon.nama,
@@ -145,11 +148,42 @@ export abstract class AntreanService {
         (countPerLayanan[item.layananId] ?? 0) + 1
     }
 
+    const todayDateStr = today.toISOString().split('T')[0]
+
+    const daftarOnline = await db
+      .select({
+        id: schema.antrean.id,
+        kode: schema.antrean.kode,
+        nomorUrut: schema.antrean.nomorUrut,
+        sumber: schema.antrean.sumber,
+        namaLayanan: schema.layanan.nama,
+        namaPemohon: schema.pemohon.nama,
+        noHpPemohon: schema.pemohon.noHp,
+        namaSesi: schema.sesi.nama,
+        jamMulai: schema.sesi.jamMulai,
+        jamSelesai: schema.sesi.jamSelesai,
+        tanggalKunjungan: schema.antrean.tanggalKunjungan,
+      })
+      .from(schema.antrean)
+      .innerJoin(schema.layanan, eq(schema.antrean.layananId, schema.layanan.id))
+      .leftJoin(schema.pemohon, eq(schema.antrean.pemohonId, schema.pemohon.id))
+      .innerJoin(schema.sesi, eq(schema.antrean.sesiId, schema.sesi.id))
+      .where(
+        and(
+          eq(schema.antrean.status, 'RESERVED'),
+          eq(schema.antrean.sumber, 'ONLINE'),
+          eq(schema.antrean.tanggalKunjungan, todayDateStr),
+          inArray(schema.antrean.layananId, layananIds),
+        ),
+      )
+      .orderBy(schema.sesi.jamMulai, schema.antrean.createdAt)
+
     return {
       mode: pengaturan?.mode ?? 'FIFO_GLOBAL',
       aktif: aktif ?? null,
       daftarWaiting,
       daftarSkipped,
+      daftarOnline,
       countPerLayanan,
     }
   }

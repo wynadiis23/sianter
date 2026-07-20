@@ -8,6 +8,7 @@ interface ActiveTicket {
   kode: string | null
   namaLayanan: string
   status: string
+  sumber: string
   namaPemohon: string | null
   noHpPemohon: string | null
 }
@@ -45,8 +46,14 @@ export function ActiveTicketCard({
           <p className="mt-1 text-sm text-muted-foreground">
             {ticket.namaLayanan}
           </p>
+          <div className="mt-2 flex items-center justify-center gap-2">
+            {ticket.sumber === 'ONLINE' && (
+              <Badge variant="secondary" className="text-xs">
+                Online
+              </Badge>
+            )}
+          </div>
           <Badge
-            className="mt-2"
             variant={
               ticket.status === 'RECALLED'
                 ? 'destructive'

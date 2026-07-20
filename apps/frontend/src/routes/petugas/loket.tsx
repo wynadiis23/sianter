@@ -9,11 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { Users } from 'lucide-react'
-import { ActiveTicketCard } from '@/routes/petugas/dashboard/active-ticket-card'
-import { CallButtons } from '@/routes/petugas/dashboard/call-buttons'
-import { WaitingList } from '@/routes/petugas/dashboard/waiting-list'
-import { SkippedList } from '@/routes/petugas/dashboard/skipped-list'
-import { DetailPemohonDialog } from '@/routes/petugas/dashboard/detail-pemohon-dialog'
+import { ActiveTicketCard } from '@/routes/petugas/loket/active-ticket-card'
+import { CallButtons } from '@/routes/petugas/loket/call-buttons'
+import { WaitingList } from '@/routes/petugas/loket/waiting-list'
+import { SkippedList } from '@/routes/petugas/loket/skipped-list'
+import { OnlineReservationsCard } from '@/routes/petugas/loket/online-reservations-card'
+import { DetailPemohonDialog } from '@/routes/petugas/loket/detail-pemohon-dialog'
 
 interface PetugasSession {
   loketId: string
@@ -25,6 +26,7 @@ interface ActiveTicket {
   kode: string | null
   nomorUrut: number | null
   status: string
+  sumber: string
   namaLayanan: string
   namaPemohon: string | null
   noHpPemohon: string | null
@@ -35,6 +37,7 @@ interface WaitingItem {
   kode: string | null
   nomorUrut: number | null
   layananId: string
+  sumber: string
   namaLayanan: string
   createdAt: Date
   namaPemohon: string | null
@@ -46,10 +49,25 @@ interface SkippedItem {
   kode: string | null
   nomorUrut: number | null
   status: string
+  sumber: string
   namaLayanan: string
   skippedAt: Date | string | null
   namaPemohon: string | null
   noHpPemohon: string | null
+}
+
+interface OnlineReservation {
+  id: string
+  kode: string | null
+  nomorUrut: number | null
+  sumber: string
+  namaLayanan: string
+  namaPemohon: string | null
+  noHpPemohon: string | null
+  namaSesi: string
+  jamMulai: string
+  jamSelesai: string
+  tanggalKunjungan: string | null
 }
 
 interface DashboardData {
@@ -57,6 +75,7 @@ interface DashboardData {
   aktif: ActiveTicket | null
   daftarWaiting: WaitingItem[]
   daftarSkipped: SkippedItem[]
+  daftarOnline: OnlineReservation[]
   countPerLayanan: Record<string, number>
 }
 
@@ -66,7 +85,7 @@ interface LayananInfo {
   prefix: string
 }
 
-export function PetugasDashboardPage() {
+export function PetugasLoketPage() {
   const navigate = useNavigate()
   const [session, setSession] = useState<PetugasSession | null>(null)
   const [data, setData] = useState<DashboardData | null>(null)
@@ -106,11 +125,12 @@ export function PetugasDashboardPage() {
     if (result) {
       setData({
         ...result,
-        daftarWaiting: result.daftarWaiting.map((w: any) => ({
+        daftarOnline: result.daftarOnline ?? [],
+        daftarWaiting: result.daftarWaiting.map((w) => ({
           ...w,
           createdAt: new Date(w.createdAt),
         })),
-        daftarSkipped: (result.daftarSkipped ?? []).map((s: any) => ({
+        daftarSkipped: (result.daftarSkipped ?? []).map((s) => ({
           ...s,
           skippedAt: s.skippedAt ?? null,
         })),
@@ -163,7 +183,7 @@ export function PetugasDashboardPage() {
     setActionLoading(null)
     if (error) {
       const errMsg =
-        (error as any)?.value?.message ?? 'Gagal memanggil antrean'
+        (error)?.value?.message ?? 'Gagal memanggil antrean'
       toast.error(errMsg)
       return
     }
@@ -213,7 +233,7 @@ export function PetugasDashboardPage() {
     setActionLoading(null)
     if (error) {
       const errMsg =
-        (error as any)?.value?.message ?? 'Gagal memanggil ulang antrean'
+        (error)?.value?.message ?? 'Gagal memanggil ulang antrean'
       toast.error(errMsg)
       return
     }
@@ -316,6 +336,11 @@ export function PetugasDashboardPage() {
         <div>
           <WaitingList
             items={data?.daftarWaiting ?? []}
+            onDetail={setDetailItem}
+          />
+
+          <OnlineReservationsCard
+            items={data?.daftarOnline ?? []}
             onDetail={setDetailItem}
           />
 
