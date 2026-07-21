@@ -1,6 +1,6 @@
 # Sianter — Sistem Informasi Antrean Instansi Pemerintah
 
-Sistem manajemen antrean berbasis web untuk instansi pemerintah. Mendukung kiosk mandiri, monitor display real-time, reservasi online, tracking, dan manajemen jadwal kegiatan.
+Sistem manajemen antrean berbasis web untuk instansi pemerintah. Mendukung kiosk mandiri, monitor display real-time, reservasi online, tracking, manajemen jadwal kegiatan, dan analitik.
 
 ## Fitur
 
@@ -10,14 +10,17 @@ Sistem manajemen antrean berbasis web untuk instansi pemerintah. Mendukung kiosk
 - **Reservasi Online** (`/antrean-online`) — Ambil nomor antrean dari rumah, pilih layanan dan sesi waktu
 - **Tracking** (`/track/:token`) — Pantau posisi antrean secara real-time via token
 - **Petugas Dashboard** (`/petugas/loket`) — Panggil, panggil ulang, lewati, selesaikan antrean. Dua mode: FIFO Global (tombol "Next") dan Selektif (per-layanan)
+- **Suara (TTS)** — Pengumuman suara otomatis nomor antrean yang dipanggil di monitor display
 
 ### Manajemen
 - **Layanan** — Kelola jenis layanan (prefix kode, deskripsi, warna, gambar)
 - **Loket** — Kelola loket dan layanan yang ditangani
 - **Sesi** — Kelola sesi waktu reservasi online (nama, jam, kuota)
 - **Kegiatan** — Jadwal kegiatan/rapat dengan import Excel massal dan template
+- **Kuesioner** — Kelola tautan survei kepuasan per layanan
 - **Pengguna** — Kelola akun dengan 3 role: Super Admin, Petugas Loket, Petugas Kegiatan
-- **Pengaturan** — Konfigurasi sistem: mode antrean, running text, media, slideshow
+- **Rekap & Analitik** — Filter tanggal/bulan/tahun, layanan, loket, status, sumber; ringkasan statistik, tabel per-layanan, ekspor CSV
+- **Pengaturan** — Konfigurasi sistem: mode antrean, running text, media YouTube, slideshow
 
 ### Aksesibilitas
 - Panel aksesibilitas (FAB pojok kanan bawah)
@@ -26,11 +29,16 @@ Sistem manajemen antrean berbasis web untuk instansi pemerintah. Mendukung kiosk
 - Font ramah disleksia (Atkinson Hyperlegible)
 - Audit aksesibilitas otomatis via `@axe-core/react` saat development
 
+### Tema & Kustomisasi
+- Mode gelap/terang
+- 3 skema warna: Default, KPU (aksen merah), Batik (warna hangat)
+- Tersimpan di localStorage dan diterapkan sebagai `data-theme` pada `<html>`
+
 ### Role & Hak Akses
 
 | Role | Akses |
 |---|---|
-| **Super Admin** | Semua fitur admin: layanan, loket, sesi, kegiatan, pengguna, pengaturan |
+| **Super Admin** | Semua fitur admin: layanan, loket, sesi, kegiatan, pengguna, pengaturan, kuesioner, rekap |
 | **Petugas Loket** | Dashboard antrean: panggil/panggil ulang/lewati/selesaikan |
 | **Petugas Kegiatan** | Manajemen jadwal kegiatan saja |
 
@@ -46,8 +54,11 @@ Sistem manajemen antrean berbasis web untuk instansi pemerintah. Mendukung kiosk
 | Real-time | Elysia WebSocket |
 | Type Safety | [Eden Treaty](https://elysiajs.com/eden/treaty.html) end-to-end |
 | UI | [shadcn/ui](https://ui.shadcn.com) + [Radix](https://radix-ui.com) |
+| Theme | [next-themes](https://github.com/pacocoursey/next-themes) |
 | Icons | [Lucide](https://lucide.dev) |
+| QR Code | [qrcode.react](https://github.com/zpao/qrcode.react) + [html5-qrcode](https://github.com/mebjas/html5-qrcode) |
 | Excel | [xlsx](https://sheetjs.com) |
+| Fonts | Plus Jakarta Sans, Fraunces, JetBrains Mono, Atkinson Hyperlegible |
 
 ## Struktur Monorepo
 
@@ -58,7 +69,7 @@ manajemen-antrean/
 │   │   └── src/
 │   │       ├── auth/       # Better Auth, Elysia macros, permissions
 │   │       ├── db/         # Drizzle client
-│   │       ├── modules/    # 13 modul fitur
+│   │       ├── modules/    # 15 modul fitur
 │   │       ├── env.ts
 │   │       ├── index.ts
 │   │       └── seed.ts
@@ -167,6 +178,8 @@ bun dev:frontend         # http://localhost:5173
 | CRUD | `/api/admin/kegiatan` | Manajemen kegiatan |
 | POST | `/api/admin/kegiatan/import` | Import Excel kegiatan |
 | GET/POST | `/api/admin/kegiatan/template` | Download/upload template |
+| CRUD | `/api/admin/kuesioner` | Manajemen tautan survei |
+| GET | `/api/admin/rekap` | Rekap & analitik dengan filter |
 | CRUD | `/api/admin/pengaturan` | Pengaturan sistem |
 | — | `/api/admin/users` | Manajemen pengguna (via Better Auth) |
 
@@ -184,7 +197,7 @@ bun dev:frontend         # http://localhost:5173
 
 ## Database Schema
 
-11 tabel utama:
+14 tabel utama:
 
 - **user** — Pengguna dengan role (SUPER_ADMIN, PETUGAS_LOKET, PETUGAS_KEGIATAN)
 - **session, account, verification** — Better Auth
@@ -196,8 +209,27 @@ bun dev:frontend         # http://localhost:5173
 - **pemohon** — Data pemohon (nama, no HP)
 - **sesi** — Sesi waktu reservasi online
 - **sesi_layanan** — Relasi sesi-layanan
+- **kuesioner** — Tautan survei per layanan
 - **kegiatan** — Jadwal kegiatan (tanggal, nama, metode, penyelenggara, nomor surat)
 - **pengaturan** — Pengaturan sistem (singleton)
+
+## Docker Deployment
+
+Tersedia konfigurasi Docker untuk production dan staging:
+
+```bash
+# Production
+docker compose -f docker-compose.prod.yml up -d
+
+# Staging
+docker compose -f docker-compose.staging.yml up -d
+```
+
+Setiap service memiliki Dockerfile masing-masing:
+- `apps/backend/Dockerfile` + `entrypoint.sh`
+- `apps/frontend/Dockerfile` + `nginx.conf`
+
+Volume ter-mount untuk penyimpanan file upload (template Excel).
 
 ## Lisensi
 
