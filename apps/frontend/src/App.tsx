@@ -18,6 +18,7 @@ import { UsersAdminPage } from './routes/admin/users'
 import { SettingsAdminPage } from './routes/admin/settings'
 import { KegiatanAdminPage } from './routes/admin/kegiatan'
 import { RekapAdminPage } from './routes/admin/rekap'
+import { KuesionerAdminPage } from './routes/admin/kuesioner'
 import { PetugasLayout } from './components/petugas-layout'
 import { KegiatanLayout } from './components/kegiatan-layout'
 import { PetugasLoketPage } from './routes/petugas/loket'
@@ -36,7 +37,7 @@ const router = createBrowserRouter([
   {
     path: '/petugas/loket',
     element: (
-      <ProtectedRoute role="PETUGAS_LOKET">
+      <ProtectedRoute allowedRoles="PETUGAS_LOKET">
         <PetugasLayout />
       </ProtectedRoute>
     ),
@@ -49,7 +50,7 @@ const router = createBrowserRouter([
   {
     path: '/petugas/kegiatan',
     element: (
-      <ProtectedRoute role="PETUGAS_KEGIATAN">
+      <ProtectedRoute allowedRoles="PETUGAS_KEGIATAN">
         <KegiatanLayout />
       </ProtectedRoute>
     ),
@@ -60,7 +61,7 @@ const router = createBrowserRouter([
   },
   {
     element: (
-      <ProtectedRoute role="SUPER_ADMIN">
+      <ProtectedRoute allowedRoles="SUPER_ADMIN">
         <AdminLayout />
       </ProtectedRoute>
     ),
@@ -74,6 +75,7 @@ const router = createBrowserRouter([
       { path: '/admin/users', element: <UsersAdminPage /> },
       { path: '/admin/settings', element: <SettingsAdminPage /> },
       { path: '/admin/rekap', element: <RekapAdminPage /> },
+      { path: '/admin/kuesioner', element: <KuesionerAdminPage /> },
     ],
   },
   { path: '*', element: <NotFoundPage /> },

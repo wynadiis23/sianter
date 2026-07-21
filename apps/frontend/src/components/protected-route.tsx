@@ -6,10 +6,10 @@ type Role = 'SUPER_ADMIN' | 'PETUGAS_LOKET' | 'PETUGAS_KEGIATAN'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
-  role?: Role | Role[]
+  allowedRoles?: Role | Role[]
 }
 
-export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { data: session, isPending } = useSession()
   const location = useLocation()
 
@@ -25,9 +25,9 @@ export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  if (role) {
-    const allowedRoles = Array.isArray(role) ? role : [role]
-    if (!allowedRoles.includes(session.user.role as Role) && session.user.role !== 'SUPER_ADMIN') {
+  if (allowedRoles) {
+    const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles]
+    if (!roles.includes(session.user.role as Role) && session.user.role !== 'SUPER_ADMIN') {
       return <Navigate to="/unauthorized" replace />
     }
   }
