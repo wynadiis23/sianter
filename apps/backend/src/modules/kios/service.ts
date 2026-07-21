@@ -3,6 +3,7 @@ import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 import { emitAntreanEvent } from '../realtime/service'
 import { generateShortToken } from '../../lib/token'
+import { KuesionerService } from '../kuesioner/service'
 
 function todayRange() {
   const today = new Date()
@@ -140,11 +141,15 @@ export abstract class KiosService {
       await emitAntreanEvent('antrean:created', antrean.id)
     }
 
+    const kuesioner = await KuesionerService.findAktifByLayananId(layananId)
+
     return {
       kode: antrean.kode!,
       nomorUrut: antrean.nomorUrut!,
       namaLayanan: layanan.nama,
       trackingToken: antrean.trackingToken,
+      kuesionerLink: kuesioner?.link ?? null,
+      kuesionerCaption: kuesioner?.caption ?? null,
     }
   }
 
@@ -256,11 +261,15 @@ export abstract class KiosService {
       await emitAntreanEvent('antrean:created', updated.id)
     }
 
+    const kuesioner = await KuesionerService.findAktifByLayananId(antrean.layananId)
+
     return {
       kode: kode,
       nomorUrut: nomorUrut,
       namaLayanan: layanan!.nama,
       trackingToken: antrean.trackingToken,
+      kuesionerLink: kuesioner?.link ?? null,
+      kuesionerCaption: kuesioner?.caption ?? null,
     }
   }
 }

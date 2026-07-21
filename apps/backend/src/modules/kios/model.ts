@@ -21,6 +21,8 @@ export const KiosModel = {
     nomorUrut: t.Number(),
     namaLayanan: t.String(),
     trackingToken: t.String(),
+    kuesionerLink: t.Nullable(t.String()),
+    kuesionerCaption: t.Nullable(t.String()),
   }),
 
   checkInBody: t.Object({

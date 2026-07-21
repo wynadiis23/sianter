@@ -24,6 +24,8 @@ export const AntreanOnlineModel = {
     jamMulai: t.String(),
     jamSelesai: t.String(),
     tanggalKunjungan: t.String(),
+    kuesionerLink: t.Nullable(t.String()),
+    kuesionerCaption: t.Nullable(t.String()),
   }),
 
   notFound: t.Object({ message: t.String() }),

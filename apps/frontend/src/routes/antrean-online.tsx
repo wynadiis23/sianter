@@ -44,6 +44,8 @@ interface ReservationData {
   jamMulai: string
   jamSelesai: string
   tanggalKunjungan: string
+  kuesionerLink?: string | null
+  kuesionerCaption?: string | null
 }
 
 export function OnlineAntreanPage() {
@@ -212,8 +214,9 @@ export function OnlineAntreanPage() {
           </div>
 
           <div className="mb-6 space-y-2">
-            <label className="text-sm font-medium text-foreground">Tanggal Kunjungan</label>
+            <label htmlFor="tanggal-kunjungan" className="text-sm font-medium text-foreground">Tanggal Kunjungan</label>
             <Input
+              id="tanggal-kunjungan"
               type="date"
               value={selectedDate}
               min={wita().format('YYYY-MM-DD')}
@@ -222,7 +225,7 @@ export function OnlineAntreanPage() {
           </div>
 
           <div className="space-y-3">
-            <label className="text-sm font-medium text-foreground">Pilih Sesi</label>
+            <p className="text-sm font-medium text-foreground">Pilih Sesi</p>
             {sesiList.length === 0 && (
               <p className="text-sm text-muted-foreground">Belum ada sesi tersedia.</p>
             )}
@@ -349,6 +352,14 @@ export function OnlineAntreanPage() {
               <p className="mt-3 text-xs text-muted-foreground/60">Scan QR ini di kios pada hari kunjungan untuk check-in</p>
               <div className="my-4 border-t border-border" />
               <p className="text-xs text-muted-foreground/60">Pantau antrean: {window.location.origin}/track/{reservation.trackingToken}</p>
+              {reservation.kuesionerLink && (
+                <>
+                  <div className="my-6 border-t border-border" />
+                  <QRCodeSVG value={reservation.kuesionerLink} size={120} />
+                  <p className="mt-3 text-xs text-muted-foreground/60 mb-1">{reservation.kuesionerCaption}</p>
+                  <p className="text-[9px] text-muted-foreground/40 break-all">{reservation.kuesionerLink}</p>
+                </>
+              )}
             </div>
           </div>
 
@@ -389,6 +400,18 @@ export function OnlineAntreanPage() {
               <p className="mt-4 text-xs text-muted-foreground">
                 Scan QR ini di kios pada hari kunjungan untuk check-in
               </p>
+              {reservation.kuesionerLink && (
+                <div className="mt-4 border-t border-border pt-4">
+                  <p className="text-xs text-muted-foreground/60 mb-2">
+                    {reservation.kuesionerCaption}
+                  </p>
+                  <QRCodeSVG
+                    value={reservation.kuesionerLink}
+                    size={80}
+                    className="mx-auto"
+                  />
+                </div>
+              )}
             </div>
             <div className="mt-6 flex flex-col gap-3">
               <Button

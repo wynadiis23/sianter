@@ -6,9 +6,11 @@ interface KiosPrintReceiptProps {
   namaLayanan?: string
   trackingToken?: string
   timestamp: Date
+  kuesionerLink?: string | null
+  kuesionerCaption?: string | null
 }
 
-export function KiosPrintReceipt({ kode, namaLayanan, trackingToken, timestamp }: KiosPrintReceiptProps) {
+export function KiosPrintReceipt({ kode, namaLayanan, trackingToken, timestamp, kuesionerLink, kuesionerCaption }: KiosPrintReceiptProps) {
   return (
     <div className="hidden print:flex print:fixed print:inset-0 print:flex-col print:items-center print:justify-center print:bg-white print:p-8">
       <div className="w-[320px] text-center">
@@ -42,6 +44,23 @@ export function KiosPrintReceipt({ kode, namaLayanan, trackingToken, timestamp }
         <p className="font-body text-xs text-muted-foreground/60">
           Scan QR untuk pantau antrean
         </p>
+        {kuesionerLink && (
+          <>
+            <div className="my-6 border-t border-border" />
+            <div className="flex justify-center mb-4">
+              <QRCodeSVG
+                value={kuesionerLink}
+                size={120}
+              />
+            </div>
+            <p className="font-body text-xs text-muted-foreground/60 mb-1">
+              {kuesionerCaption}
+            </p>
+            <p className="font-body text-[9px] text-muted-foreground/40 break-all">
+              {kuesionerLink}
+            </p>
+          </>
+        )}
         <div className="my-4 border-t border-border" />
         <p className="font-body text-xs text-muted-foreground/60">
           Harap menunggu nomor antrean Anda dipanggil.
