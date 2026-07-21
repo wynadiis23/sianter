@@ -1,0 +1,21 @@
+/* Hallmark · token system · studio theme
+ * Pre-emit critique: P5 H4 E5 S4 R5 V5
+ *
+ * macrostructure: Workbench · genre: editorial · theme: Studio
+ * enrichment: none · nav: N6 Newspaper masthead · footer: Ft5 Statement
+ *
+ * Diversification axes:
+ *   paper band: light (paper L 96%) · display style: high-contrast-serif (Fraunces)
+ *   accent hue: red (oklch 53% 0.19 14)
+ */
+
+:root {
+  /* Studio accent — red (KPU) */
+  --accent-leaf:         oklch(53%  0.19 14);
+  --accent-leaf-dim:     oklch(43%  0.15 14);
+  --accent-leaf-bright:  oklch(60%  0.20 14);
+  --accent-leaf-surface: oklch(96%  0.02 14);
+  --accent-leaf-soft:    oklch(86%  0.06 14);
+  --accent-leaf-border:  oklch(76%  0.08 14);
+  --accent-leaf-ink:     oklch(22%  0.03 14);
+}

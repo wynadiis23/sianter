@@ -249,11 +249,28 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-accent-leaf: var(--accent-leaf);
+  --color-accent-leaf-dim: var(--accent-leaf-dim);
+  --color-accent-leaf-bright: var(--accent-leaf-bright);
+  --color-accent-leaf-surface: var(--accent-leaf-surface);
+  --color-accent-leaf-soft: var(--accent-leaf-soft);
+  --color-accent-leaf-border: var(--accent-leaf-border);
   --ease-enter: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-exit: cubic-bezier(0.55, 0, 1, 0.45);
   --ease-on-screen: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-micro: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ─── Hallmark · studio accent tokens (landing page) ─── */
+:root {
+  --accent-leaf:         oklch(53% 0.19 14);
+  --accent-leaf-dim:     oklch(43% 0.15 14);
+  --accent-leaf-bright:  oklch(60% 0.20 14);
+  --accent-leaf-surface: oklch(96% 0.02 14);
+  --accent-leaf-soft:    oklch(86% 0.06 14);
+  --accent-leaf-border:  oklch(76% 0.08 14);
+  --accent-leaf-ink:     oklch(22% 0.03 14);
 }
 
 @layer base {
