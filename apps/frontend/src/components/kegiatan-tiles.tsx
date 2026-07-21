@@ -98,6 +98,9 @@ export function KegiatanTiles({
                 <div
                   key={`${item.id}-${i}`}
                   onClick={() => openDetail(i)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(i) } }}
+                  role="button"
+                  tabIndex={0}
                   className="relative flex flex-col overflow-hidden rounded-lg border shadow-sm transition-[transform,box-shadow] duration-200 ease-enter hover:shadow-md active:scale-[0.97] cursor-pointer"
                   style={{
                     borderLeftColor: p.border,

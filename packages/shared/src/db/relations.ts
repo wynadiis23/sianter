@@ -12,6 +12,7 @@ import {
   pemohon,
   sesi,
   sesiLayanan,
+  kuesioner,
 } from './schema'
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -31,10 +32,11 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 export const verificationRelations = relations(verification, () => ({}))
 
-export const layananRelations = relations(layanan, ({ many }) => ({
+export const layananRelations = relations(layanan, ({ many, one }) => ({
   loketLayanan: many(loketLayanan),
   antrean: many(antrean),
   sesiLayanan: many(sesiLayanan),
+  kuesioner: one(kuesioner),
 }))
 
 export const loketRelations = relations(loket, ({ many }) => ({
@@ -81,4 +83,8 @@ export const sesiRelations = relations(sesi, ({ many }) => ({
 export const sesiLayananRelations = relations(sesiLayanan, ({ one }) => ({
   sesi: one(sesi, { fields: [sesiLayanan.sesiId], references: [sesi.id] }),
   layanan: one(layanan, { fields: [sesiLayanan.layananId], references: [layanan.id] }),
+}))
+
+export const kuesionerRelations = relations(kuesioner, ({ one }) => ({
+  layanan: one(layanan, { fields: [kuesioner.layananId], references: [layanan.id] }),
 }))

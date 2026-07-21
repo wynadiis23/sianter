@@ -6,15 +6,17 @@ type AnyWs = ReturnType<typeof server.api.ws.monitor.subscribe>
 
 export type WsStatus = 'connecting' | 'connected' | 'disconnected'
 
-function useReconnectingSocket(
+function useReconnectingSocket<T>(
   factory: () => AnyWs,
-  onMessage: (event: any) => void,
+  onMessage: (event: T) => void,
   onReconnect?: () => void,
 ) {
   const onMessageRef = useRef(onMessage)
   const onReconnectRef = useRef(onReconnect)
+  const factoryRef = useRef(factory)
   onMessageRef.current = onMessage
   onReconnectRef.current = onReconnect
+  factoryRef.current = factory
 
   const [status, setStatus] = useState<WsStatus>('connecting')
 
@@ -26,9 +28,9 @@ function useReconnectingSocket(
 
     const connect = () => {
       setStatus('connecting')
-      ws = factory()
-      ws.on('message', (raw: any) => {
-        onMessageRef.current?.(raw.data)
+      ws = factoryRef.current()
+      ws.on('message', (raw: unknown) => {
+        onMessageRef.current?.((raw as { data: T }).data)
       })
       ws.on('open', () => {
         setStatus('connected')

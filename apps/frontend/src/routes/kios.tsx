@@ -28,6 +28,8 @@ interface TicketData {
   nomorUrut: number
   namaLayanan: string
   trackingToken: string
+  kuesionerLink?: string | null
+  kuesionerCaption?: string | null
 }
 
 const KIOS_STEPS = ['Pilih Layanan', 'Isi Identitas', 'Konfirmasi', 'Ambil Tiket']
@@ -238,6 +240,8 @@ export function KiosPage() {
         namaLayanan={ticket?.namaLayanan}
         trackingToken={ticket?.trackingToken}
         timestamp={now}
+        kuesionerLink={ticket?.kuesionerLink}
+        kuesionerCaption={ticket?.kuesionerCaption}
       />
 
       <div className="kiosk flex h-dvh flex-col bg-linear-to-b from-primary/4 via-background to-background print:hidden">

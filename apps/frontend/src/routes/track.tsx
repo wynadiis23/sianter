@@ -162,7 +162,7 @@ export function TrackPage() {
     if (!data || data.status === 'FINISHED' || data.status === 'SKIPPED') return
     const id = setInterval(fetchTrack, 5000)
     return () => clearInterval(id)
-  }, [data?.status, fetchTrack])
+  }, [data, fetchTrack])
 
   if (loading) {
     return (

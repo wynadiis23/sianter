@@ -7,6 +7,8 @@ interface TicketData {
   kode: string
   namaLayanan: string
   trackingToken: string
+  kuesionerLink?: string | null
+  kuesionerCaption?: string | null
 }
 
 interface KiosTicketProps {
@@ -66,6 +68,18 @@ export function KiosTicket({ ticket, timestamp, countdown, onPrint, onReset }: K
             <p className="mt-3 font-body text-xs text-muted-foreground/40">
               Harap menunggu nomor Anda dipanggil
             </p>
+            {ticket.kuesionerLink && (
+              <div className="mt-4 border-t border-border pt-4">
+                <p className="font-body text-xs text-muted-foreground/60 mb-2">
+                  {ticket.kuesionerCaption}
+                </p>
+                <QRCodeSVG
+                  value={ticket.kuesionerLink}
+                  size={80}
+                  className="mx-auto"
+                />
+              </div>
+            )}
           </div>
         </div>
 

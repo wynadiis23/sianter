@@ -19,6 +19,7 @@ import { DetailPemohonDialog } from '@/routes/petugas/loket/detail-pemohon-dialo
 interface PetugasSession {
   loketId: string
   nomorLoket: number
+  layanan: LayananInfo[]
 }
 
 interface ActiveTicket {
@@ -105,7 +106,7 @@ export function PetugasLoketPage() {
     }
     const s = JSON.parse(raw) as PetugasSession
     setSession(s)
-    setLayananInfo((s as any).layanan ?? [])
+    setLayananInfo(s.layanan)
   }, [navigate])
 
   const fetchDashboard = useCallback(async () => {

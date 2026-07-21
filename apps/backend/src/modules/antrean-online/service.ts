@@ -2,6 +2,7 @@ import { eq, and, gte, lt, or, sql } from 'drizzle-orm'
 import { status } from 'elysia'
 import { db, schema } from '../../db/client'
 import { generateShortToken } from '../../lib/token'
+import { KuesionerService } from '../kuesioner/service'
 
 export abstract class AntreanOnlineService {
   static async listSesi(layananId?: string) {
@@ -169,6 +170,7 @@ export abstract class AntreanOnlineService {
       })
       .returning()
 
+    const kuesioner = await KuesionerService.findAktifByLayananId(layananId)
     const formattedTanggal = String(tanggalKunjungan).substring(0, 10)
 
     return {
@@ -178,6 +180,8 @@ export abstract class AntreanOnlineService {
       jamMulai: sesi.jamMulai,
       jamSelesai: sesi.jamSelesai,
       tanggalKunjungan: formattedTanggal,
+      kuesionerLink: kuesioner?.link ?? null,
+      kuesionerCaption: kuesioner?.caption ?? null,
     }
   }
 }
