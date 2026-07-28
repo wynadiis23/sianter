@@ -7,6 +7,7 @@ import {
   getSavedDeviceId,
   requestDevice,
   removeSavedDeviceId,
+  saveDeviceId,
   getActiveDevice,
   connectToDevice,
   disconnectDevice,
@@ -35,6 +36,11 @@ export function useThermalPrinter() {
   const [isConnecting, setIsConnecting] = useState(false)
   const [pairedDevices, setPairedDevices] = useState<BluetoothDevice[]>([])
   const [hasSavedDevice, setHasSavedDevice] = useState(!!getSavedDeviceId())
+
+  const savedId = getSavedDeviceId()
+  const defaultPrinterName = hasSavedDevice
+    ? (pairedDevices.find((d) => d.id === savedId)?.name ?? null)
+    : null
 
   const refreshPaired = useCallback(async () => {
     const devices = await getPairedDevices()
@@ -84,6 +90,7 @@ export function useThermalPrinter() {
         kuesionerCaption: data.kuesionerCaption ?? null,
       })
       if (error || !result) {
+        console.error(error)
         toast.error('Gagal menghasilkan buffer struk')
         return
       }
@@ -110,6 +117,7 @@ export function useThermalPrinter() {
       setIsConnecting(true)
       const { data: result, error } = await server.api.printer.test.post()
       if (error || !result) {
+        console.log('Error generating test print buffer:', error)
         toast.error('Gagal menghasilkan buffer test')
         return
       }
@@ -134,16 +142,24 @@ export function useThermalPrinter() {
     toast.info('Printer dihapus dari daftar')
   }, [])
 
+  const setDefaultDevice = useCallback((deviceId: string) => {
+    saveDeviceId(deviceId)
+    setHasSavedDevice(true)
+    toast.success('Printer default diperbarui')
+  }, [])
+
   return {
     isConnected,
     isConnecting,
     pairedDevices,
     hasSavedDevice,
+    defaultPrinterName,
     connect,
     disconnect,
     print,
     testPrint,
     forgetDevice,
+    setDefaultDevice,
     refreshPaired,
   }
 }

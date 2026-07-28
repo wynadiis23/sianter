@@ -267,6 +267,22 @@ export function PetugasLoketPage() {
     }
   }, [data?.aktif, print])
 
+  const handleReprintWaiting = useCallback(async (item: WaitingItem) => {
+    setActionLoading(`reprint-${item.id}`)
+    try {
+      await print({
+        kode: item.kode ?? '-',
+        namaLayanan: item.namaLayanan,
+        timestamp: item.createdAt,
+        trackingUrl: `${window.location.origin}/track/${item.id}`,
+      })
+    } catch {
+      // toast already handled by the hook
+    } finally {
+      setActionLoading(null)
+    }
+  }, [print])
+
   const handleGantiLoket = () => {
     localStorage.removeItem('petugasSession')
     navigate('/petugas/loket/select', { replace: true })
@@ -360,6 +376,7 @@ export function PetugasLoketPage() {
           <WaitingList
             items={data?.daftarWaiting ?? []}
             onDetail={setDetailItem}
+            onReprint={handleReprintWaiting}
           />
 
           <OnlineReservationsCard

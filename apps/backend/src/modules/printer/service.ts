@@ -3,8 +3,10 @@ import { PNG } from 'pngjs'
 import fs from 'fs'
 import { join } from 'path'
 import type { PrinterModel } from './model'
+import { CustomManager } from './manager'
 
 const LOGO_PATH = join(import.meta.dir, '..', '..', 'assets', 'logo-kpu-bali.png')
+const imageManager = new CustomManager()
 
 function loadLogo(): Image {
   const png = PNG.sync.read(fs.readFileSync(LOGO_PATH))
@@ -16,7 +18,7 @@ export abstract class PrinterService {
     body: PrinterModel['receiptBody'],
   ): Promise<PrinterModel['response']> {
     const connection = new InMemory()
-    const printer = await Printer.CONNECT('POS-58', connection)
+    const printer = await Printer.CONNECT('POS-58', connection, imageManager)
 
     await printer.setColumns(32)
 
@@ -81,7 +83,7 @@ export abstract class PrinterService {
 
   static async generateTestPrint(): Promise<PrinterModel['response']> {
     const connection = new InMemory()
-    const printer = await Printer.CONNECT('POS-58', connection)
+    const printer = await Printer.CONNECT('POS-58', connection, imageManager)
 
     await printer.writeln('=== TEST PRINT ===', Style.Bold, Align.Center)
     await printer.writeln('Sianter Queue System', 0, Align.Center)

@@ -10,6 +10,7 @@ import { KiosServiceSelect } from '@/routes/kios/kios-service-select'
 import { KiosCheckIn } from '@/routes/kios/kios-check-in'
 import { KiosConfirm } from '@/routes/kios/kios-confirm'
 import { KiosTicket } from '@/routes/kios/kios-ticket'
+import { KiosPrinterManager } from '@/routes/kios/kios-printer-manager'
 import { useThermalPrinter } from '@/hooks/use-thermal-printer'
 
 type PageState = 'loading' | 'select' | 'checkin' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
@@ -49,6 +50,7 @@ export function KiosPage() {
   const [checkInError, setCheckInError] = useState<string | null>(null)
   const [checkInToken, setCheckInToken] = useState('')
   const [inputMode, setInputMode] = useState<'scan' | 'manual'>('scan')
+  const [showPrinterManager, setShowPrinterManager] = useState(false)
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
@@ -184,7 +186,7 @@ export function KiosPage() {
     fetchLayanan()
   }, [fetchLayanan])
 
-  const { print } = useThermalPrinter()
+  const { print, hasSavedDevice, defaultPrinterName, testPrint, forgetDevice, refreshPaired } = useThermalPrinter()
 
   const handlePrint = useCallback(async () => {
     if (!ticket) return
@@ -250,7 +252,12 @@ export function KiosPage() {
   return (
     <>
       <div className="kiosk flex h-dvh flex-col bg-linear-to-b from-primary/4 via-background to-background print:hidden">
-        <KiosHeader now={now} />
+        <KiosHeader
+            now={now}
+            hasSavedPrinter={hasSavedDevice}
+            printerName={defaultPrinterName}
+            onPrinterClick={() => setShowPrinterManager(true)}
+          />
 
         <Stepper
           steps={KIOS_STEPS}
@@ -329,6 +336,16 @@ export function KiosPage() {
         )}
         </div>
       </div>
+
+      <KiosPrinterManager
+        open={showPrinterManager}
+        onOpenChange={setShowPrinterManager}
+        hasSavedPrinter={hasSavedDevice}
+        printerName={defaultPrinterName}
+        testPrint={testPrint}
+        forgetDevice={forgetDevice}
+        refreshPaired={refreshPaired}
+      />
     </>
   )
 }
