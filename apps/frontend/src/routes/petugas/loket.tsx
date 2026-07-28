@@ -15,6 +15,7 @@ import { WaitingList } from '@/routes/petugas/loket/waiting-list'
 import { SkippedList } from '@/routes/petugas/loket/skipped-list'
 import { OnlineReservationsCard } from '@/routes/petugas/loket/online-reservations-card'
 import { DetailPemohonDialog } from '@/routes/petugas/loket/detail-pemohon-dialog'
+import { useThermalPrinter } from '@/hooks/use-thermal-printer'
 
 interface PetugasSession {
   loketId: string
@@ -97,6 +98,8 @@ export function PetugasLoketPage() {
     nama: string
     noHp: string
   } | null>(null)
+
+  const { print } = useThermalPrinter()
 
   useEffect(() => {
     const raw = localStorage.getItem('petugasSession')
@@ -246,6 +249,24 @@ export function PetugasLoketPage() {
     await handleFinish(id)
   }
 
+  const handleReprint = useCallback(async (id: string) => {
+    const ticket = data?.aktif
+    if (!ticket || ticket.id !== id) return
+    setActionLoading(`reprint-${id}`)
+    try {
+      await print({
+        kode: ticket.kode ?? '-',
+        namaLayanan: ticket.namaLayanan,
+        timestamp: new Date(),
+        trackingUrl: `${window.location.origin}/track/${id}`,
+      })
+    } catch {
+      // toast already handled by the hook
+    } finally {
+      setActionLoading(null)
+    }
+  }, [data?.aktif, print])
+
   const handleGantiLoket = () => {
     localStorage.removeItem('petugasSession')
     navigate('/petugas/loket/select', { replace: true })
@@ -308,6 +329,7 @@ export function PetugasLoketPage() {
               onRecall={handleRecall}
               onSkip={handleSkip}
               onFinish={handleFinish}
+              onReprint={handleReprint}
               onDetail={setDetailItem}
             />
           ) : (

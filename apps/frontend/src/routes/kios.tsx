@@ -10,7 +10,7 @@ import { KiosServiceSelect } from '@/routes/kios/kios-service-select'
 import { KiosCheckIn } from '@/routes/kios/kios-check-in'
 import { KiosConfirm } from '@/routes/kios/kios-confirm'
 import { KiosTicket } from '@/routes/kios/kios-ticket'
-import { KiosPrintReceipt } from '@/routes/kios/kios-print-receipt'
+import { useThermalPrinter } from '@/hooks/use-thermal-printer'
 
 type PageState = 'loading' | 'select' | 'checkin' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -184,9 +184,23 @@ export function KiosPage() {
     fetchLayanan()
   }, [fetchLayanan])
 
-  const handlePrint = useCallback(() => {
-    window.print()
-  }, [])
+  const { print } = useThermalPrinter()
+
+  const handlePrint = useCallback(async () => {
+    if (!ticket) return
+    try {
+      await print({
+        kode: ticket.kode,
+        namaLayanan: ticket.namaLayanan,
+        timestamp: now,
+        trackingUrl: `${window.location.origin}/track/${ticket.trackingToken}`,
+        kuesionerUrl: ticket.kuesionerLink ?? null,
+        kuesionerCaption: ticket.kuesionerCaption ?? null,
+      })
+    } catch {
+      // toast already handled by the hook
+    }
+  }, [ticket, now, print])
 
   useEffect(() => {
     if (state !== 'ticket') return
@@ -235,15 +249,6 @@ export function KiosPage() {
 
   return (
     <>
-      <KiosPrintReceipt
-        kode={ticket?.kode}
-        namaLayanan={ticket?.namaLayanan}
-        trackingToken={ticket?.trackingToken}
-        timestamp={now}
-        kuesionerLink={ticket?.kuesionerLink}
-        kuesionerCaption={ticket?.kuesionerCaption}
-      />
-
       <div className="kiosk flex h-dvh flex-col bg-linear-to-b from-primary/4 via-background to-background print:hidden">
         <KiosHeader now={now} />
 

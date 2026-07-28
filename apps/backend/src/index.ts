@@ -17,6 +17,7 @@ import { rekapModule } from './modules/rekap'
 import { sesiModule } from './modules/sesi'
 import { kegiatanModule } from './modules/kegiatan'
 import { kuesionerModule } from './modules/kuesioner'
+import { printerModule } from './modules/printer'
 
 const app = new Elysia()
   .use(
@@ -43,6 +44,7 @@ const app = new Elysia()
   .use(antreanOnlineModule)
   .use(rekapModule)
   .use(kuesionerModule)
+  .use(printerModule)
   .listen(Number(process.env.PORT) || 3000)
 
 console.log(

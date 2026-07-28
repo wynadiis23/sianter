@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Phone, PhoneCall, SkipForward, CheckCircle2, User } from 'lucide-react'
+import { Phone, PhoneCall, SkipForward, CheckCircle2, User, Printer } from 'lucide-react'
 
 interface ActiveTicket {
   id: string
@@ -19,6 +19,7 @@ interface ActiveTicketCardProps {
   onRecall: (id: string) => void
   onSkip: (id: string) => void
   onFinish: (id: string) => void
+  onReprint: (id: string) => void
   onDetail: (data: { nama: string; noHp: string } | null) => void
 }
 
@@ -28,6 +29,7 @@ export function ActiveTicketCard({
   onRecall,
   onSkip,
   onFinish,
+  onReprint,
   onDetail,
 }: ActiveTicketCardProps) {
   return (
@@ -91,6 +93,16 @@ export function ActiveTicketCard({
           >
             <CheckCircle2 className="size-4" />
             Selesai
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="shrink-0"
+            onClick={() => onReprint(ticket.id)}
+            disabled={actionLoading === `reprint-${ticket.id}`}
+            title="Cetak Ulang"
+          >
+            <Printer className="size-4" />
           </Button>
           <Button
             variant="ghost"

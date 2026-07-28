@@ -1,4 +1,4 @@
-import { LayoutGrid, Building2, Users, Settings, Clock, CalendarDays, FileText, ClipboardList } from 'lucide-react'
+import { LayoutGrid, Building2, Users, Settings, Clock, CalendarDays, FileText, ClipboardList, Printer } from 'lucide-react'
 import { DashboardLayout } from './dashboard-layout'
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { title: 'Kuesioner', url: '/admin/kuesioner', icon: ClipboardList },
   { title: 'Rekap', url: '/admin/rekap', icon: FileText },
   { title: 'Pengaturan', url: '/admin/settings', icon: Settings },
+  { title: 'Printer', url: '/admin/printer', icon: Printer },
 ]
 
 export function AdminLayout() {
