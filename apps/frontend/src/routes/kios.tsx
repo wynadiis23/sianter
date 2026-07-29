@@ -186,7 +186,7 @@ export function KiosPage() {
     fetchLayanan()
   }, [fetchLayanan])
 
-  const { print, hasSavedDevice, defaultPrinterName, testPrint, forgetDevice, refreshPaired } = useThermalPrinter()
+  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, hasSavedDevice, testPrint, forgetDevice, reconnectNow, refreshPaired } = useThermalPrinter()
 
   const handlePrint = useCallback(async () => {
     if (!ticket) return
@@ -254,9 +254,13 @@ export function KiosPage() {
       <div className="kiosk flex h-dvh flex-col bg-linear-to-b from-primary/4 via-background to-background print:hidden">
         <KiosHeader
             now={now}
-            hasSavedPrinter={hasSavedDevice}
+            isConnected={isConnected}
+            isConnecting={isConnecting}
+            isReconnecting={isReconnecting}
             printerName={defaultPrinterName}
+            connectionError={connectionError}
             onPrinterClick={() => setShowPrinterManager(true)}
+            onReconnect={reconnectNow}
           />
 
         <Stepper

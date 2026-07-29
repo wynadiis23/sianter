@@ -18,6 +18,7 @@ import { wita } from '@/lib/dayjs'
 import { IdentityForm } from '@/components/identity-form'
 import { ServiceCard } from '@/components/service-card'
 import { useThermalPrinter } from '@/hooks/use-thermal-printer'
+import { PrinterStatusIndicator } from '@/components/printer-status-indicator'
 
 type Step = 'select' | 'jadwal' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -63,7 +64,7 @@ export function OnlineAntreanPage() {
   const [noHp, setNoHp] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
 
-  const { print } = useThermalPrinter()
+  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, reconnectNow } = useThermalPrinter()
 
   const fetchLayanan = useCallback(async () => {
     setErrorMsg(null)
@@ -194,6 +195,15 @@ export function OnlineAntreanPage() {
             <h1 className="text-lg font-semibold text-foreground">Antrean Online</h1>
             <p className="text-xs text-muted-foreground">KPU Provinsi Bali</p>
           </div>
+          <PrinterStatusIndicator
+            isConnected={isConnected}
+            isConnecting={isConnecting}
+            isReconnecting={isReconnecting}
+            printerName={defaultPrinterName}
+            connectionError={connectionError}
+            onClick={() => {}}
+            onReconnect={reconnectNow}
+          />
         </div>
       </header>
 

@@ -1,15 +1,28 @@
 import { wita } from '@/lib/dayjs'
 import { ThemeSelector } from '@/components/theme-selector'
-import { Bluetooth, BluetoothOff } from 'lucide-react'
+import { PrinterStatusIndicator } from '@/components/printer-status-indicator'
 
 interface KiosHeaderProps {
   now: Date
-  hasSavedPrinter: boolean
+  isConnected: boolean
+  isConnecting: boolean
+  isReconnecting: boolean
   printerName: string | null
+  connectionError: string | null
   onPrinterClick: () => void
+  onReconnect: () => void
 }
 
-export function KiosHeader({ now, hasSavedPrinter, printerName, onPrinterClick }: KiosHeaderProps) {
+export function KiosHeader({
+  now,
+  isConnected,
+  isConnecting,
+  isReconnecting,
+  printerName,
+  connectionError,
+  onPrinterClick,
+  onReconnect,
+}: KiosHeaderProps) {
   return (
     <header className="flex items-center gap-3 border-b border-border bg-card/80 px-5 py-3 shadow-sm backdrop-blur-sm">
       <img src="/logo-kpu-bali.png" alt="KPU Provinsi Bali" className="size-11" />
@@ -21,21 +34,15 @@ export function KiosHeader({ now, hasSavedPrinter, printerName, onPrinterClick }
           SISTEM INFORMASI ANTREAN
         </p>
       </div>
-      <button
-        type="button"
+      <PrinterStatusIndicator
+        isConnected={isConnected}
+        isConnecting={isConnecting}
+        isReconnecting={isReconnecting}
+        printerName={printerName}
+        connectionError={connectionError}
         onClick={onPrinterClick}
-        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/50"
-        title="Kelola Printer Thermal"
-      >
-        {hasSavedPrinter ? (
-          <Bluetooth className="size-4 text-green-500" />
-        ) : (
-          <BluetoothOff className="size-4 text-muted-foreground" />
-        )}
-        <span className="kiosk-font-mono text-[10px] text-muted-foreground/60 max-w-24 truncate">
-          {printerName ?? 'Printer'}
-        </span>
-      </button>
+        onReconnect={onReconnect}
+      />
       <time
         className="kiosk-font-mono text-lg tracking-widest text-foreground"
         aria-label="Jam saat ini WITA"

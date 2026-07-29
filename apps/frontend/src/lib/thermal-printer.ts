@@ -5,6 +5,21 @@ const STORAGE_KEY = 'thermal-printer-device-id'
 const PREFIX_STORAGE_KEY = 'printerNamePrefixes'
 
 let activeDevice: BluetoothDevice | null = null
+let activeCharacteristic: BluetoothRemoteGATTCharacteristic | null = null
+
+type ConnectionListener = (connected: boolean) => void
+const listeners = new Set<ConnectionListener>()
+
+export function onConnectionChange(fn: ConnectionListener): () => void {
+  listeners.add(fn)
+  return () => {
+    listeners.delete(fn)
+  }
+}
+
+function notifyConnectionChange(connected: boolean) {
+  listeners.forEach((fn) => fn(connected))
+}
 
 export function getSavedDeviceId(): string | null {
   return localStorage.getItem(STORAGE_KEY)
@@ -20,6 +35,10 @@ export function removeSavedDeviceId(): void {
 
 export function getActiveDevice(): BluetoothDevice | null {
   return activeDevice
+}
+
+export function getActiveCharacteristic(): BluetoothRemoteGATTCharacteristic | null {
+  return activeCharacteristic
 }
 
 export function getPrinterNamePrefixes(): string[] {
@@ -72,11 +91,15 @@ export async function connectToDevice(device: BluetoothDevice): Promise<Bluetoot
 
   device.addEventListener('gattserverdisconnected', () => {
     activeDevice = null
+    activeCharacteristic = null
+    notifyConnectionChange(false)
   })
 
   const service = await server.getPrimaryService(SERVICE_UUID)
   const characteristic = await service.getCharacteristic(WRITE_CHAR_UUID)
   activeDevice = device
+  activeCharacteristic = characteristic
+  notifyConnectionChange(true)
   return characteristic
 }
 
@@ -97,6 +120,29 @@ export async function disconnectDevice(device: BluetoothDevice): Promise<void> {
     device.gatt.disconnect()
   }
   activeDevice = null
+  activeCharacteristic = null
+  notifyConnectionChange(false)
+}
+
+export async function ensureConnection(): Promise<BluetoothRemoteGATTCharacteristic> {
+  if (activeCharacteristic && activeDevice?.gatt?.connected) {
+    return activeCharacteristic
+  }
+
+  activeDevice = null
+  activeCharacteristic = null
+
+  const savedId = getSavedDeviceId()
+  if (savedId) {
+    const paired = await getPairedDevices()
+    const device = paired.find((d) => d.id === savedId) ?? null
+    if (device) {
+      return await connectToDevice(device)
+    }
+  }
+
+  const device = await requestDevice()
+  return await connectToDevice(device)
 }
 
 export async function printViaBluetooth(data: Uint8Array): Promise<void> {
@@ -104,22 +150,6 @@ export async function printViaBluetooth(data: Uint8Array): Promise<void> {
     throw new Error('Browser tidak mendukung Web Bluetooth')
   }
 
-  let device: BluetoothDevice | null = null
-
-  const savedId = getSavedDeviceId()
-  if (savedId) {
-    const paired = await getPairedDevices()
-    device = paired.find((d) => d.id === savedId) ?? null
-  }
-
-  if (!device) {
-    device = await requestDevice()
-  }
-
-  try {
-    const characteristic = await connectToDevice(device)
-    await sendToPrinter(characteristic, data)
-  } finally {
-    await disconnectDevice(device)
-  }
+  const characteristic = await ensureConnection()
+  await sendToPrinter(characteristic, data)
 }

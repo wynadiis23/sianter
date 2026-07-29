@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { Users, Printer } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { ActiveTicketCard } from '@/routes/petugas/loket/active-ticket-card'
 import { CallButtons } from '@/routes/petugas/loket/call-buttons'
 import { WaitingList } from '@/routes/petugas/loket/waiting-list'
@@ -17,6 +17,7 @@ import { OnlineReservationsCard } from '@/routes/petugas/loket/online-reservatio
 import { DetailPemohonDialog } from '@/routes/petugas/loket/detail-pemohon-dialog'
 import { useThermalPrinter } from '@/hooks/use-thermal-printer'
 import { PetugasPrinterDialog } from '@/routes/petugas/printer-dialog'
+import { PrinterStatusIndicator } from '@/components/printer-status-indicator'
 
 interface PetugasSession {
   loketId: string
@@ -113,7 +114,7 @@ export function PetugasLoketPage() {
   } | null>(null)
   const [showPrinterDialog, setShowPrinterDialog] = useState(false)
 
-  const { print } = useThermalPrinter()
+  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, reconnectNow } = useThermalPrinter()
 
   useEffect(() => {
     const raw = localStorage.getItem('petugasSession')
@@ -366,10 +367,15 @@ export function PetugasLoketPage() {
               {waitingCount} menunggu
             </span>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => setShowPrinterDialog(true)}>
-            <Printer className="size-4" />
-            Printer
-          </Button>
+          <PrinterStatusIndicator
+            isConnected={isConnected}
+            isConnecting={isConnecting}
+            isReconnecting={isReconnecting}
+            printerName={defaultPrinterName}
+            connectionError={connectionError}
+            onClick={() => setShowPrinterDialog(true)}
+            onReconnect={reconnectNow}
+          />
           <Button variant="outline" size="sm" onClick={handleGantiLoket}>
             Ganti Loket
           </Button>
