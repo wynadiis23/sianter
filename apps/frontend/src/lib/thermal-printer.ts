@@ -6,6 +6,7 @@ const PREFIX_STORAGE_KEY = 'printerNamePrefixes'
 
 let activeDevice: BluetoothDevice | null = null
 let activeCharacteristic: BluetoothRemoteGATTCharacteristic | null = null
+let lastRequestedDevice: BluetoothDevice | null = null
 
 type ConnectionListener = (connected: boolean) => void
 const listeners = new Set<ConnectionListener>()
@@ -61,9 +62,13 @@ export async function getPairedDevices(): Promise<BluetoothDevice[]> {
   if (!('bluetooth' in navigator)) return []
   try {
     const devices = await navigator.bluetooth.getDevices()
-    const prefixes = getPrinterNamePrefixes()
-    if (prefixes.length === 0) return devices
-    return devices.filter((d) => prefixes.some((p) => d.name?.startsWith(p)))
+    const cached = lastRequestedDevice
+    if (cached) {
+      const idx = devices.findIndex((d) => d.id === cached.id)
+      if (idx >= 0) devices[idx] = cached
+      else devices.push(cached)
+    }
+    return devices
   } catch {
     return []
   }
@@ -83,6 +88,7 @@ export async function requestDevice(): Promise<BluetoothDevice> {
   )
 
   saveDeviceId(device.id)
+  lastRequestedDevice = device
   return device
 }
 

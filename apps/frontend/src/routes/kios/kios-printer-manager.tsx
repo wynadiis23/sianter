@@ -11,7 +11,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { toast } from 'sonner'
 import { Bluetooth, BluetoothOff, Plus, Trash2, Printer, Check } from 'lucide-react'
-import { getPairedDevices, getSavedDeviceId, requestDevice, saveDeviceId } from '@/lib/thermal-printer'
+import { getPairedDevices, getSavedDeviceId, requestDevice, saveDeviceId, connectToDevice } from '@/lib/thermal-printer'
 import { ThermalPrinterSelect } from '@/components/thermal-printer-select'
 
 interface KiosPrinterManagerProps {
@@ -50,14 +50,15 @@ export function KiosPrinterManager({
   const handleScanNew = useCallback(async () => {
     setScanning(true)
     try {
-      await requestDevice()
+      const device = await requestDevice()
+      await connectToDevice(device)
       await refreshPaired()
-      toast.success('Printer berhasil dipasangkan')
+      toast.success(`Terhubung ke ${device.name ?? 'printer'}`)
     } catch (err) {
       if (err instanceof DOMException && err.name === 'NotFoundError') {
         // user cancelled
       } else {
-        const msg = err instanceof Error ? err.message : 'Gagal memindai printer'
+        const msg = err instanceof Error ? err.message : 'Gagal menghubungkan printer'
         toast.error(msg)
       }
     } finally {
