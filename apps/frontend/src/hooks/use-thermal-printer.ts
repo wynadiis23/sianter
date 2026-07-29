@@ -43,6 +43,7 @@ export function useThermalPrinter() {
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [pairedDevices, setPairedDevices] = useState<BluetoothDevice[]>([])
   const [hasSavedDevice, setHasSavedDevice] = useState(!!getSavedDeviceId())
+  const [connectedDeviceName, setConnectedDeviceName] = useState<string | null>(null)
 
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const attemptRef = useRef(0)
@@ -50,9 +51,9 @@ export function useThermalPrinter() {
   const scheduleReconnectRef = useRef<() => void>(() => {})
 
   const savedId = getSavedDeviceId()
-  const defaultPrinterName = hasSavedDevice
+  const defaultPrinterName = connectedDeviceName ?? (hasSavedDevice
     ? (pairedDevices.find((d) => d.id === savedId)?.name ?? null)
-    : null
+    : null)
 
   const refreshPaired = useCallback(async () => {
     const devices = await getPairedDevices()
@@ -131,6 +132,7 @@ export function useThermalPrinter() {
   useEffect(() => {
     const unsub = onConnectionChange((connected) => {
       setIsConnected(connected)
+      setConnectedDeviceName(connected ? (getActiveDevice()?.name ?? null) : null)
       if (!connected && !manualDisconnectRef.current) {
         scheduleReconnect()
       }
