@@ -14,6 +14,9 @@ interface WaitingItem {
   createdAt: Date
   namaPemohon: string | null
   noHpPemohon: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface WaitingListProps {

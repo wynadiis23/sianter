@@ -32,6 +32,9 @@ interface ActiveTicket {
   namaLayanan: string
   namaPemohon: string | null
   noHpPemohon: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface WaitingItem {
@@ -44,6 +47,9 @@ interface WaitingItem {
   createdAt: Date
   namaPemohon: string | null
   noHpPemohon: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface SkippedItem {
@@ -56,6 +62,9 @@ interface SkippedItem {
   skippedAt: Date | string | null
   namaPemohon: string | null
   noHpPemohon: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface OnlineReservation {
@@ -70,6 +79,9 @@ interface OnlineReservation {
   jamMulai: string
   jamSelesai: string
   tanggalKunjungan: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface DashboardData {
@@ -258,7 +270,9 @@ export function PetugasLoketPage() {
         kode: ticket.kode ?? '-',
         namaLayanan: ticket.namaLayanan,
         timestamp: new Date(),
-        trackingUrl: `${window.location.origin}/track/${id}`,
+        trackingUrl: `${window.location.origin}/track/${ticket.trackingToken}`,
+        kuesionerUrl: ticket.kuesionerLink ?? null,
+        kuesionerCaption: ticket.kuesionerCaption ?? null,
       })
     } catch {
       // toast already handled by the hook
@@ -274,7 +288,27 @@ export function PetugasLoketPage() {
         kode: item.kode ?? '-',
         namaLayanan: item.namaLayanan,
         timestamp: item.createdAt,
-        trackingUrl: `${window.location.origin}/track/${item.id}`,
+        trackingUrl: `${window.location.origin}/track/${item.trackingToken}`,
+        kuesionerUrl: item.kuesionerLink ?? null,
+        kuesionerCaption: item.kuesionerCaption ?? null,
+      })
+    } catch {
+      // toast already handled by the hook
+    } finally {
+      setActionLoading(null)
+    }
+  }, [print])
+
+  const handleReprintOnline = useCallback(async (item: OnlineReservation) => {
+    setActionLoading(`reprint-${item.id}`)
+    try {
+      await print({
+        kode: item.kode ?? '-',
+        namaLayanan: item.namaLayanan,
+        timestamp: new Date(),
+        trackingUrl: `${window.location.origin}/track/${item.trackingToken}`,
+        kuesionerUrl: item.kuesionerLink ?? null,
+        kuesionerCaption: item.kuesionerCaption ?? null,
       })
     } catch {
       // toast already handled by the hook
@@ -382,6 +416,7 @@ export function PetugasLoketPage() {
           <OnlineReservationsCard
             items={data?.daftarOnline ?? []}
             onDetail={setDetailItem}
+            onReprint={handleReprintOnline}
           />
 
           <SkippedList

@@ -10,7 +10,32 @@ const imageManager = new CustomManager()
 
 function loadLogo(): Image {
   const png = PNG.sync.read(fs.readFileSync(LOGO_PATH))
-  return new Image({ data: Buffer.from(png.data), width: png.width, height: png.height })
+  const maxWidth = 70
+
+  if (png.width <= maxWidth) {
+    return new Image({ data: Buffer.from(png.data), width: png.width, height: png.height })
+  }
+
+  const scale = maxWidth / png.width
+  const width = maxWidth
+  const height = Math.max(1, Math.round(png.height * scale))
+  const resized = Buffer.alloc(width * height * 4)
+
+  for (let y = 0; y < height; y++) {
+    const srcY = Math.min(png.height - 1, Math.floor(y / scale))
+    for (let x = 0; x < width; x++) {
+      const srcX = Math.min(png.width - 1, Math.floor(x / scale))
+      const srcIdx = (srcY * png.width + srcX) * 4
+      const dstIdx = (y * width + x) * 4
+
+      resized[dstIdx] = png.data[srcIdx]
+      resized[dstIdx + 1] = png.data[srcIdx + 1]
+      resized[dstIdx + 2] = png.data[srcIdx + 2]
+      resized[dstIdx + 3] = png.data[srcIdx + 3]
+    }
+  }
+
+  return new Image({ data: resized, width, height })
 }
 
 export abstract class PrinterService {
@@ -25,54 +50,38 @@ export abstract class PrinterService {
     const logo = loadLogo()
     await printer.setAlignment(Align.Center)
     await printer.draw(logo)
-    await printer.feed(1)
 
-    await printer.writeln('KOMISI PEMILIHAN UMUM', Style.Bold, Align.Center)
-    await printer.writeln('PROVINSI BALI', Style.Bold, Align.Center)
+    await printer.writeln('KOMISI PEMILIHAN UMUM', 0, Align.Center)
+    await printer.writeln('PROVINSI BALI', 0, Align.Center)
     await printer.feed(1)
     await printer.writeln('================================', 0, Align.Center)
     await printer.feed(1)
 
     await printer.writeln('NOMOR ANTREAN', 0, Align.Center)
-    await printer.feed(1)
-    await printer.writeln(
-      body.kode,
-      Style.DoubleHeight | Style.DoubleWidth | Style.Bold,
-      Align.Center,
-    )
-    await printer.feed(1)
-
-    await printer.writeln('================================', 0, Align.Center)
-    await printer.feed(1)
-
-    await printer.writeln(body.namaLayanan, 0, Align.Left)
-    await printer.writeln(body.timestamp, 0, Align.Left)
+    await printer.withStyle({
+      width: 4,
+      height: 6,
+      bold: true,
+      align: Align.Center,
+      }, async () => {
+        await printer.writeln(body.kode)
+    })
     await printer.feed(1)
 
     await printer.writeln('================================', 0, Align.Center)
-    await printer.feed(1)
-
-    await printer.qrcode(body.trackingUrl, 6)
-    await printer.writeln('Scan QR untuk pantau antrean', 0, Align.Center)
-    await printer.feed(1)
 
     if (body.kuesionerUrl) {
-      await printer.writeln('================================', 0, Align.Center)
+      await printer.writeln('Bantu tingkatkan layanan kami', 0, Align.Center)
       await printer.feed(1)
-      if (body.kuesionerCaption) {
-        await printer.writeln(body.kuesionerCaption, 0, Align.Center)
-        await printer.feed(1)
-      }
-      await printer.qrcode(body.kuesionerUrl, 6)
+      await printer.withStyle({
+        align: Align.Center
+      }, async () => {
+        await printer.qrcode(body.kuesionerUrl!, 3)
+      })
+      await printer.writeln(body.kuesionerUrl, Style.Condensed, Align.Center)
       await printer.feed(1)
     }
 
-    await printer.writeln('================================', 0, Align.Center)
-    await printer.feed(1)
-    await printer.writeln('Harap menunggu nomor antrean', 0, Align.Center)
-    await printer.writeln('Anda dipanggil.', 0, Align.Center)
-    await printer.writeln('Terima kasih.', 0, Align.Center)
-    await printer.feed(3)
 
     await printer.cutter(Cut.Partial)
     await printer.close()

@@ -30,13 +30,24 @@ export async function getPairedDevices(): Promise<BluetoothDevice[]> {
   }
 }
 
+/**
+ * 
+ * TODO: get filters from backend, so we can support multiple printer types
+ */
 export async function requestDevice(): Promise<BluetoothDevice> {
   if (!('bluetooth' in navigator)) {
     throw new Error('Browser tidak mendukung Web Bluetooth')
   }
 
   const device = await navigator.bluetooth.requestDevice({
-    acceptAllDevices: true,
+    filters:[
+      {
+        namePrefix: 'POS-58',
+      },
+      {
+        namePrefix: 'RPP',
+      }
+    ],
     optionalServices: [SERVICE_UUID],
   })
 
@@ -64,8 +75,7 @@ export async function sendToPrinter(
   let offset = 0
   while (offset < data.length) {
     const chunk = data.slice(offset, offset + CHUNK_SIZE)
-    await characteristic.writeValueWithoutResponse(chunk)
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await characteristic.writeValue(chunk)
     offset += CHUNK_SIZE
   }
 }
