@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { server } from '@/lib/eden'
 import { toast } from 'sonner'
-import { Save, Radio, Youtube, ListVideo, Image, Plus, X } from 'lucide-react'
+import { Save, Radio, Youtube, ListVideo, Image, Plus, X, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,6 +20,7 @@ interface Pengaturan {
   slideshowImages: string | null
   slideshowInterval: number
   kegiatanInterval: number
+  printerNamePrefixes: string | null
 }
 
 function parseSlideshowImages(raw: string | null): string[] {
@@ -44,6 +45,7 @@ export function SettingsAdminPage() {
     slideshowImages: null,
     slideshowInterval: 5,
     kegiatanInterval: 8,
+    printerNamePrefixes: '',
   })
   const [slideshowImages, setSlideshowImages] = useState<string[]>([])
   const [newImageUrl, setNewImageUrl] = useState('')
@@ -63,6 +65,7 @@ export function SettingsAdminPage() {
         slideshowImages: data.slideshowImages ?? null,
         slideshowInterval: data.slideshowInterval ?? 5,
         kegiatanInterval: data.kegiatanInterval ?? 8,
+        printerNamePrefixes: data.printerNamePrefixes ?? '',
       })
       setSlideshowImages(parseSlideshowImages(data.slideshowImages))
     }
@@ -85,12 +88,14 @@ export function SettingsAdminPage() {
       slideshowImages: slideshowImages.length > 0 ? JSON.stringify(slideshowImages) : null,
       slideshowInterval: form.slideshowInterval,
       kegiatanInterval: form.kegiatanInterval,
+      printerNamePrefixes: form.printerNamePrefixes || null,
     }
     const { data, error } = await server.api.admin.pengaturan.put(body)
     setSaving(false)
     if (error) {
       toast.error('Gagal menyimpan pengaturan')
     } else if (data) {
+      localStorage.setItem('printerNamePrefixes', data.printerNamePrefixes ?? '')
       setForm({
         modeAntrean: data.modeAntrean,
         runningText: data.runningText ?? '',
@@ -100,6 +105,7 @@ export function SettingsAdminPage() {
         slideshowImages: data.slideshowImages ?? null,
         slideshowInterval: data.slideshowInterval ?? 5,
         kegiatanInterval: data.kegiatanInterval ?? 8,
+        printerNamePrefixes: data.printerNamePrefixes ?? '',
       })
       setSlideshowImages(parseSlideshowImages(data.slideshowImages))
       toast.success('Pengaturan disimpan')
@@ -327,6 +333,34 @@ export function SettingsAdminPage() {
               />
               <p className="text-xs text-muted-foreground">
                 Durasi rotasi per card kegiatan di monitor (3-120 detik)
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <Printer className="size-5 text-primary" />
+              <h2 className="text-lg font-semibold">Printer Thermal</h2>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="printerNamePrefixes">Printer Name Prefixes</Label>
+              <Input
+                id="printerNamePrefixes"
+                value={form.printerNamePrefixes ?? ''}
+                onChange={(e) =>
+                  setForm({ ...form, printerNamePrefixes: e.target.value })
+                }
+                placeholder="POS, RPP, TM-U"
+              />
+              <p className="text-xs text-muted-foreground">
+                Daftar prefix nama printer Bluetooth untuk filter pencarian.
+                Pisahkan dengan koma. Prefix bersifat case-sensitive.
+                Contoh: POS, RPP, TM-U. Biarkan kosong untuk menampilkan semua perangkat.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Prefix akan disimpan secara lokal di browser setiap petugas/kios.
               </p>
             </div>
           </CardContent>

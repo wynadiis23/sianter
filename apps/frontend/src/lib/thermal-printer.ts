@@ -2,6 +2,7 @@ const SERVICE_UUID = '0000ff00-0000-1000-8000-00805f9b34fb'
 const WRITE_CHAR_UUID = '0000ff02-0000-1000-8000-00805f9b34fb'
 const CHUNK_SIZE = 512
 const STORAGE_KEY = 'thermal-printer-device-id'
+const PREFIX_STORAGE_KEY = 'printerNamePrefixes'
 
 let activeDevice: BluetoothDevice | null = null
 
@@ -21,35 +22,46 @@ export function getActiveDevice(): BluetoothDevice | null {
   return activeDevice
 }
 
+export function getPrinterNamePrefixes(): string[] {
+  const raw = localStorage.getItem(PREFIX_STORAGE_KEY)
+  if (!raw) return []
+  return raw.split(',').map((s) => s.trim()).filter(Boolean)
+}
+
+export async function syncPrinterNamePrefixes(): Promise<void> {
+  try {
+    const res = await fetch('/api/settings/printer-prefixes')
+    const data = await res.json()
+    localStorage.setItem(PREFIX_STORAGE_KEY, data.printerNamePrefixes ?? '')
+  } catch {
+    // silently ignore
+  }
+}
+
 export async function getPairedDevices(): Promise<BluetoothDevice[]> {
   if (!('bluetooth' in navigator)) return []
   try {
-    return await navigator.bluetooth.getDevices()
+    const devices = await navigator.bluetooth.getDevices()
+    const prefixes = getPrinterNamePrefixes()
+    if (prefixes.length === 0) return devices
+    return devices.filter((d) => prefixes.some((p) => d.name?.startsWith(p)))
   } catch {
     return []
   }
 }
 
-/**
- * 
- * TODO: get filters from backend, so we can support multiple printer types
- */
 export async function requestDevice(): Promise<BluetoothDevice> {
   if (!('bluetooth' in navigator)) {
     throw new Error('Browser tidak mendukung Web Bluetooth')
   }
 
-  const device = await navigator.bluetooth.requestDevice({
-    filters:[
-      {
-        namePrefix: 'POS-58',
-      },
-      {
-        namePrefix: 'RPP',
-      }
-    ],
-    optionalServices: [SERVICE_UUID],
-  })
+  const prefixes = getPrinterNamePrefixes()
+
+  const device = await navigator.bluetooth.requestDevice(
+    prefixes.length > 0
+      ? { filters: prefixes.map((p) => ({ namePrefix: p })), optionalServices: [SERVICE_UUID] }
+      : { acceptAllDevices: true, optionalServices: [SERVICE_UUID] },
+  )
 
   saveDeviceId(device.id)
   return device

@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { AccessibilityPanel } from '@/components/accessibility-panel'
 import { AdminLayout } from './components/admin-layout'
 import { ProtectedRoute } from './components/protected-route'
@@ -24,6 +25,7 @@ import { KegiatanLayout } from './components/kegiatan-layout'
 import { PetugasLoketPage } from './routes/petugas/loket'
 import { PilihLoketPage } from './routes/petugas/pilih-loket'
 import { KegiatanPetugasPage } from './routes/petugas/kegiatan'
+import { syncPrinterNamePrefixes } from './lib/thermal-printer'
 
 const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
@@ -82,6 +84,10 @@ const router = createBrowserRouter([
 ])
 
 export function App() {
+  useEffect(() => {
+    syncPrinterNamePrefixes()
+  }, [])
+
   return (
     <>
       <RouterProvider router={router} />
