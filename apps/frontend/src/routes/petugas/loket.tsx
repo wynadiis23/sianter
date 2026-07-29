@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
-import { Users } from 'lucide-react'
+import { Users, Printer } from 'lucide-react'
 import { ActiveTicketCard } from '@/routes/petugas/loket/active-ticket-card'
 import { CallButtons } from '@/routes/petugas/loket/call-buttons'
 import { WaitingList } from '@/routes/petugas/loket/waiting-list'
@@ -16,6 +16,7 @@ import { SkippedList } from '@/routes/petugas/loket/skipped-list'
 import { OnlineReservationsCard } from '@/routes/petugas/loket/online-reservations-card'
 import { DetailPemohonDialog } from '@/routes/petugas/loket/detail-pemohon-dialog'
 import { useThermalPrinter } from '@/hooks/use-thermal-printer'
+import { PetugasPrinterDialog } from '@/routes/petugas/printer-dialog'
 
 interface PetugasSession {
   loketId: string
@@ -110,6 +111,7 @@ export function PetugasLoketPage() {
     nama: string
     noHp: string
   } | null>(null)
+  const [showPrinterDialog, setShowPrinterDialog] = useState(false)
 
   const { print } = useThermalPrinter()
 
@@ -364,6 +366,10 @@ export function PetugasLoketPage() {
               {waitingCount} menunggu
             </span>
           </div>
+          <Button variant="ghost" size="sm" onClick={() => setShowPrinterDialog(true)}>
+            <Printer className="size-4" />
+            Printer
+          </Button>
           <Button variant="outline" size="sm" onClick={handleGantiLoket}>
             Ganti Loket
           </Button>
@@ -433,6 +439,10 @@ export function PetugasLoketPage() {
         open={!!detailItem}
         onOpenChange={(open) => !open && setDetailItem(null)}
         data={detailItem}
+      />
+      <PetugasPrinterDialog
+        open={showPrinterDialog}
+        onOpenChange={setShowPrinterDialog}
       />
     </div>
   )

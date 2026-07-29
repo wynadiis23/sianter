@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 import { toast } from 'sonner'
 import { Bluetooth, BluetoothOff, Plus, Trash2, Printer, Check } from 'lucide-react'
@@ -86,14 +86,14 @@ export function KiosPrinterManager({
 
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="w-[380px] sm:max-w-[380px]">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
               <Bluetooth className="size-5 text-primary" />
               Kelola Printer Thermal
-            </SheetTitle>
-          </SheetHeader>
+            </DialogTitle>
+          </DialogHeader>
 
           <div className="mt-6 space-y-6">
             <div className="rounded-lg border border-border bg-card p-4">
@@ -185,8 +185,8 @@ export function KiosPrinterManager({
               </div>
             )}
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
       <ThermalPrinterSelect
         open={showSelect}
