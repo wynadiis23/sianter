@@ -15,6 +15,7 @@ import {
   onConnectionChange,
   ensureConnection,
   sendToPrinter,
+  emitLog,
 } from '@/lib/thermal-printer'
 
 export interface ReceiptData {
@@ -89,8 +90,10 @@ export function useThermalPrinter() {
     if (isRetry) {
       setIsReconnecting(true)
       setConnectionError(null)
+      emitLog('info', 'Mencoba menyambungkan ulang...')
     } else {
       setIsConnecting(true)
+      emitLog('info', 'Mencari printer tersimpan...')
     }
 
     try {
@@ -98,17 +101,20 @@ export function useThermalPrinter() {
       const device = paired.find((d) => d.id === savedDeviceId)
 
       if (!device) {
+        emitLog('warn', 'Printer tersimpan tidak ditemukan. Pastikan printer menyala.')
         setConnectionError('Printer tidak ditemukan. Pastikan printer menyala.')
         scheduleReconnectRef.current()
         return
       }
 
+      emitLog('info', `Menemukan printer: ${device.name ?? device.id}`)
       await connectToDevice(device)
       attemptRef.current = 0
       clearRetryCountdown()
       setConnectionError(null)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Gagal menghubungkan printer'
+      emitLog('error', `Gagal menghubungkan printer: ${msg}`)
       setConnectionError(msg)
       scheduleReconnectRef.current()
     } finally {
@@ -122,6 +128,7 @@ export function useThermalPrinter() {
 
     const attempt = attemptRef.current
     if (attempt >= BACKOFF_MS.length * 3) {
+      emitLog('error', 'Percobaan ulang otomatis dihentikan. Silakan sambungkan manual.')
       clearRetryCountdown()
       return
     }
@@ -131,6 +138,7 @@ export function useThermalPrinter() {
 
     setRetryAttempt(attemptRef.current)
     setRetryCountdown(Math.ceil(delay / 1000))
+    emitLog('info', `Percobaan ulang ke-${attemptRef.current} dalam ${Math.ceil(delay / 1000)}s...`)
 
     if (retryTimerRef.current) {
       clearInterval(retryTimerRef.current)
@@ -150,6 +158,7 @@ export function useThermalPrinter() {
   scheduleReconnectRef.current = scheduleReconnect
 
   const reconnectNow = useCallback(() => {
+    emitLog('info', 'Menghubungkan ulang secara manual...')
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current)
       reconnectTimerRef.current = null
@@ -235,6 +244,7 @@ export function useThermalPrinter() {
   const print = useCallback(async (data: ReceiptData) => {
     try {
       setIsConnecting(true)
+      emitLog('info', 'Mengirim perintah cetak struk...')
       const { data: result, error } = await server.api.printer.receipt.post({
         kode: data.kode,
         namaLayanan: data.namaLayanan,
@@ -251,12 +261,15 @@ export function useThermalPrinter() {
       const characteristic = await ensureConnection()
       await sendToPrinter(characteristic, buffer)
       await refreshPaired()
+      emitLog('info', 'Struk berhasil dicetak')
       toast.success('Struk berhasil dicetak')
     } catch (err) {
       if (err instanceof DOMException && err.name === 'NotFoundError') {
+        emitLog('error', 'Printer tidak ditemukan saat mencetak')
         toast.error('Printer tidak ditemukan. Pastikan printer menyala dan dalam jangkauan.')
       } else {
         const msg = err instanceof Error ? err.message : 'Gagal mencetak struk'
+        emitLog('error', `Gagal mencetak struk: ${msg}`)
         toast.error(msg)
       }
     } finally {
@@ -267,6 +280,7 @@ export function useThermalPrinter() {
   const testPrint = useCallback(async () => {
     try {
       setIsConnecting(true)
+      emitLog('info', 'Mengirim perintah cetak test...')
       const { data: result, error } = await server.api.printer.test.post()
       if (error || !result) {
         toast.error('Gagal menghasilkan buffer test')
@@ -275,9 +289,11 @@ export function useThermalPrinter() {
       const buffer = base64ToUint8Array(result.buffer)
       await printViaBluetooth(buffer)
       await refreshPaired()
+      emitLog('info', 'Test print berhasil')
       toast.success('Test print berhasil')
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Test print gagal'
+      emitLog('error', `Test print gagal: ${msg}`)
       toast.error(msg)
     } finally {
       setIsConnecting(false)
@@ -299,6 +315,7 @@ export function useThermalPrinter() {
     setHasSavedDevice(false)
     setConnectedDeviceName(null)
     setConnectionError(null)
+    emitLog('info', 'Printer dihapus dari daftar')
     toast.info('Printer dihapus dari daftar')
   }, [clearRetryCountdown])
 

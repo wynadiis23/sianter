@@ -23,6 +23,29 @@ function notifyConnectionChange(connected: boolean) {
   listeners.forEach((fn) => fn(connected))
 }
 
+export type LogLevel = 'info' | 'warn' | 'error'
+
+export interface LogEntry {
+  timestamp: Date
+  message: string
+  level: LogLevel
+}
+
+type LogListener = (entry: LogEntry) => void
+const logListeners = new Set<LogListener>()
+
+export function onLog(fn: LogListener): () => void {
+  logListeners.add(fn)
+  return () => {
+    logListeners.delete(fn)
+  }
+}
+
+export function emitLog(level: LogLevel, message: string): void {
+  const entry: LogEntry = { timestamp: new Date(), message, level }
+  logListeners.forEach((fn) => fn(entry))
+}
+
 export function getSavedDeviceId(): string | null {
   return localStorage.getItem(STORAGE_KEY)
 }
@@ -80,8 +103,12 @@ export async function getPairedDevices(): Promise<BluetoothDevice[]> {
       if (idx >= 0) devices[idx] = cached
       else devices.push(cached)
     }
+    emitLog('info', devices.length > 0
+      ? `Menemukan ${devices.length} printer tersimpan`
+      : 'Belum ada printer tersimpan')
     return devices
   } catch {
+    emitLog('warn', 'Gagal membaca daftar printer tersimpan')
     return []
   }
 }
@@ -93,12 +120,14 @@ export async function requestDevice(): Promise<BluetoothDevice> {
 
   const prefixes = getPrinterNamePrefixes()
 
+  emitLog('info', 'Membuka dialog pairing Bluetooth...')
   const device = await navigator.bluetooth.requestDevice(
     prefixes.length > 0
       ? { filters: prefixes.map((p) => ({ namePrefix: p })), optionalServices: [SERVICE_UUID] }
       : { acceptAllDevices: true, optionalServices: [SERVICE_UUID] },
   )
 
+  emitLog('info', `Perangkat dipilih: ${device.name ?? device.id}`)
   saveDeviceId(device.id)
   savePrinterName(device.name)
   lastRequestedDevice = device
@@ -106,20 +135,24 @@ export async function requestDevice(): Promise<BluetoothDevice> {
 }
 
 export async function connectToDevice(device: BluetoothDevice): Promise<BluetoothRemoteGATTCharacteristic> {
+  emitLog('info', `Menghubungkan GATT ke ${device.name ?? device.id}...`)
   const server = await device.gatt!.connect()
 
   savePrinterName(device.name)
 
   device.addEventListener('gattserverdisconnected', () => {
+    emitLog('warn', `Koneksi ke ${device.name ?? device.id} terputus`)
     activeDevice = null
     activeCharacteristic = null
     notifyConnectionChange(false)
   })
 
+  emitLog('info', 'Mencari service printer...')
   const service = await server.getPrimaryService(SERVICE_UUID)
   const characteristic = await service.getCharacteristic(WRITE_CHAR_UUID)
   activeDevice = device
   activeCharacteristic = characteristic
+  emitLog('info', `Terhubung ke ${device.name ?? device.id}`)
   notifyConnectionChange(true)
   return characteristic
 }
@@ -137,6 +170,7 @@ export async function sendToPrinter(
 }
 
 export async function disconnectDevice(device: BluetoothDevice): Promise<void> {
+  emitLog('info', 'Memutuskan koneksi secara manual...')
   if (device.gatt?.connected) {
     device.gatt.disconnect()
   }
@@ -155,6 +189,7 @@ export async function ensureConnection(): Promise<BluetoothRemoteGATTCharacteris
 
   const savedId = getSavedDeviceId()
   if (savedId) {
+    emitLog('info', 'Memastikan koneksi printer...')
     const paired = await getPairedDevices()
     const device = paired.find((d) => d.id === savedId) ?? null
     if (device) {

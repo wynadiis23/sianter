@@ -13,6 +13,7 @@ import {
 import { Bluetooth, BluetoothOff, Plus, Trash2, Printer, RefreshCw } from 'lucide-react'
 import { server } from '@/lib/eden'
 import { printViaBluetooth } from '@/lib/thermal-printer'
+import { BluetoothLog } from '@/components/bluetooth-log'
 import {
   getPairedDevices,
   getSavedDeviceId,
@@ -276,6 +277,13 @@ export function PetugasPrinterDialog({ open, onOpenChange, reconnectNow }: Petug
               </div>
             </>
           )}
+
+          <Separator />
+
+          <div>
+            <p className="text-sm font-semibold mb-2">Log Aktivitas</p>
+            <BluetoothLog />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

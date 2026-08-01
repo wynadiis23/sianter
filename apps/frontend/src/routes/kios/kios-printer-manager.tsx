@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { Bluetooth, BluetoothOff, Plus, Trash2, Printer, Check, RefreshCw } from 'lucide-react'
 import { getPairedDevices, getSavedDeviceId, requestDevice, saveDeviceId, connectToDevice } from '@/lib/thermal-printer'
 import { ThermalPrinterSelect } from '@/components/thermal-printer-select'
+import { BluetoothLog } from '@/components/bluetooth-log'
 
 interface KiosPrinterManagerProps {
   open: boolean
@@ -198,6 +199,11 @@ export function KiosPrinterManager({
                 </Button>
               </div>
             )}
+          </div>
+
+          <div>
+            <Label className="text-xs text-muted-foreground">Log Aktivitas</Label>
+            <BluetoothLog className="mt-2" />
           </div>
         </DialogContent>
       </Dialog>
