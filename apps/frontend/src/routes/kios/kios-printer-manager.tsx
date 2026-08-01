@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 import { toast } from 'sonner'
-import { Bluetooth, BluetoothOff, Plus, Trash2, Printer, Check } from 'lucide-react'
+import { Bluetooth, BluetoothOff, Plus, Trash2, Printer, Check, RefreshCw } from 'lucide-react'
 import { getPairedDevices, getSavedDeviceId, requestDevice, saveDeviceId, connectToDevice } from '@/lib/thermal-printer'
 import { ThermalPrinterSelect } from '@/components/thermal-printer-select'
 
@@ -22,6 +22,7 @@ interface KiosPrinterManagerProps {
   testPrint: () => Promise<void>
   forgetDevice: () => void | Promise<void>
   refreshPaired: () => Promise<void>
+  reconnectNow: () => void
 }
 
 export function KiosPrinterManager({
@@ -32,6 +33,7 @@ export function KiosPrinterManager({
   testPrint,
   forgetDevice,
   refreshPaired,
+  reconnectNow,
 }: KiosPrinterManagerProps) {
   const [testing, setTesting] = useState(false)
   const [showSelect, setShowSelect] = useState(false)
@@ -120,6 +122,14 @@ export function KiosPrinterManager({
                     >
                       <Printer className="size-4" />
                       {testing ? 'Mencetak...' : 'Test Print'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={reconnectNow}
+                    >
+                      <RefreshCw className="size-4" />
+                      Hubungkan
                     </Button>
                     <Button
                       size="sm"

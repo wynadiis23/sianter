@@ -262,7 +262,6 @@ export function KiosPage() {
             printerName={defaultPrinterName}
             connectionError={connectionError}
             onPrinterClick={() => setShowPrinterManager(true)}
-            onReconnect={reconnectNow}
           />
 
         <Stepper
@@ -351,6 +350,7 @@ export function KiosPage() {
         testPrint={testPrint}
         forgetDevice={forgetDevice}
         refreshPaired={refreshPaired}
+        reconnectNow={reconnectNow}
       />
     </>
   )

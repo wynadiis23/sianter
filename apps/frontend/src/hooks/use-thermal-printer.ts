@@ -5,6 +5,7 @@ import {
   printViaBluetooth,
   getPairedDevices,
   getSavedDeviceId,
+  getSavedPrinterName,
   requestDevice,
   removeSavedDeviceId,
   getActiveDevice,
@@ -63,9 +64,9 @@ export function useThermalPrinter() {
   }, [])
 
   const savedId = getSavedDeviceId()
-  const defaultPrinterName = connectedDeviceName ?? (hasSavedDevice
+  const defaultPrinterName = getSavedPrinterName() ?? (connectedDeviceName ?? (hasSavedDevice
     ? (pairedDevices.find((d) => d.id === savedId)?.name ?? null)
-    : null)
+    : null))
 
   const refreshPaired = useCallback(async () => {
     const devices = await getPairedDevices()

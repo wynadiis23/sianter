@@ -19,6 +19,7 @@ import { IdentityForm } from '@/components/identity-form'
 import { ServiceCard } from '@/components/service-card'
 import { useThermalPrinter } from '@/hooks/use-thermal-printer'
 import { PrinterStatusIndicator } from '@/components/printer-status-indicator'
+import { PetugasPrinterDialog } from '@/routes/petugas/printer-dialog'
 
 type Step = 'select' | 'jadwal' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -63,6 +64,7 @@ export function OnlineAntreanPage() {
   const [nama, setNama] = useState('')
   const [noHp, setNoHp] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
+  const [showPrinterDialog, setShowPrinterDialog] = useState(false)
 
   const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, retryCountdown, retryAttempt, reconnectNow } = useThermalPrinter()
 
@@ -203,8 +205,7 @@ export function OnlineAntreanPage() {
             retryAttempt={retryAttempt}
             printerName={defaultPrinterName}
             connectionError={connectionError}
-            onClick={() => {}}
-            onReconnect={reconnectNow}
+            onClick={() => setShowPrinterDialog(true)}
           />
         </div>
       </header>
@@ -453,6 +454,12 @@ export function OnlineAntreanPage() {
           </div>
         </main>
       )}
+
+      <PetugasPrinterDialog
+        open={showPrinterDialog}
+        onOpenChange={setShowPrinterDialog}
+        reconnectNow={reconnectNow}
+      />
     </div>
   )
 }

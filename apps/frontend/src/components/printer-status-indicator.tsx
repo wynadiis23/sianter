@@ -1,6 +1,5 @@
-import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { Bluetooth, BluetoothOff, AlertCircle, RefreshCw } from 'lucide-react'
+import { Bluetooth, BluetoothOff } from 'lucide-react'
 
 interface PrinterStatusIndicatorProps {
   isConnected: boolean
@@ -11,7 +10,6 @@ interface PrinterStatusIndicatorProps {
   printerName: string | null
   connectionError: string | null
   onClick: () => void
-  onReconnect: () => void
 }
 
 export function PrinterStatusIndicator({
@@ -23,7 +21,6 @@ export function PrinterStatusIndicator({
   printerName,
   connectionError,
   onClick,
-  onReconnect,
 }: PrinterStatusIndicatorProps) {
   if (isConnected) {
     return (
@@ -51,7 +48,7 @@ export function PrinterStatusIndicator({
       >
         <Spinner className="size-4 text-amber-500" />
         <span className="max-w-24 truncate text-xs text-muted-foreground/60">
-          {isReconnecting ? 'Menghubungkan...' : 'Menghubungkan...'}
+          Menghubungkan...
         </span>
       </button>
     )
@@ -59,66 +56,36 @@ export function PrinterStatusIndicator({
 
   if (retryCountdown !== null) {
     return (
-      <div className="flex items-center gap-1.5">
-        <button
-          type="button"
-          onClick={onClick}
-          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/50"
-          title={connectionError ?? 'Menunggu percobaan ulang...'}
-        >
-          <Spinner className="size-4 text-amber-500" />
-          <span className="max-w-24 truncate text-xs text-muted-foreground/60">
-            Coba lagi dalam {retryCountdown}s
-          </span>
-          <span className="rounded bg-muted px-1 py-0.5 text-[10px] font-medium text-muted-foreground">
-            ke-{retryAttempt}
-          </span>
-        </button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-xs"
-          onClick={(e) => {
-            e.stopPropagation()
-            onReconnect()
-          }}
-        >
-          <RefreshCw className="size-3" />
-          Hubungkan
-        </Button>
-      </div>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/50"
+        title={connectionError ?? 'Menunggu percobaan ulang...'}
+      >
+        <Spinner className="size-4 text-amber-500" />
+        <span className="max-w-24 truncate text-xs text-muted-foreground/60">
+          Coba lagi dalam {retryCountdown}s
+        </span>
+        <span className="rounded bg-muted px-1 py-0.5 text-[10px] font-medium text-muted-foreground">
+          ke-{retryAttempt}
+        </span>
+      </button>
     )
   }
 
   if (connectionError) {
     return (
-      <div className="flex items-center gap-1.5">
-        <button
-          type="button"
-          onClick={onClick}
-          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/50"
-          title={connectionError}
-        >
-          <AlertCircle className="size-4 text-destructive" />
-          <span className="max-w-24 truncate text-xs text-destructive/70">
-            Gagal
-          </span>
-        </button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-xs"
-          onClick={(e) => {
-            e.stopPropagation()
-            onReconnect()
-          }}
-        >
-          <RefreshCw className="size-3" />
-          Hubungkan
-        </Button>
-      </div>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/50"
+        title={connectionError}
+      >
+        <BluetoothOff className="size-4 text-muted-foreground" />
+        <span className="max-w-24 truncate text-xs text-muted-foreground/60">
+          {printerName ?? 'Printer'}
+        </span>
+      </button>
     )
   }
 

@@ -376,7 +376,6 @@ export function PetugasLoketPage() {
             printerName={defaultPrinterName}
             connectionError={connectionError}
             onClick={() => setShowPrinterDialog(true)}
-            onReconnect={reconnectNow}
           />
           <Button variant="outline" size="sm" onClick={handleGantiLoket}>
             Ganti Loket
@@ -451,6 +450,7 @@ export function PetugasLoketPage() {
       <PetugasPrinterDialog
         open={showPrinterDialog}
         onOpenChange={setShowPrinterDialog}
+        reconnectNow={reconnectNow}
       />
     </div>
   )

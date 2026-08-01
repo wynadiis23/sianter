@@ -27,9 +27,10 @@ import {
 interface PetugasPrinterDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  reconnectNow: () => void
 }
 
-export function PetugasPrinterDialog({ open, onOpenChange }: PetugasPrinterDialogProps) {
+export function PetugasPrinterDialog({ open, onOpenChange, reconnectNow }: PetugasPrinterDialogProps) {
   const [loading, setLoading] = useState(true)
   const [devices, setDevices] = useState<BluetoothDevice[]>([])
   const [savedId, setSavedId] = useState<string | null>(null)
@@ -190,10 +191,21 @@ export function PetugasPrinterDialog({ open, onOpenChange }: PetugasPrinterDialo
                       Putuskan
                     </Button>
                   ) : (
-                    <Button size="sm" onClick={handleScan} disabled={connecting || !hasBluetooth}>
-                      <Plus className="size-4" />
-                      {connecting ? 'Memindai...' : 'Sambungkan'}
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={reconnectNow}
+                        disabled={connecting}
+                      >
+                        <RefreshCw className="size-4" />
+                        Hubungkan
+                      </Button>
+                      <Button size="sm" onClick={handleScan} disabled={connecting || !hasBluetooth}>
+                        <Plus className="size-4" />
+                        {connecting ? 'Memindai...' : 'Sambungkan'}
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>

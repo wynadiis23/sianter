@@ -2,6 +2,7 @@ const SERVICE_UUID = '0000ff00-0000-1000-8000-00805f9b34fb'
 const WRITE_CHAR_UUID = '0000ff02-0000-1000-8000-00805f9b34fb'
 const CHUNK_SIZE = 512
 const STORAGE_KEY = 'thermal-printer-device-id'
+const NAME_STORAGE_KEY = 'thermal-printer-device-name'
 const PREFIX_STORAGE_KEY = 'printerNamePrefixes'
 
 let activeDevice: BluetoothDevice | null = null
@@ -32,6 +33,17 @@ export function saveDeviceId(deviceId: string): void {
 
 export function removeSavedDeviceId(): void {
   localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(NAME_STORAGE_KEY)
+}
+
+export function getSavedPrinterName(): string | null {
+  return localStorage.getItem(NAME_STORAGE_KEY)
+}
+
+export function savePrinterName(name: string | null | undefined): void {
+  if (name) {
+    localStorage.setItem(NAME_STORAGE_KEY, name)
+  }
 }
 
 export function getActiveDevice(): BluetoothDevice | null {
@@ -88,12 +100,15 @@ export async function requestDevice(): Promise<BluetoothDevice> {
   )
 
   saveDeviceId(device.id)
+  savePrinterName(device.name)
   lastRequestedDevice = device
   return device
 }
 
 export async function connectToDevice(device: BluetoothDevice): Promise<BluetoothRemoteGATTCharacteristic> {
   const server = await device.gatt!.connect()
+
+  savePrinterName(device.name)
 
   device.addEventListener('gattserverdisconnected', () => {
     activeDevice = null
