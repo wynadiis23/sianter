@@ -186,7 +186,7 @@ export function KiosPage() {
     fetchLayanan()
   }, [fetchLayanan])
 
-  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, hasSavedDevice, testPrint, forgetDevice, reconnectNow, refreshPaired } = useThermalPrinter()
+  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, hasSavedDevice, retryCountdown, retryAttempt, testPrint, forgetDevice, reconnectNow, refreshPaired } = useThermalPrinter()
 
   const handlePrint = useCallback(async () => {
     if (!ticket) return
@@ -257,6 +257,8 @@ export function KiosPage() {
             isConnected={isConnected}
             isConnecting={isConnecting}
             isReconnecting={isReconnecting}
+            retryCountdown={retryCountdown}
+            retryAttempt={retryAttempt}
             printerName={defaultPrinterName}
             connectionError={connectionError}
             onPrinterClick={() => setShowPrinterManager(true)}

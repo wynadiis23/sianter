@@ -64,7 +64,7 @@ export function OnlineAntreanPage() {
   const [noHp, setNoHp] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
 
-  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, reconnectNow } = useThermalPrinter()
+  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, retryCountdown, retryAttempt, reconnectNow } = useThermalPrinter()
 
   const fetchLayanan = useCallback(async () => {
     setErrorMsg(null)
@@ -199,6 +199,8 @@ export function OnlineAntreanPage() {
             isConnected={isConnected}
             isConnecting={isConnecting}
             isReconnecting={isReconnecting}
+            retryCountdown={retryCountdown}
+            retryAttempt={retryAttempt}
             printerName={defaultPrinterName}
             connectionError={connectionError}
             onClick={() => {}}

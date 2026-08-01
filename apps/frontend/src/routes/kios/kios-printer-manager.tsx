@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
@@ -20,7 +20,7 @@ interface KiosPrinterManagerProps {
   hasSavedPrinter: boolean
   printerName: string | null
   testPrint: () => Promise<void>
-  forgetDevice: () => void
+  forgetDevice: () => void | Promise<void>
   refreshPaired: () => Promise<void>
 }
 
@@ -71,10 +71,12 @@ export function KiosPrinterManager({
     setShowSelect(false)
     try {
       saveDeviceId(device.id)
+      await connectToDevice(device)
       await refreshPaired()
-      toast.success(`${device.name ?? 'Printer'} dipilih sebagai default`)
-    } catch {
-      toast.error('Gagal memilih printer')
+      toast.success(`Terhubung ke ${device.name ?? 'printer'}`)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Gagal menghubungkan printer'
+      toast.error(msg)
     } finally {
       setConnecting(false)
     }
@@ -164,10 +166,11 @@ export function KiosPrinterManager({
                 <Label className="text-xs text-muted-foreground">Printer Lain</Label>
                 <PairedDevicesList
                   excludeId={getSavedDeviceId()}
-                  onSelect={(deviceId) => {
-                    saveDeviceId(deviceId)
-                    refreshPaired()
-                    toast.success('Printer default diperbarui')
+                  onSelect={async (device) => {
+                    saveDeviceId(device.id)
+                    await connectToDevice(device)
+                    await refreshPaired()
+                    toast.success(`Terhubung ke ${device.name ?? 'printer'}`)
                   }}
                 />
                 <Button
@@ -205,15 +208,19 @@ function PairedDevicesList({
   onSelect,
 }: {
   excludeId: string | null
-  onSelect: (deviceId: string) => void
+  onSelect: (device: BluetoothDevice) => void
 }) {
   const [devices, setDevices] = useState<BluetoothDevice[]>([])
 
-  useState(() => {
-    getPairedDevices().then((d) =>
-      setDevices(d.filter((d) => d.id !== excludeId)),
-    )
-  })
+  useEffect(() => {
+    let cancelled = false
+    getPairedDevices().then((d) => {
+      if (!cancelled) setDevices(d.filter((d) => d.id !== excludeId))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [excludeId])
 
   if (devices.length === 0) return null
 
@@ -235,7 +242,7 @@ function PairedDevicesList({
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => onSelect(device.id)}
+            onClick={() => onSelect(device)}
           >
             <Check className="size-4" />
           </Button>

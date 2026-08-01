@@ -44,11 +44,23 @@ export function useThermalPrinter() {
   const [pairedDevices, setPairedDevices] = useState<BluetoothDevice[]>([])
   const [hasSavedDevice, setHasSavedDevice] = useState(!!getSavedDeviceId())
   const [connectedDeviceName, setConnectedDeviceName] = useState<string | null>(null)
+  const [retryCountdown, setRetryCountdown] = useState<number | null>(null)
+  const [retryAttempt, setRetryAttempt] = useState(0)
 
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const retryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const attemptRef = useRef(0)
   const manualDisconnectRef = useRef(false)
   const scheduleReconnectRef = useRef<() => void>(() => {})
+
+  const clearRetryCountdown = useCallback(() => {
+    if (retryTimerRef.current) {
+      clearInterval(retryTimerRef.current)
+      retryTimerRef.current = null
+    }
+    setRetryCountdown(null)
+    setRetryAttempt(0)
+  }, [])
 
   const savedId = getSavedDeviceId()
   const defaultPrinterName = connectedDeviceName ?? (hasSavedDevice
@@ -92,6 +104,7 @@ export function useThermalPrinter() {
 
       await connectToDevice(device)
       attemptRef.current = 0
+      clearRetryCountdown()
       setConnectionError(null)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Gagal menghubungkan printer'
@@ -101,21 +114,37 @@ export function useThermalPrinter() {
       setIsConnecting(false)
       setIsReconnecting(false)
     }
-  }, [])
+  }, [clearRetryCountdown])
 
   const scheduleReconnect = useCallback(() => {
     if (manualDisconnectRef.current) return
 
     const attempt = attemptRef.current
-    if (attempt >= BACKOFF_MS.length * 3) return
+    if (attempt >= BACKOFF_MS.length * 3) {
+      clearRetryCountdown()
+      return
+    }
 
     const delay = BACKOFF_MS[Math.min(attempt, BACKOFF_MS.length - 1)]
     attemptRef.current++
 
+    setRetryAttempt(attemptRef.current)
+    setRetryCountdown(Math.ceil(delay / 1000))
+
+    if (retryTimerRef.current) {
+      clearInterval(retryTimerRef.current)
+    }
+    retryTimerRef.current = setInterval(() => {
+      setRetryCountdown((prev) => {
+        if (prev === null || prev <= 1) return null
+        return prev - 1
+      })
+    }, 1000)
+
     reconnectTimerRef.current = setTimeout(() => {
       attemptConnection(true)
     }, delay)
-  }, [attemptConnection])
+  }, [attemptConnection, clearRetryCountdown])
 
   scheduleReconnectRef.current = scheduleReconnect
 
@@ -126,14 +155,22 @@ export function useThermalPrinter() {
     }
     manualDisconnectRef.current = false
     attemptRef.current = 0
+    clearRetryCountdown()
     attemptConnection()
-  }, [attemptConnection])
+  }, [attemptConnection, clearRetryCountdown])
 
   useEffect(() => {
     const unsub = onConnectionChange((connected) => {
       setIsConnected(connected)
       setConnectedDeviceName(connected ? (getActiveDevice()?.name ?? null) : null)
-      if (!connected && !manualDisconnectRef.current) {
+      if (connected) {
+        attemptRef.current = 0
+        if (reconnectTimerRef.current) {
+          clearTimeout(reconnectTimerRef.current)
+          reconnectTimerRef.current = null
+        }
+        clearRetryCountdown()
+      } else if (!manualDisconnectRef.current) {
         scheduleReconnect()
       }
     })
@@ -143,8 +180,9 @@ export function useThermalPrinter() {
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current)
       }
+      clearRetryCountdown()
     }
-  }, [scheduleReconnect])
+  }, [scheduleReconnect, clearRetryCountdown])
 
   useEffect(() => {
     const savedDeviceId = getSavedDeviceId()
@@ -156,11 +194,13 @@ export function useThermalPrinter() {
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current)
       }
+      clearRetryCountdown()
     }
-  }, [attemptConnection])
+  }, [attemptConnection, clearRetryCountdown])
 
   const connect = useCallback(async (device?: BluetoothDevice) => {
     manualDisconnectRef.current = false
+    clearRetryCountdown()
     setIsConnecting(true)
     try {
       const d = device ?? (await requestDevice())
@@ -174,7 +214,7 @@ export function useThermalPrinter() {
     } finally {
       setIsConnecting(false)
     }
-  }, [refreshPaired])
+  }, [refreshPaired, clearRetryCountdown])
 
   const disconnect = useCallback(async () => {
     manualDisconnectRef.current = true
@@ -182,13 +222,14 @@ export function useThermalPrinter() {
       clearTimeout(reconnectTimerRef.current)
       reconnectTimerRef.current = null
     }
+    clearRetryCountdown()
     const device = getActiveDevice()
     if (device) {
       await disconnectDevice(device)
     }
     setConnectionError(null)
     toast.info('Printer terputus')
-  }, [])
+  }, [clearRetryCountdown])
 
   const print = useCallback(async (data: ReceiptData) => {
     try {
@@ -242,17 +283,23 @@ export function useThermalPrinter() {
     }
   }, [refreshPaired])
 
-  const forgetDevice = useCallback(() => {
+  const forgetDevice = useCallback(async () => {
     manualDisconnectRef.current = true
     if (reconnectTimerRef.current) {
       clearTimeout(reconnectTimerRef.current)
       reconnectTimerRef.current = null
     }
+    clearRetryCountdown()
+    const device = getActiveDevice()
+    if (device) {
+      await disconnectDevice(device)
+    }
     removeSavedDeviceId()
     setHasSavedDevice(false)
+    setConnectedDeviceName(null)
     setConnectionError(null)
     toast.info('Printer dihapus dari daftar')
-  }, [])
+  }, [clearRetryCountdown])
 
   return {
     isConnected,
@@ -262,6 +309,8 @@ export function useThermalPrinter() {
     pairedDevices,
     hasSavedDevice,
     defaultPrinterName,
+    retryCountdown,
+    retryAttempt,
     connect,
     disconnect,
     print,

@@ -7,6 +7,8 @@ interface KiosHeaderProps {
   isConnected: boolean
   isConnecting: boolean
   isReconnecting: boolean
+  retryCountdown: number | null
+  retryAttempt: number
   printerName: string | null
   connectionError: string | null
   onPrinterClick: () => void
@@ -18,6 +20,8 @@ export function KiosHeader({
   isConnected,
   isConnecting,
   isReconnecting,
+  retryCountdown,
+  retryAttempt,
   printerName,
   connectionError,
   onPrinterClick,
@@ -38,6 +42,8 @@ export function KiosHeader({
         isConnected={isConnected}
         isConnecting={isConnecting}
         isReconnecting={isReconnecting}
+        retryCountdown={retryCountdown}
+        retryAttempt={retryAttempt}
         printerName={printerName}
         connectionError={connectionError}
         onClick={onPrinterClick}

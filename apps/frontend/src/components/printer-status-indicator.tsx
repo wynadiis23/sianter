@@ -6,6 +6,8 @@ interface PrinterStatusIndicatorProps {
   isConnected: boolean
   isConnecting: boolean
   isReconnecting: boolean
+  retryCountdown: number | null
+  retryAttempt: number
   printerName: string | null
   connectionError: string | null
   onClick: () => void
@@ -16,6 +18,8 @@ export function PrinterStatusIndicator({
   isConnected,
   isConnecting,
   isReconnecting,
+  retryCountdown,
+  retryAttempt,
   printerName,
   connectionError,
   onClick,
@@ -50,6 +54,40 @@ export function PrinterStatusIndicator({
           {isReconnecting ? 'Menghubungkan...' : 'Menghubungkan...'}
         </span>
       </button>
+    )
+  }
+
+  if (retryCountdown !== null) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={onClick}
+          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/50"
+          title={connectionError ?? 'Menunggu percobaan ulang...'}
+        >
+          <Spinner className="size-4 text-amber-500" />
+          <span className="max-w-24 truncate text-xs text-muted-foreground/60">
+            Coba lagi dalam {retryCountdown}s
+          </span>
+          <span className="rounded bg-muted px-1 py-0.5 text-[10px] font-medium text-muted-foreground">
+            ke-{retryAttempt}
+          </span>
+        </button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs"
+          onClick={(e) => {
+            e.stopPropagation()
+            onReconnect()
+          }}
+        >
+          <RefreshCw className="size-3" />
+          Hubungkan
+        </Button>
+      </div>
     )
   }
 

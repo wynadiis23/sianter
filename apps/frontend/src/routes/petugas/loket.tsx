@@ -114,7 +114,7 @@ export function PetugasLoketPage() {
   } | null>(null)
   const [showPrinterDialog, setShowPrinterDialog] = useState(false)
 
-  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, reconnectNow } = useThermalPrinter()
+  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, retryCountdown, retryAttempt, reconnectNow } = useThermalPrinter()
 
   useEffect(() => {
     const raw = localStorage.getItem('petugasSession')
@@ -371,6 +371,8 @@ export function PetugasLoketPage() {
             isConnected={isConnected}
             isConnecting={isConnecting}
             isReconnecting={isReconnecting}
+            retryCountdown={retryCountdown}
+            retryAttempt={retryAttempt}
             printerName={defaultPrinterName}
             connectionError={connectionError}
             onClick={() => setShowPrinterDialog(true)}
