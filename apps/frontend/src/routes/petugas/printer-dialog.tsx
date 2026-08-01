@@ -20,6 +20,7 @@ import {
   connectToDevice,
   disconnectDevice,
   removeSavedDeviceId,
+  saveDeviceId,
   getActiveDevice,
 } from '@/lib/thermal-printer'
 
@@ -52,14 +53,15 @@ export function PetugasPrinterDialog({ open, onOpenChange }: PetugasPrinterDialo
   const handleScan = async () => {
     setConnecting(true)
     try {
-      await requestDevice()
+      const device = await requestDevice()
+      await connectToDevice(device)
       await refresh()
-      toast.success('Printer berhasil dipasangkan')
+      toast.success(`Terhubung ke ${device.name ?? 'printer'}`)
     } catch (err) {
       if (err instanceof DOMException && err.name === 'NotFoundError') {
         toast.info('Pemindaian dibatalkan')
       } else {
-        const msg = err instanceof Error ? err.message : 'Gagal memindai printer'
+        const msg = err instanceof Error ? err.message : 'Gagal menghubungkan printer'
         toast.error(msg)
       }
     } finally {
@@ -70,9 +72,11 @@ export function PetugasPrinterDialog({ open, onOpenChange }: PetugasPrinterDialo
   const handleConnect = async (device: BluetoothDevice) => {
     setConnecting(true)
     try {
+      saveDeviceId(device.id)
       await connectToDevice(device)
       setConnected(true)
-      toast.success('Terhubung ke printer')
+      await refresh()
+      toast.success(`Terhubung ke ${device.name ?? 'printer'}`)
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Gagal menghubungkan printer'
       toast.error(msg)
