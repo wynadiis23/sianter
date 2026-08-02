@@ -73,6 +73,18 @@ export function getActiveDevice(): BluetoothDevice | null {
   return activeDevice
 }
 
+export function getLastRequestedDevice(): BluetoothDevice | null {
+  return lastRequestedDevice
+}
+
+export function supportsGetDevices(): boolean {
+  return (
+    typeof navigator !== 'undefined' &&
+    'bluetooth' in navigator &&
+    typeof (navigator.bluetooth as { getDevices?: unknown }).getDevices === 'function'
+  )
+}
+
 export function getActiveCharacteristic(): BluetoothRemoteGATTCharacteristic | null {
   return activeCharacteristic
 }
@@ -95,22 +107,28 @@ export async function syncPrinterNamePrefixes(): Promise<void> {
 
 export async function getPairedDevices(): Promise<BluetoothDevice[]> {
   if (!('bluetooth' in navigator)) return []
-  try {
-    const devices = await navigator.bluetooth.getDevices()
-    const cached = lastRequestedDevice
-    if (cached) {
-      const idx = devices.findIndex((d) => d.id === cached.id)
-      if (idx >= 0) devices[idx] = cached
-      else devices.push(cached)
+
+  const cached = lastRequestedDevice
+  const result: BluetoothDevice[] = cached ? [cached] : []
+
+  if (supportsGetDevices()) {
+    try {
+      const devices = await navigator.bluetooth.getDevices()
+      for (const device of devices) {
+        if (cached && device.id === cached.id) continue
+        result.push(device)
+      }
+      if (devices.length > 0) {
+        emitLog('info', `Menemukan ${devices.length} printer tersimpan di browser`)
+      }
+    } catch (error) {
+      emitLog('warn', `Gagal membaca daftar printer tersimpan di browser: ${(error as Error).message}`)
     }
-    emitLog('info', devices.length > 0
-      ? `Menemukan ${devices.length} printer tersimpan`
-      : 'Belum ada printer tersimpan')
-    return devices
-  } catch {
-    emitLog('warn', 'Gagal membaca daftar printer tersimpan')
-    return []
+  } else {
+    emitLog('info', 'Browser tidak mendukung daftar printer tersimpan (getDevices). Gunakan tombol Sambungkan.')
   }
+
+  return result
 }
 
 export async function requestDevice(): Promise<BluetoothDevice> {

@@ -9,6 +9,8 @@ import {
   requestDevice,
   removeSavedDeviceId,
   getActiveDevice,
+  getLastRequestedDevice,
+  supportsGetDevices,
   connectToDevice,
   disconnectDevice,
   syncPrinterNamePrefixes,
@@ -83,7 +85,7 @@ export function useThermalPrinter() {
     refreshPaired()
   }, [refreshPaired])
 
-  const attemptConnection = useCallback(async (isRetry?: boolean) => {
+  const attemptConnection = useCallback(async (isRetry?: boolean, allowPrompt?: boolean) => {
     const savedDeviceId = getSavedDeviceId()
     if (!savedDeviceId) return
 
@@ -97,13 +99,40 @@ export function useThermalPrinter() {
     }
 
     try {
+      const cached = getLastRequestedDevice()
+      if (cached) {
+        emitLog('info', `Menghubungkan ulang ke ${cached.name ?? cached.id}...`)
+        await connectToDevice(cached)
+        attemptRef.current = 0
+        clearRetryCountdown()
+        setConnectionError(null)
+        return
+      }
+
       const paired = await getPairedDevices()
       const device = paired.find((d) => d.id === savedDeviceId)
 
       if (!device) {
-        emitLog('warn', 'Printer tersimpan tidak ditemukan. Pastikan printer menyala.')
-        setConnectionError('Printer tidak ditemukan. Pastikan printer menyala.')
-        scheduleReconnectRef.current()
+        if (allowPrompt) {
+          emitLog('info', 'Membuka dialog pilih printer...')
+          const picked = await requestDevice()
+          await connectToDevice(picked)
+          await refreshPaired()
+          attemptRef.current = 0
+          clearRetryCountdown()
+          setConnectionError(null)
+          return
+        }
+
+        if (supportsGetDevices()) {
+          emitLog('warn', 'Printer tersimpan tidak ditemukan. Mencoba lagi...')
+          setConnectionError('Printer tersimpan tidak ditemukan. Mencoba menyambungkan kembali...')
+          scheduleReconnectRef.current()
+          return
+        }
+
+        emitLog('warn', 'Browser tidak mendukung koneksi otomatis. Gunakan tombol Sambungkan.')
+        setConnectionError('Printer belum tersambung. Buka pengaturan printer dan pilih Sambungkan.')
         return
       }
 
@@ -113,15 +142,20 @@ export function useThermalPrinter() {
       clearRetryCountdown()
       setConnectionError(null)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Gagal menghubungkan printer'
-      emitLog('error', `Gagal menghubungkan printer: ${msg}`)
-      setConnectionError(msg)
-      scheduleReconnectRef.current()
+      if (err instanceof DOMException && err.name === 'NotFoundError') {
+        emitLog('info', 'Pemilihan printer dibatalkan')
+        setConnectionError(null)
+      } else {
+        const msg = err instanceof Error ? err.message : 'Gagal menghubungkan printer'
+        emitLog('error', `Gagal menghubungkan printer: ${msg}`)
+        setConnectionError(msg)
+        scheduleReconnectRef.current()
+      }
     } finally {
       setIsConnecting(false)
       setIsReconnecting(false)
     }
-  }, [clearRetryCountdown])
+  }, [clearRetryCountdown, refreshPaired])
 
   const scheduleReconnect = useCallback(() => {
     if (manualDisconnectRef.current) return
@@ -166,7 +200,7 @@ export function useThermalPrinter() {
     manualDisconnectRef.current = false
     attemptRef.current = 0
     clearRetryCountdown()
-    attemptConnection()
+    attemptConnection(false, true)
   }, [attemptConnection, clearRetryCountdown])
 
   useEffect(() => {
