@@ -16,7 +16,7 @@ import { SkippedList } from '@/routes/petugas/loket/skipped-list'
 import { OnlineReservationsCard } from '@/routes/petugas/loket/online-reservations-card'
 import { DetailPemohonDialog } from '@/routes/petugas/loket/detail-pemohon-dialog'
 import { useThermalPrinter } from '@/hooks/use-thermal-printer'
-import { PetugasPrinterDialog } from '@/routes/petugas/printer-dialog'
+import { PrinterManagerDialog } from '@/components/printer-manager-dialog'
 import { PrinterStatusIndicator } from '@/components/printer-status-indicator'
 
 interface PetugasSession {
@@ -114,7 +114,7 @@ export function PetugasLoketPage() {
   } | null>(null)
   const [showPrinterDialog, setShowPrinterDialog] = useState(false)
 
-  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, retryCountdown, retryAttempt, reconnectNow } = useThermalPrinter()
+  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, retryCountdown, retryAttempt, reconnectNow, hasSavedDevice, testPrint, forgetDevice, refreshPaired, disconnect } = useThermalPrinter()
 
   useEffect(() => {
     const raw = localStorage.getItem('petugasSession')
@@ -447,10 +447,17 @@ export function PetugasLoketPage() {
         onOpenChange={(open) => !open && setDetailItem(null)}
         data={detailItem}
       />
-      <PetugasPrinterDialog
+      <PrinterManagerDialog
         open={showPrinterDialog}
         onOpenChange={setShowPrinterDialog}
+        hasSavedPrinter={hasSavedDevice}
+        printerName={defaultPrinterName}
+        testPrint={testPrint}
+        forgetDevice={forgetDevice}
+        refreshPaired={refreshPaired}
         reconnectNow={reconnectNow}
+        isConnected={isConnected}
+        onDisconnect={disconnect}
       />
     </div>
   )

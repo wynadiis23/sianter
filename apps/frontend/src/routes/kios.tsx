@@ -10,8 +10,8 @@ import { KiosServiceSelect } from '@/routes/kios/kios-service-select'
 import { KiosCheckIn } from '@/routes/kios/kios-check-in'
 import { KiosConfirm } from '@/routes/kios/kios-confirm'
 import { KiosTicket } from '@/routes/kios/kios-ticket'
-import { KiosPrinterManager } from '@/routes/kios/kios-printer-manager'
 import { useThermalPrinter } from '@/hooks/use-thermal-printer'
+import { PrinterManagerDialog } from '@/components/printer-manager-dialog'
 
 type PageState = 'loading' | 'select' | 'checkin' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -186,7 +186,7 @@ export function KiosPage() {
     fetchLayanan()
   }, [fetchLayanan])
 
-  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, hasSavedDevice, retryCountdown, retryAttempt, testPrint, forgetDevice, reconnectNow, refreshPaired } = useThermalPrinter()
+  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, hasSavedDevice, retryCountdown, retryAttempt, testPrint, forgetDevice, reconnectNow, refreshPaired, disconnect } = useThermalPrinter()
 
   const handlePrint = useCallback(async () => {
     if (!ticket) return
@@ -342,7 +342,7 @@ export function KiosPage() {
         </div>
       </div>
 
-      <KiosPrinterManager
+      <PrinterManagerDialog
         open={showPrinterManager}
         onOpenChange={setShowPrinterManager}
         hasSavedPrinter={hasSavedDevice}
@@ -351,6 +351,8 @@ export function KiosPage() {
         forgetDevice={forgetDevice}
         refreshPaired={refreshPaired}
         reconnectNow={reconnectNow}
+        isConnected={isConnected}
+        onDisconnect={disconnect}
       />
     </>
   )

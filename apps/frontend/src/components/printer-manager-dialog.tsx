@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -10,12 +11,12 @@ import {
 } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 import { toast } from 'sonner'
-import { Bluetooth, BluetoothOff, Plus, Trash2, Printer, Check, RefreshCw } from 'lucide-react'
+import { Bluetooth, BluetoothOff, Plus, Trash2, Printer, Check, RefreshCw, Unplug } from 'lucide-react'
 import { getPairedDevices, getSavedDeviceId, requestDevice, saveDeviceId, connectToDevice } from '@/lib/thermal-printer'
 import { ThermalPrinterSelect } from '@/components/thermal-printer-select'
 import { BluetoothLog } from '@/components/bluetooth-log'
 
-interface KiosPrinterManagerProps {
+interface PrinterManagerDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   hasSavedPrinter: boolean
@@ -24,9 +25,11 @@ interface KiosPrinterManagerProps {
   forgetDevice: () => void | Promise<void>
   refreshPaired: () => Promise<void>
   reconnectNow: () => void
+  isConnected?: boolean
+  onDisconnect?: () => void | Promise<void>
 }
 
-export function KiosPrinterManager({
+export function PrinterManagerDialog({
   open,
   onOpenChange,
   hasSavedPrinter,
@@ -35,11 +38,15 @@ export function KiosPrinterManager({
   forgetDevice,
   refreshPaired,
   reconnectNow,
-}: KiosPrinterManagerProps) {
+  isConnected = false,
+  onDisconnect,
+}: PrinterManagerDialogProps) {
   const [testing, setTesting] = useState(false)
   const [showSelect, setShowSelect] = useState(false)
   const [scanning, setScanning] = useState(false)
   const [connecting, setConnecting] = useState(false)
+
+  const hasBluetooth = 'bluetooth' in navigator
 
   const handleTestPrint = async () => {
     setTesting(true)
@@ -101,6 +108,22 @@ export function KiosPrinterManager({
             </DialogTitle>
           </DialogHeader>
 
+          {!hasBluetooth && (
+            <Card className="border-destructive/50 bg-destructive/5">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <BluetoothOff className="size-5 text-destructive shrink-0" />
+                  <div>
+                    <p className="font-medium text-destructive text-sm">Web Bluetooth Tidak Didukung</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Browser Anda tidak mendukung Web Bluetooth API. Gunakan Chrome atau Edge.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="mt-6 space-y-6">
             <div className="rounded-lg border border-border bg-card p-4">
               <Label className="text-xs text-muted-foreground">Printer Default</Label>
@@ -124,14 +147,25 @@ export function KiosPrinterManager({
                       <Printer className="size-4" />
                       {testing ? 'Mencetak...' : 'Test Print'}
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={reconnectNow}
-                    >
-                      <RefreshCw className="size-4" />
-                      Hubungkan
-                    </Button>
+                    {isConnected && onDisconnect ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={onDisconnect}
+                      >
+                        <Unplug className="size-4" />
+                        Putuskan
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={reconnectNow}
+                      >
+                        <RefreshCw className="size-4" />
+                        Hubungkan
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="ghost"

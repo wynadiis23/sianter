@@ -19,7 +19,7 @@ import { IdentityForm } from '@/components/identity-form'
 import { ServiceCard } from '@/components/service-card'
 import { useThermalPrinter } from '@/hooks/use-thermal-printer'
 import { PrinterStatusIndicator } from '@/components/printer-status-indicator'
-import { PetugasPrinterDialog } from '@/routes/petugas/printer-dialog'
+import { PrinterManagerDialog } from '@/components/printer-manager-dialog'
 
 type Step = 'select' | 'jadwal' | 'identity' | 'confirm' | 'creating' | 'ticket' | 'error'
 
@@ -66,7 +66,7 @@ export function OnlineAntreanPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [showPrinterDialog, setShowPrinterDialog] = useState(false)
 
-  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, retryCountdown, retryAttempt, reconnectNow } = useThermalPrinter()
+  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, retryCountdown, retryAttempt, reconnectNow, hasSavedDevice, testPrint, forgetDevice, refreshPaired, disconnect } = useThermalPrinter()
 
   const fetchLayanan = useCallback(async () => {
     setErrorMsg(null)
@@ -455,10 +455,17 @@ export function OnlineAntreanPage() {
         </main>
       )}
 
-      <PetugasPrinterDialog
+      <PrinterManagerDialog
         open={showPrinterDialog}
         onOpenChange={setShowPrinterDialog}
+        hasSavedPrinter={hasSavedDevice}
+        printerName={defaultPrinterName}
+        testPrint={testPrint}
+        forgetDevice={forgetDevice}
+        refreshPaired={refreshPaired}
         reconnectNow={reconnectNow}
+        isConnected={isConnected}
+        onDisconnect={disconnect}
       />
     </div>
   )
