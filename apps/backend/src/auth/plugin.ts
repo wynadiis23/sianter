@@ -36,4 +36,15 @@ export const authPlugin = new Elysia({ name: 'better-auth' })
         }
       },
     },
+    loket: {
+      async resolve({ status, request: { headers } }) {
+        const session = await auth.api.getSession({ headers })
+        if (!session) return status(401)
+        if (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'PETUGAS_LOKET') return status(403)
+        return {
+          user: session.user,
+          session: session.session,
+        }
+      },
+    },
   })
