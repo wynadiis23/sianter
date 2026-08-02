@@ -116,68 +116,72 @@ export function HomePage() {
               {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
           </div>
-          {menuOpen && (
-            <nav className="flex flex-col gap-3 border-t border-border pb-4 pt-3 md:hidden" aria-label="Navigasi mobile">
-              <a
-                href="#features"
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => setMenuOpen(false)}
-              >
-                Layanan
-              </a>
-              <a
-                href="#manfaat"
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => setMenuOpen(false)}
-              >
-                Manfaat
-              </a>
-              <a
-                href="#cara-kerja"
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => setMenuOpen(false)}
-              >
-                Cara Kerja
-              </a>
-              <Link
-                to="/login"
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => setMenuOpen(false)}
-              >
-                Masuk
-              </Link>
-              <Button asChild size="sm" className="bg-accent-leaf text-white hover:bg-accent-leaf-dim">
-                <Link to="/antrean-online" onClick={() => setMenuOpen(false)}>Reservasi Online</Link>
-              </Button>
-            </nav>
-          )}
+        </div>
+        <div
+          className={`md:hidden absolute inset-x-0 top-full z-50 border-b border-border bg-background/95 backdrop-blur-xs transition-[opacity,translate,visibility] duration-200 ease-enter ${menuOpen ? 'translate-y-0 opacity-100 visible' : '-translate-y-2 pointer-events-none opacity-0 invisible'}`}
+          aria-hidden={!menuOpen}
+        >
+          <nav className="flex flex-col gap-3 border-t border-border px-4 py-4 sm:px-6 lg:px-8" aria-label="Navigasi mobile">
+            <a
+              href="#features"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setMenuOpen(false)}
+            >
+              Layanan
+            </a>
+            <a
+              href="#manfaat"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setMenuOpen(false)}
+            >
+              Manfaat
+            </a>
+            <a
+              href="#cara-kerja"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setMenuOpen(false)}
+            >
+              Cara Kerja
+            </a>
+            <div className="border-t border-border" />
+            <Link
+              to="/login"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setMenuOpen(false)}
+            >
+              Masuk
+            </Link>
+            <Button asChild size="sm" className="mt-1 bg-accent-leaf text-white hover:bg-accent-leaf-dim">
+              <Link to="/antrean-online" onClick={() => setMenuOpen(false)}>Reservasi Online</Link>
+            </Button>
+          </nav>
         </div>
       </header>
 
       <main>
         <section className="mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 sm:pb-24 sm:pt-20 lg:px-8">
           <div className="max-w-3xl">
-            <p className="mb-4 font-wordmark text-sm tracking-[0.15em] text-accent-leaf uppercase">
+            <p className="hero-enter mb-4 font-wordmark text-sm tracking-[0.15em] text-accent-leaf uppercase" style={{ animationDelay: '0ms' }}>
               Inovasi Layanan Publik · KPU Provinsi Bali
             </p>
-            <h1 className="landing-headline font-wordmark text-4xl leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="hero-enter landing-headline font-wordmark text-4xl leading-tight tracking-tight sm:text-5xl lg:text-6xl" style={{ animationDelay: '80ms' }}>
               Antrean Pelayanan Publik yang{' '}
               <span className="text-accent-leaf">Mudah, Adil,</span>
               {' '}dan Transparan
             </h1>
-            <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            <p className="hero-enter mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg" style={{ animationDelay: '160ms' }}>
               Sianter adalah sistem informasi antrean dari KPU Provinsi Bali untuk meningkatkan layanan publik.
               Masyarakat dapat mengambil nomor antrean dari rumah maupun di lokasi, memantau posisinya secara
               real-time, dan dilayani tepat waktu — tanpa perlu mengantre lama.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Button asChild size="lg" className="bg-accent-leaf text-white hover:bg-accent-leaf-dim">
+            <div className="hero-enter mt-8 flex flex-wrap items-center gap-4" style={{ animationDelay: '240ms' }}>
+              <Button asChild size="lg" className="landing-cta bg-accent-leaf text-white hover:bg-accent-leaf-dim">
                 <Link to="/antrean-online">
                   Reservasi Online
                   <ArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
+              <Button asChild variant="outline" size="lg" className="landing-cta">
                 <a href="#cara-kerja">Lihat Cara Kerja</a>
               </Button>
             </div>
@@ -204,10 +208,10 @@ export function HomePage() {
               {features.map((f, i) => (
                 <article
                   key={f.title}
-                  className={`reveal-card rounded-lg border border-border p-6 transition-all duration-500 [animation-delay:${i * 100}ms] ${featuresInView ? 'is-visible' : ''}`}
-                  style={{ animationDelay: `${i * 100}ms` }}
+                  className={`reveal-card card-hover rounded-lg border border-border p-6 ${featuresInView ? 'is-visible' : ''}`}
+                  style={{ transitionDelay: `${i * 80}ms` }}
                 >
-                  <div className="mb-4 flex size-12 items-center justify-center rounded-md bg-accent-leaf-surface">
+                  <div className="icon-chip mb-4 flex size-12 items-center justify-center rounded-md bg-accent-leaf-surface">
                     <f.icon className="size-6 text-accent-leaf" aria-hidden="true" />
                   </div>
                   <h3 className="font-wordmark text-lg font-semibold">{f.title}</h3>
@@ -240,10 +244,10 @@ export function HomePage() {
               {benefits.map((b, i) => (
                 <article
                   key={b.title}
-                  className={`reveal-card rounded-lg border border-border bg-background p-5 transition-all duration-500 ${benefitsInView ? 'is-visible' : ''}`}
-                  style={{ animationDelay: `${i * 100}ms` }}
+                  className={`reveal-card card-hover rounded-lg border border-border bg-background p-5 ${benefitsInView ? 'is-visible' : ''}`}
+                  style={{ transitionDelay: `${i * 60}ms` }}
                 >
-                  <div className="mb-3 flex size-10 items-center justify-center rounded-md bg-accent-leaf-surface">
+                  <div className="icon-chip mb-3 flex size-10 items-center justify-center rounded-md bg-accent-leaf-surface">
                     <b.icon className="size-5 text-accent-leaf" aria-hidden="true" />
                   </div>
                   <h3 className="font-wordmark text-base font-semibold">{b.title}</h3>
@@ -275,7 +279,7 @@ export function HomePage() {
                 <article
                   key={s.num}
                   className={`reveal-card ${stepsInView ? 'is-visible' : ''}`}
-                  style={{ animationDelay: `${i * 150}ms` }}
+                  style={{ transitionDelay: `${i * 90}ms` }}
                 >
                   <span className="font-wordmark text-4xl font-bold text-accent-leaf/30 sm:text-5xl">
                     {s.num}
@@ -325,13 +329,13 @@ export function HomePage() {
               Lakukan reservasi online dari rumah, atau ambil nomor antrean di kiosk mandiri di lokasi pelayanan.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="bg-accent-leaf text-white hover:bg-accent-leaf-dim">
+              <Button asChild size="lg" className="landing-cta bg-accent-leaf text-white hover:bg-accent-leaf-dim">
                 <Link to="/antrean-online">
                   Reservasi Online
                   <ArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
+              <Button asChild size="lg" variant="outline" className="landing-cta">
                 <a href="#cara-kerja">Lihat Cara Kerja</a>
               </Button>
             </div>
@@ -361,7 +365,7 @@ export function HomePage() {
               ))}
             </div>
             <div className="mt-10">
-              <Button asChild variant="outline" size="lg">
+              <Button asChild variant="outline" size="lg" className="landing-cta">
                 <Link to="/login">Masuk Admin</Link>
               </Button>
             </div>
@@ -390,19 +394,68 @@ export function HomePage() {
         /* Hallmark · macrostructure: Workbench · genre: editorial · theme: Studio · enrichment: none · nav: N6 · footer: Ft5 */
         html, body { overflow-x: clip; }
         .landing-headline { overflow-wrap: anywhere; min-width: 0; }
+
+        /* Hero load entrance — staggered fade-rise, opacity + transform only */
+        .hero-enter {
+          opacity: 0;
+          animation: hero-rise 0.5s var(--ease-enter) forwards;
+        }
+        @keyframes hero-rise {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scroll-triggered reveals — opacity + transform only, GPU-composited */
         .reveal-card {
           opacity: 0;
-          transform: translateY(12px);
-          transition: opacity 0.5s var(--ease-enter), transform 0.5s var(--ease-enter);
+          transform: translateY(14px);
+          transition: opacity 0.55s var(--ease-enter), transform 0.55s var(--ease-enter);
         }
         .reveal-card.is-visible {
           opacity: 1;
           transform: translateY(0);
         }
+
+        /* Card micro-interaction — icon chip scales + tints on hover */
+        .icon-chip {
+          transition: transform 200ms ease-out, background-color 200ms ease-out;
+        }
+        @media (hover: hover) and (pointer: fine) {
+          .card-hover:hover .icon-chip {
+            transform: scale(1.08);
+            background-color: var(--accent-leaf-soft);
+          }
+        }
+
+        /* Landing CTAs — snappy hover lift (translate + shadow) + press feedback */
+        .landing-cta {
+          transition:
+            translate 160ms var(--ease-enter),
+            scale 160ms var(--ease-enter),
+            box-shadow 200ms var(--ease-enter),
+            background-color 160ms var(--ease-enter),
+            border-color 160ms var(--ease-enter);
+        }
+        @media (hover: hover) and (pointer: fine) {
+          .landing-cta:hover {
+            translate: 0 -2px;
+            box-shadow: 0 14px 28px -14px oklch(22% 0.03 14 / 0.4);
+          }
+        }
+
         @media (prefers-reduced-motion: reduce) {
+          .hero-enter,
           .reveal-card {
             opacity: 1;
             transform: none;
+            animation: none;
+            transition: none;
+          }
+          .icon-chip,
+          .landing-cta {
+            translate: none;
+            transform: none;
+            box-shadow: none;
             transition: none;
           }
         }
