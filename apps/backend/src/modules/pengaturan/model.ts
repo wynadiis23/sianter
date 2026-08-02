@@ -12,6 +12,7 @@ const pengaturanShape = {
   slideshowImages: t.Nullable(t.String()),
   slideshowInterval: t.Integer(),
   kegiatanInterval: t.Integer(),
+  printerNamePrefixes: t.Nullable(t.String()),
 }
 
 export const PengaturanModel = {

@@ -1,25 +1,31 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Users, User } from 'lucide-react'
+import { Users, User, Printer } from 'lucide-react'
 import { wita } from '@/lib/dayjs'
 
 interface WaitingItem {
   id: string
   kode: string | null
+  nomorUrut: number | null
+  layananId: string
   namaLayanan: string
   sumber: string
   createdAt: Date
   namaPemohon: string | null
   noHpPemohon: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface WaitingListProps {
   items: WaitingItem[]
   onDetail: (data: { nama: string; noHp: string } | null) => void
+  onReprint: (item: WaitingItem) => void
 }
 
-export function WaitingList({ items, onDetail }: WaitingListProps) {
+export function WaitingList({ items, onDetail, onReprint }: WaitingListProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -57,6 +63,15 @@ export function WaitingList({ items, onDetail }: WaitingListProps) {
                   <p className="text-xs text-muted-foreground">
                     {wita(item.createdAt).format('HH:mm')}
                   </p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-6"
+                    onClick={() => onReprint(item)}
+                    title="Cetak Ulang"
+                  >
+                    <Printer className="size-3" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"

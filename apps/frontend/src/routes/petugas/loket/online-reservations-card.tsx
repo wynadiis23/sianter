@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, User } from 'lucide-react'
+import { Calendar, User, Printer } from 'lucide-react'
 
 interface OnlineReservation {
   id: string
@@ -15,14 +15,18 @@ interface OnlineReservation {
   jamMulai: string
   jamSelesai: string
   tanggalKunjungan: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface OnlineReservationsCardProps {
   items: OnlineReservation[]
   onDetail: (data: { nama: string; noHp: string } | null) => void
+  onReprint: (item: OnlineReservation) => void
 }
 
-export function OnlineReservationsCard({ items, onDetail }: OnlineReservationsCardProps) {
+export function OnlineReservationsCard({ items, onDetail, onReprint }: OnlineReservationsCardProps) {
   if (items.length === 0) return null
 
   return (
@@ -55,6 +59,15 @@ export function OnlineReservationsCard({ items, onDetail }: OnlineReservationsCa
                 <Badge variant="secondary" className="text-xs">
                   Online
                 </Badge>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-6"
+                  onClick={() => onReprint(item)}
+                  title="Cetak Ulang"
+                >
+                  <Printer className="size-3" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"

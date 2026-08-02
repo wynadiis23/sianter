@@ -1,0 +1,1 @@
+ALTER TABLE "pengaturan" ADD COLUMN "printer_name_prefixes" text;

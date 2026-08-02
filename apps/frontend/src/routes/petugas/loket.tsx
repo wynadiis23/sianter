@@ -15,6 +15,9 @@ import { WaitingList } from '@/routes/petugas/loket/waiting-list'
 import { SkippedList } from '@/routes/petugas/loket/skipped-list'
 import { OnlineReservationsCard } from '@/routes/petugas/loket/online-reservations-card'
 import { DetailPemohonDialog } from '@/routes/petugas/loket/detail-pemohon-dialog'
+import { useThermalPrinter } from '@/hooks/use-thermal-printer'
+import { PrinterManagerDialog } from '@/components/printer-manager-dialog'
+import { PrinterStatusIndicator } from '@/components/printer-status-indicator'
 
 interface PetugasSession {
   loketId: string
@@ -31,6 +34,9 @@ interface ActiveTicket {
   namaLayanan: string
   namaPemohon: string | null
   noHpPemohon: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface WaitingItem {
@@ -43,6 +49,9 @@ interface WaitingItem {
   createdAt: Date
   namaPemohon: string | null
   noHpPemohon: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface SkippedItem {
@@ -55,6 +64,9 @@ interface SkippedItem {
   skippedAt: Date | string | null
   namaPemohon: string | null
   noHpPemohon: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface OnlineReservation {
@@ -69,6 +81,9 @@ interface OnlineReservation {
   jamMulai: string
   jamSelesai: string
   tanggalKunjungan: string | null
+  trackingToken: string
+  kuesionerLink: string | null
+  kuesionerCaption: string | null
 }
 
 interface DashboardData {
@@ -97,6 +112,9 @@ export function PetugasLoketPage() {
     nama: string
     noHp: string
   } | null>(null)
+  const [showPrinterDialog, setShowPrinterDialog] = useState(false)
+
+  const { print, isConnected, isConnecting, isReconnecting, defaultPrinterName, connectionError, retryCountdown, retryAttempt, reconnectNow, hasSavedDevice, testPrint, forgetDevice, refreshPaired, disconnect } = useThermalPrinter()
 
   useEffect(() => {
     const raw = localStorage.getItem('petugasSession')
@@ -246,6 +264,62 @@ export function PetugasLoketPage() {
     await handleFinish(id)
   }
 
+  const handleReprint = useCallback(async (id: string) => {
+    const ticket = data?.aktif
+    if (!ticket || ticket.id !== id) return
+    setActionLoading(`reprint-${id}`)
+    try {
+      await print({
+        kode: ticket.kode ?? '-',
+        namaLayanan: ticket.namaLayanan,
+        timestamp: new Date(),
+        trackingUrl: `${window.location.origin}/track/${ticket.trackingToken}`,
+        kuesionerUrl: ticket.kuesionerLink ?? null,
+        kuesionerCaption: ticket.kuesionerCaption ?? null,
+      })
+    } catch {
+      // toast already handled by the hook
+    } finally {
+      setActionLoading(null)
+    }
+  }, [data?.aktif, print])
+
+  const handleReprintWaiting = useCallback(async (item: WaitingItem) => {
+    setActionLoading(`reprint-${item.id}`)
+    try {
+      await print({
+        kode: item.kode ?? '-',
+        namaLayanan: item.namaLayanan,
+        timestamp: item.createdAt,
+        trackingUrl: `${window.location.origin}/track/${item.trackingToken}`,
+        kuesionerUrl: item.kuesionerLink ?? null,
+        kuesionerCaption: item.kuesionerCaption ?? null,
+      })
+    } catch {
+      // toast already handled by the hook
+    } finally {
+      setActionLoading(null)
+    }
+  }, [print])
+
+  const handleReprintOnline = useCallback(async (item: OnlineReservation) => {
+    setActionLoading(`reprint-${item.id}`)
+    try {
+      await print({
+        kode: item.kode ?? '-',
+        namaLayanan: item.namaLayanan,
+        timestamp: new Date(),
+        trackingUrl: `${window.location.origin}/track/${item.trackingToken}`,
+        kuesionerUrl: item.kuesionerLink ?? null,
+        kuesionerCaption: item.kuesionerCaption ?? null,
+      })
+    } catch {
+      // toast already handled by the hook
+    } finally {
+      setActionLoading(null)
+    }
+  }, [print])
+
   const handleGantiLoket = () => {
     localStorage.removeItem('petugasSession')
     navigate('/petugas/loket/select', { replace: true })
@@ -293,6 +367,16 @@ export function PetugasLoketPage() {
               {waitingCount} menunggu
             </span>
           </div>
+          <PrinterStatusIndicator
+            isConnected={isConnected}
+            isConnecting={isConnecting}
+            isReconnecting={isReconnecting}
+            retryCountdown={retryCountdown}
+            retryAttempt={retryAttempt}
+            printerName={defaultPrinterName}
+            connectionError={connectionError}
+            onClick={() => setShowPrinterDialog(true)}
+          />
           <Button variant="outline" size="sm" onClick={handleGantiLoket}>
             Ganti Loket
           </Button>
@@ -308,6 +392,7 @@ export function PetugasLoketPage() {
               onRecall={handleRecall}
               onSkip={handleSkip}
               onFinish={handleFinish}
+              onReprint={handleReprint}
               onDetail={setDetailItem}
             />
           ) : (
@@ -338,11 +423,13 @@ export function PetugasLoketPage() {
           <WaitingList
             items={data?.daftarWaiting ?? []}
             onDetail={setDetailItem}
+            onReprint={handleReprintWaiting}
           />
 
           <OnlineReservationsCard
             items={data?.daftarOnline ?? []}
             onDetail={setDetailItem}
+            onReprint={handleReprintOnline}
           />
 
           <SkippedList
@@ -359,6 +446,18 @@ export function PetugasLoketPage() {
         open={!!detailItem}
         onOpenChange={(open) => !open && setDetailItem(null)}
         data={detailItem}
+      />
+      <PrinterManagerDialog
+        open={showPrinterDialog}
+        onOpenChange={setShowPrinterDialog}
+        hasSavedPrinter={hasSavedDevice}
+        printerName={defaultPrinterName}
+        testPrint={testPrint}
+        forgetDevice={forgetDevice}
+        refreshPaired={refreshPaired}
+        reconnectNow={reconnectNow}
+        isConnected={isConnected}
+        onDisconnect={disconnect}
       />
     </div>
   )

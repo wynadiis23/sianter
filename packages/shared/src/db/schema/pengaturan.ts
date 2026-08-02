@@ -17,6 +17,7 @@ export const pengaturan = pgTable('pengaturan', {
   slideshowImages: text('slideshow_images'),
   slideshowInterval: integer('slideshow_interval').notNull().default(5),
   kegiatanInterval: integer('kegiatan_interval').notNull().default(8),
+  printerNamePrefixes: text('printer_name_prefixes'),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .notNull()
     .defaultNow(),

@@ -75,6 +75,8 @@ export abstract class AntreanService {
         nomorUrut: schema.antrean.nomorUrut,
         status: schema.antrean.status,
         sumber: schema.antrean.sumber,
+        trackingToken: schema.antrean.trackingToken,
+        layananId: schema.antrean.layananId,
         namaLayanan: schema.layanan.nama,
         namaPemohon: schema.pemohon.nama,
         noHpPemohon: schema.pemohon.noHp,
@@ -97,6 +99,7 @@ export abstract class AntreanService {
         nomorUrut: schema.antrean.nomorUrut,
         layananId: schema.antrean.layananId,
         sumber: schema.antrean.sumber,
+        trackingToken: schema.antrean.trackingToken,
         namaLayanan: schema.layanan.nama,
         createdAt: schema.antrean.createdAt,
         namaPemohon: schema.pemohon.nama,
@@ -122,6 +125,8 @@ export abstract class AntreanService {
         nomorUrut: schema.antrean.nomorUrut,
         status: schema.antrean.status,
         sumber: schema.antrean.sumber,
+        trackingToken: schema.antrean.trackingToken,
+        layananId: schema.antrean.layananId,
         namaLayanan: schema.layanan.nama,
         skippedAt: schema.antrean.skippedAt,
         namaPemohon: schema.pemohon.nama,
@@ -156,6 +161,8 @@ export abstract class AntreanService {
         kode: schema.antrean.kode,
         nomorUrut: schema.antrean.nomorUrut,
         sumber: schema.antrean.sumber,
+        trackingToken: schema.antrean.trackingToken,
+        layananId: schema.antrean.layananId,
         namaLayanan: schema.layanan.nama,
         namaPemohon: schema.pemohon.nama,
         noHpPemohon: schema.pemohon.noHp,
@@ -178,12 +185,40 @@ export abstract class AntreanService {
       )
       .orderBy(schema.sesi.jamMulai, schema.antrean.createdAt)
 
+    const kuesionerIds = new Set<string>()
+    if (aktif?.layananId) kuesionerIds.add(aktif.layananId)
+    for (const w of daftarWaiting) kuesionerIds.add(w.layananId)
+    for (const s of daftarSkipped) kuesionerIds.add(s.layananId)
+    for (const o of daftarOnline) kuesionerIds.add(o.layananId)
+
+    const kuesionerRows = kuesionerIds.size > 0
+      ? await db
+          .select()
+          .from(schema.kuesioner)
+          .where(
+            and(
+              inArray(schema.kuesioner.layananId, [...kuesionerIds]),
+              eq(schema.kuesioner.aktif, true),
+            ),
+          )
+      : []
+
+    const kuesionerMap = new Map(kuesionerRows.map((k) => [k.layananId, k]))
+
+    const mapKuesioner = (item: { layananId: string }) => {
+      const k = kuesionerMap.get(item.layananId)
+      return {
+        kuesionerLink: k?.link ?? null,
+        kuesionerCaption: k?.caption ?? null,
+      }
+    }
+
     return {
       mode: pengaturan?.mode ?? 'FIFO_GLOBAL',
-      aktif: aktif ?? null,
-      daftarWaiting,
-      daftarSkipped,
-      daftarOnline,
+      aktif: aktif ? { ...aktif, ...mapKuesioner(aktif) } : null,
+      daftarWaiting: daftarWaiting.map((w) => ({ ...w, ...mapKuesioner(w) })),
+      daftarSkipped: daftarSkipped.map((s) => ({ ...s, ...mapKuesioner(s) })),
+      daftarOnline: daftarOnline.map((o) => ({ ...o, ...mapKuesioner(o) })),
       countPerLayanan,
     }
   }
