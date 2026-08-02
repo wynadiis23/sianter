@@ -27,7 +27,14 @@ import { KegiatanPetugasPage } from './routes/petugas/kegiatan'
 
 const router = createBrowserRouter([
   { path: '/', element: <HomePage /> },
-  { path: '/kios', element: <KiosPage /> },
+  {
+    path: '/kios',
+    element: (
+      <ProtectedRoute allowedRoles="PETUGAS_LOKET">
+        <KiosPage />
+      </ProtectedRoute>
+    ),
+  },
   { path: '/antrean-online', element: <OnlineAntreanPage /> },
   { path: '/track/:token', element: <TrackPage /> },
   { path: '/monitor', element: <MonitorPage /> },

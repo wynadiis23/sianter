@@ -10,6 +10,7 @@ export const kiosModule = new Elysia({ prefix: '/api/kios' })
     '/antrean',
     ({ body }) => KiosService.createAntrean(body.layananId, body.nama, body.noHp),
     {
+      loket: true,
       body: KiosModel.antreanBody,
       response: {
         200: KiosModel.antreanResponse,
@@ -23,6 +24,7 @@ export const kiosModule = new Elysia({ prefix: '/api/kios' })
     '/check-in',
     ({ body }) => KiosService.checkIn(body.token),
     {
+      loket: true,
       body: KiosModel.checkInBody,
       response: {
         200: KiosModel.antreanResponse,
